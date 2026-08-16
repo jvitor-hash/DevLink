@@ -12,10 +12,12 @@ Versão: 1.0.0v
 - Dotenv (Variáveis de ambiente)
 - Socket.io (Comunicação por meio de chat)
 - Handlebars (Engine de renderização de páginas) 
-- Bootstrap (Framework de componentes)
+- Bootstrap (Framework de componentes HTML)
+- Bootstrap-icons (Icones)
 - Method-override (Suporte de métodos PUT/PATCH/DELETE em formulários)
 - Body-parser (Auxilia nas requisições de req.body)
 - Nodemon (Ambiente de desenvolvimento)
+
 
 ## Pré-requisitos
 - Node.js (Versão 18+)

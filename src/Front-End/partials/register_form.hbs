@@ -1,0 +1,52 @@
+<form>
+    <h3>Formulário de registro</h2>
+
+    <span>Tipo de conta: </span>
+    <div class="btn-group btn-group-sm mt-2" role="group" aria-label="Login/Register">
+        <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
+        <label class="btn btn-outline-primary" for="btnradio1">Cliente</label>
+
+        <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+        <label class="btn btn-outline-primary" for="btnradio2">Programador</label>
+    </div>
+
+    <div class="mb-3">
+        <label for="exampleFormControlInput1" class="form-label">E-mail</label>
+        <input type="email" class="form-control" id="exampleFormControlInput1" placeholder="nome@exemplo.com">
+    </div>
+
+    <div class="mb-3">
+        <label for="exampleFormControlInput1" class="form-label">Nome</label>
+        <input type="text" class="form-control" id="exampleFormControlInput1" placeholder="digite seu nome de usuário">
+    </div>
+
+    <div class="mb-3">
+        <label for="exampleFormControlInput1" class="form-label">Senha</label>
+        <div class="input-group">
+            <input type="password" class="form-control" id="password-input" placeholder="digite sua senha">
+            <button class="input-group-text" type="button" id="togglePassword">
+                <i class="bi bi-eye"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <button type="button" class="ps-3 btn btn-outline-success">Login</button>
+        <button type="button" class="btn btn-outline-danger">Cancelar</button>
+    </div>
+</form>
+
+<script>
+document.getElementById("togglePassword").addEventListener("click", function () {
+    const password = document.getElementById("password-input");
+    const icon = this.querySelector("i");
+
+    if (password.type === "password") {
+        password.type = "text";
+        icon.classList.replace("bi-eye", "bi-eye-slash");
+    } else {
+        password.type = "password";
+        icon.classList.replace("bi-eye-slash", "bi-eye");
+    }
+});
+</script>
