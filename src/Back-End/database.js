@@ -17,6 +17,13 @@ const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, proces
           cria o banco configurado nas variáveis de ambiente.
 */
 async function EnsureDatabaseExists() {
+    const dbName = process.env.DB_NAME;
+
+    // Validacao do nome do banco antes de executar uma query.
+    if (!dbName || !/^[a-z_][a-z0-9_]*$/.test(dbName)) {
+        throw new Error('Invalid DB_NAME');
+    }
+
     const client = new Client({
         host: process.env.DB_HOST,
         port: Number(process.env.DB_PORT) || 5432,
@@ -27,14 +34,9 @@ async function EnsureDatabaseExists() {
 
     try {
         await client.connect();
-        const result = await client.query('SELECT 1 FROM pg_database WHERE datname = $1', [process.env.DB_NAME]);
+        const result = await client.query('SELECT 1 FROM pg_database WHERE datname = $1', [dbName]);
         if (result.rowCount === 0) {
-            // Validacao do nome antes de interpolar.
-            if (!/^[a-zA-Z0-9_]+$/.test(process.env.DB_NAME)) {
-                throw new Error('`\x1b[41m\x1b[1;32m DATABASE | ${process.env.NODE_ENV} \x1b[0m\x1b[0m Nome invalido para um banco');
-            }
-
-            await client.query(`CREATE DATABASE ${process.env.DB_NAME}`);
+            await client.query(`CREATE DATABASE ${dbName}`);
 
             console.log(`\x1b[42m\x1b[1;32m DATABASE | ${process.env.NODE_ENV} \x1b[0m\x1b[0m Banco de dados criado com sucesso`);
         } else {
@@ -56,7 +58,7 @@ async function EnsureDatabaseExists() {
 async function AuthenticateDatabase() {
     try {
         await sequelize.authenticate();
-        await sequelize.sync({ force: true });
+        await sequelize.sync();
 
         console.log(`\x1b[42m\x1b[1;32m DATABASE | ${process.env.NODE_ENV} \x1b[0m\x1b[0m Conexão com banco de dados esbelecida.`);
     } catch(error) {

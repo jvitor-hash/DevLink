@@ -11,8 +11,7 @@ const envFiles = {
     "Production": "./prod.env.production"
 };
 
-if (process.env.NODE_ENV !== undefined) {
-    dotenv.config({ path: envFiles[process.env.NODE_ENV], override: true });
-} else {
-    throw new Error("Configuracao do arquivo .env nao contem NODE_ENV");
-}
+if (process.env.NODE_ENV === undefined) 
+    console.error("Configuração do arquivo .env não existe ou contem NODE_ENV");
+
+dotenv.config({ path: envFiles[process.env.NODE_ENV], override: true });
