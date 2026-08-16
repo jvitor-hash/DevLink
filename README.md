@@ -1,12 +1,14 @@
 # Projeto sem nome
+Versão: 1.0.0v
 
-*(Nota: Testes sao rodados automaticamente após um pull-request ou push)*
+*(Nota: Testes são rodados automaticamente após um pull-request ou push)*
 
 ## Tecnologias utilizadas
 - Node.js
 - Express.js
 - Sequelize (PostgreSQL)
 - JWT (Autenticação)
+- Vitest (Framework de testes)
 - Dotenv (Variáveis de ambiente)
 - Socket.io (Comunicação por meio de chat)
 - Handlebars (Engine de renderização de páginas) 
@@ -23,8 +25,8 @@
 
 1. Clonar o repositório:
 ```
-git clone ...
-cd ...
+git clone https://github.com/jvitor-hash/Projeto-sem-nome
+cd '.\Projeto sem nome\'
 ```
 
 2. Instalação das dependências do projeto:
@@ -34,6 +36,35 @@ npm install
 
 3. Configuração das variáveis de ambiente:
 ```
-
+# development, staging, testing, production
+NODE_ENV=development 
 PORT=8080
+```
+
+4. Configuração secundaria das variáveis de ambiente:
+Nomenclatura dos arquivos: 
+- ".env.development"
+- ".env.staging"
+- ".env.testing"
+- ".env.production"
+
+Exemplo de configuração secundária:
+```
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=db_development
+DB_USER=postgres
+DB_PASSWORD=123
+```
+
+# Commandos
+
+```
+npm start
+npm test
+npm run test:run # Executa uma unica vez e não espera para o usuário precionar 'q'
+npm run db:migrate
+npm run db:migrate:undo # Desfaz todas as migrations criadas
+npm run db:seed
+npm run db:seed:undo # Mesmo conceito do commando 'db:migrate:undo'
 ```

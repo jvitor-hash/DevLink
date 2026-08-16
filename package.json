@@ -6,7 +6,11 @@
   "scripts": {
     "test": "vitest",
     "test:run": "vitest run",
-    "start": "nodemon ./src/index.js"
+    "start": "nodemon ./src/index.js",
+    "db:migrate": "sequelize-cli db:migrate",
+    "db:migrate:undo": "sequelize-cli db:migrate:undo",
+    "db:seed": "sequelize-cli db:seed:all",
+    "db:seed:undo": "sequelize-cli db:seed:undo:all"
   },
   "keywords": [],
   "author": "",
@@ -22,7 +26,7 @@
     "nodemon": "^3.1.14",
     "pg": "^8.23.0",
     "pg-hstore": "^2.3.4",
-    "sequelize": "^3.30.0",
+    "sequelize": "^6.37.8",
     "socket.io": "^4.8.3"
   },
   "devDependencies": {

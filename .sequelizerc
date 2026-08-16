@@ -1,0 +1,7 @@
+import path from 'path';
+
+module.exports = {
+  'migrations-path': path.resolve(__dirname, 'src/Back-End/Migrations'),
+  'seeders-path': path.resolve(__dirname, 'src/Back-End/Seeds'),
+  'models-path': path.resolve(__dirname, 'src/Back-End/Models'),
+};
