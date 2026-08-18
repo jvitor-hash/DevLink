@@ -1,5 +1,5 @@
 {
-  "name": "projeto-sem-nome",
+  "name": "DevLink",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -7,10 +7,10 @@
     "test": "vitest",
     "test:run": "vitest run",
     "start": "nodemon ./src/index.js",
-    "db:migrate": "sequelize-cli db:migrate",
-    "db:migrate:undo": "sequelize-cli db:migrate:undo",
-    "db:seed": "sequelize-cli db:seed:all",
-    "db:seed:undo": "sequelize-cli db:seed:undo:all"
+    "db:migrate": "npx sequelize-cli db:migrate --env development",
+    "db:migrate:undo": "sequelize-cli db:migrate:undo --env development",
+    "db:seed": "sequelize-cli db:seed:all --env development",
+    "db:seed:undo": "sequelize-cli db:seed:undo:all --env development"
   },
   "keywords": [],
   "author": "",
@@ -27,6 +27,7 @@
     "pg": "^8.23.0",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.8",
+    "sequelize-cli": "^6.6.5",
     "socket.io": "^4.8.3"
   },
   "devDependencies": {

@@ -1,6 +1,7 @@
 import express from 'express';
 import { engine } from 'express-handlebars';
 import { InitializeDatabase } from './database.js';
+import clienteRouter from './routes/cliente_routes.js';
 import './config.js';
 
 /*
@@ -11,9 +12,12 @@ import './config.js';
     @params: app : express
 */
 function SetupRoutes(app) {
-    app.get('/', (req, res) => {
-        res.render('home');
-    });
+  // Configuração das rotas.
+  app.use('/clientes', clienteRouter);
+
+  app.get('/', (req, res) => {
+    res.render('home');
+  });
 }
 
 /*
@@ -24,37 +28,39 @@ function SetupRoutes(app) {
     irá iniciar as migrations e preencher as tabelas com as seeds no banco de testes.
 */
 export function InitServer() {
-    const port = process.env.PORT || 8080;
+  const port = process.env.PORT || 8080;
 
-    console.log(`\x1b[42m\x1b[1;32m BACK-END \x1b[0m\x1b[0m Inicializando servidor | Porta: ${port}`);
+  console.log(`\x1b[42m\x1b[1;32m BACK-END \x1b[0m\x1b[0m Inicializando servidor | Porta: ${port}`);
 
-    // Criação da instancia do express-js.
-    const app = express();
+  // Criação da instancia do express-js.
+  const app = express();
 
-    // Configuração da handlebars.
-    app.engine('handlebars', engine());
+  // Configuração da handlebars.
+  app.engine('handlebars', engine());
 
-    // Definição dos arquivos usando .hbs
-    app.engine('hbs', engine({
-        extname: '.hbs'
-    }));
+  // Definição dos arquivos usando .hbs
+  app.engine('hbs', engine({
+    extname: '.hbs'
+  }));
 
-    app.set('view engine', 'hbs');
-    
+  app.set('view engine', 'hbs');
 
-    // Configuração da pasta das views.
-    app.set('views', './src/Front-End');
+  // Usar formatacão json.
+  app.use(express.json());
 
-    SetupRoutes(app);
+  // Configuração da pasta das views.
+  app.set('views', './src/Front-End');
 
-    // Nota: Utilizei uma anonymous function para circunver a parte assíncrona de lidar com banco de dados
-    (async () => {
-        if (process.env.NODE_ENV)
-            await InitializeDatabase();
-    })();
+  SetupRoutes(app);
 
-    // Inicia a aplicação e começar a ouvir na porta definida nas variáveis de ambiente.
-    app.listen(port, () => {
-        console.log(`\x1b[42m\x1b[1;32m BACK-END \x1b[0m\x1b[0m Servidor esperando conexões na porta: ${port}`);    
-    });
+  // Nota: Utilizei uma anonymous function para circunver a parte assíncrona de lidar com banco de dados
+  (async () => {
+    if (process.env.NODE_ENV)
+      await InitializeDatabase();
+  })();
+
+  // Inicia a aplicação e começar a ouvir na porta definida nas variáveis de ambiente.
+  app.listen(port, () => {
+    console.log(`\x1b[42m\x1b[1;32m BACK-END \x1b[0m\x1b[0m Servidor esperando conexões na porta: ${port}`);    
+  });
 };
