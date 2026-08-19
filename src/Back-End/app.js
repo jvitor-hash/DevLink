@@ -1,7 +1,8 @@
 import express from 'express';
 import { engine } from 'express-handlebars';
 import { InitializeDatabase } from './database.js';
-import clienteRouter from './routes/cliente_routes.js';
+import usuarioRouter from './Routes/usuario_routes.js';
+import path from 'path';
 import './config.js';
 
 /*
@@ -9,11 +10,11 @@ import './config.js';
     Autor: Jvitor
     Desc: Lista a rotas e os métodos sendo usados por estas rotas,
     além dos arquivos associados a partir da pasta Front-End/
-    @params: app : express
+    @params: App (express)
 */
 function SetupRoutes(app) {
   // Configuração das rotas.
-  app.use('/clientes', clienteRouter);
+  app.use('/api/usuario', usuarioRouter);
 
   app.get('/', (req, res) => {
     res.render('home');
@@ -47,9 +48,11 @@ export function InitServer() {
 
   // Usar formatacão json.
   app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
 
-  // Configuração da pasta das views.
+  // Configuração da pasta das views e public.
   app.set('views', './src/Front-End');
+  // app.use(express.static(path.join(__dirname, "../../public")));
 
   SetupRoutes(app);
 
@@ -61,6 +64,6 @@ export function InitServer() {
 
   // Inicia a aplicação e começar a ouvir na porta definida nas variáveis de ambiente.
   app.listen(port, () => {
-    console.log(`\x1b[42m\x1b[1;32m BACK-END \x1b[0m\x1b[0m Servidor esperando conexões na porta: ${port}`);    
+    console.log(`\x1b[42m\x1b[1;32m BACK-END \x1b[0m\x1b[0m Servidor esperando conexões na porta: ${port}`);
   });
 };

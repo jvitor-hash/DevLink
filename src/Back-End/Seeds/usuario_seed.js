@@ -2,11 +2,12 @@ import { QueryInterface } from "sequelize";
 
 export default {
     async up(queryInterface, Sequelize) {
-        await queryInterface.bulkInsert('Clientes', [
+        await queryInterface.bulkInsert('Usuarios', [
             {
                 name: 'João Silva',
                 email: 'joao.silva@example.com',
                 password: '123456',
+                userType: 'cliente',
                 createdAt: new Date(),
                 updatedAt: new Date()
             },
@@ -14,6 +15,7 @@ export default {
                 name: 'Maria Santos',
                 email: 'maria.santos@example.com',
                 password: '123456',
+                userType: 'cliente',
                 createdAt: new Date(),
                 updatedAt: new Date()
             },
@@ -21,6 +23,7 @@ export default {
                 name: 'Carlos Oliveira',
                 email: 'carlos.oliveira@example.com',
                 password: '123456',
+                userType: 'programador',
                 createdAt: new Date(),
                 updatedAt: new Date()
             },
@@ -28,6 +31,7 @@ export default {
                 name: 'Ana Costa',
                 email: 'ana.costa@example.com',
                 password: '123456',
+                userType: 'programador',
                 createdAt: new Date(),
                 updatedAt: new Date()
             }
@@ -35,6 +39,6 @@ export default {
     },
 
     async down(queryInterface, Sequelize) {
-        await queryInterface.bulkDelete('Clientes', null, {});
+        await queryInterface.bulkDelete('Usuarios', null, {});
     }
 }

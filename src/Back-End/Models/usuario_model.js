@@ -1,9 +1,9 @@
 import { DataTypes, Model } from "sequelize";
 import { sequelize } from '../database.js';
 
-export class Cliente extends Model {};
+export class Usuario extends Model {};
 
-Cliente.init({
+Usuario.init({
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -19,9 +19,18 @@ Cliente.init({
         allowNull: false,
         unique: true
     },
+    description: {
+        type: DataTypes.STRING,
+        defaultValue: '',
+        allowNull: true
+    },
     password: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    userType: {
+      type: DataTypes.STRING,
+      allowNull: false
     },
     createdAt: {
         type: DataTypes.DATE,
@@ -33,5 +42,5 @@ Cliente.init({
     }
 }, {
     sequelize,
-    modelName: "Cliente"
+    modelName: "Usuario"
 });

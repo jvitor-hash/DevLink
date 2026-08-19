@@ -10,12 +10,11 @@ Versão: 1.0.0v
 - JWT (Autenticação)
 - Vitest (Framework de testes)
 - Dotenv (Variáveis de ambiente)
+- Bcrypt (Encriptação de senhas)
 - Socket.io (Comunicação por meio de chat)
 - Handlebars (Engine de renderização de páginas) 
 - Bootstrap (Framework de componentes HTML)
 - Bootstrap-icons (Icones)
-- Method-override (Suporte de métodos PUT/PATCH/DELETE em formulários)
-- Body-parser (Auxilia nas requisições de req.body)
 - Nodemon (Ambiente de desenvolvimento)
 
 
@@ -40,11 +39,12 @@ npm install
 ```
 # development, staging, testing, production
 NODE_ENV=development 
+SALT_ROUNDS=24
 PORT=8080
 ```
 
-4. Configuração secundaria das variáveis de ambiente:
-Nomenclatura dos arquivos: 
+4. Configuração secundaria das variáveis de ambiente
+
 - ".env.development"
 - ".env.staging"
 - ".env.testing"

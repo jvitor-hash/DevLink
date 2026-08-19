@@ -1,41 +1,13 @@
 <div class="modal fade" id="login_modal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-body">
-                <div id="login-form">
-                    {{> login_form}}
-                    <div class="d-flex align-items-center">
-                        <span>Nao possui uma conta?</span>
-                        <button type="button" id="register-switch" class="btn btn-link p-0 px-1">Registre-se</button>
-                    </div>
-                </div>
+            <div class="modal-header">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
 
-                <div id="register-form" class="d-none">
-                    {{> register_form}}
-                    <div class="d-flex align-items-center">
-                        <span>Já possui uma conta?</span>
-                        <button type="button" id="login-switch" class="btn btn-link p-0 px-1">Login</button>
-                    </div>
-                </div>
+            <div class="modal-body">
+                {{> login_form}}
             </div>
         </div>
     </div>
 </div>
-
-<script>
-    const loginSwitch = document.getElementById('login-switch');
-    const registerSwitch = document.getElementById('register-switch');
-
-    const loginForm = document.getElementById('login-form');
-    const registerForm = document.getElementById('register-form');
-
-    registerSwitch.addEventListener('click', () => {
-        loginForm.classList.add('d-none');
-        registerForm.classList.remove('d-none');
-    });
-
-    loginSwitch.addEventListener('click', () => {
-        registerForm.classList.add('d-none');
-        loginForm.classList.remove('d-none');
-    });
-</script>

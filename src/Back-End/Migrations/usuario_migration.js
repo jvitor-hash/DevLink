@@ -1,7 +1,7 @@
 import { INTEGER, STRING, DATE } from "sequelize";
 
 export async function up(queryInterface) {
-    await queryInterface.createTable('Clientes', {
+    await queryInterface.createTable('Usuarios', {
         id: {
             type: INTEGER,
             primaryKey: true,
@@ -17,9 +17,18 @@ export async function up(queryInterface) {
             allowNull: false,
             unique: true
         },
+        description: {
+            type: STRING,
+            defaultValue: '',
+            allowNull: true
+        },
         password: {
             type: STRING,
             allowNull: false
+        },
+        userType: {
+          type: STRING,
+          allowNull: false
         },
         createdAt: {
             type: DATE,
@@ -33,5 +42,5 @@ export async function up(queryInterface) {
 }
 
 export async function down(queryInterface) {
-    await queryInterface.dropTable('Clientes');
+    await queryInterface.dropTable('Usuarios');
 }

@@ -5,14 +5,20 @@ export function validateStr(input, options = {}) {
     pattern = /^[a-zA-Z0-9_]+$/
   } = options;
 
-  if (typeof input !== "string")
+  if (typeof input !== "string") {
     return false;
+  }
 
-  if (input.length < minLength || input.length > maxLength)
+  if (input.length < minLength || input.length > maxLength) {
     return false;
+  }
 
-  if (pattern && !pattern.test(input))
-    return false;
+  if (pattern instanceof RegExp) {
+    pattern.lastIndex = 0;
+    if (!pattern.test(input)) {
+      return false;
+    }
+  }
 
   return true;
 }
@@ -43,4 +49,38 @@ export function validateSQLInjection(input) {
   ];
 
   return !patterns.some(pattern => pattern.test(input));
+}
+
+/*
+  Validacao de inputs como nome, email,
+*/
+export function validateInputs(inputs) {
+  for (const [key, value] of Object.entries(inputs)) {
+    switch (key) {
+      case 'name':
+        if (validateStr(value) === false || validateSQLInjection(value) === false)
+          throw new Error("Nome invalido.");
+        break;
+      case 'email':
+        if (validateEmail(value) === false || validateSQLInjection(value) === false)
+          throw new Error("E-mail invalido.");
+        break;
+      case 'description':
+        if (validateSQLInjection(value) === false)
+          throw new Error("Descricao invalida.");
+        break;
+      case 'password':
+        if (validateStr(value) === false || validateSQLInjection(value) === false)
+          throw new Error("Senha invalida.");
+        break;
+      case 'userType':
+        if (validateStr(value) === false || validateSQLInjection(value) === false)
+          throw new Error("Tipo de usuario invalido.");
+        break;
+      default:
+        if (validateStr(value) === false || validateSQLInjection(value) === false)
+          throw new Error(`\'${key}\' e invalido(a)`);
+        break;
+    }
+  }
 }
