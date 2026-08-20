@@ -1,0 +1,50 @@
+# ================================ #
+#           REQUEST GET            #
+# ================================ #
+
+# Retornar todos os usuários
+GET http://localhost:8888/api/usuario HTTP/1.1
+
+# Retornar um único usuário
+GET http://localhost:8888/api/usuario/1 HTTP/1.1
+
+# Retornar um único usuário através do nome do usuário
+GET localhost:8080/api/usuario/name/?name=Silva
+
+# ================================ #
+#           REQUEST POST           #
+# ================================ #
+
+# Criar um novo usuário
+POST http://localhost:8888/api/usuario/ HTTP/1.1
+Content-Type: application/json
+
+{
+    "name": "teste",
+    "email": "teste@gmail.com",
+    "description": "Hello, World!",
+    "password": "123456",
+    "userType": "cliente"
+}
+
+# ================================ #
+#           REQUEST PATCH          #
+# ================================ #
+
+# Atualizar um usuário através de um id
+PATCH http://localhost:8888/api/usuario/7 HTTP/1.1
+Content-Type: application/json
+
+{
+    "name": "hello",
+    "email": "hello@gmail.com",
+    "password": "987654321",
+    "userType": "programador"
+}
+
+# ================================ #
+#          REQUEST DELETE          #
+# ================================ #
+
+# Deletar um usuário através de um id
+DELETE http://localhost:8888/api/usuario/1 HTTP/1.1

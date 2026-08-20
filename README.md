@@ -1,7 +1,8 @@
 # Projeto sem nome
-Versão: 1.0.0v
+Versão: v1.1.0
 
 *(Nota: Testes são rodados automaticamente após um pull-request ou push)*
+*(Nota - 2: As rotas sendo enviadas do front-end podem varias dependendo da porta sendo usada.)*
 
 ## Tecnologias utilizadas
 - Node.js
@@ -39,16 +40,17 @@ npm install
 ```
 # development, staging, testing, production
 NODE_ENV=development 
-SALT_ROUNDS=24
+SALT_ROUNDS=12
 PORT=8080
+IP="127.0.0.1"
 ```
 
 4. Configuração secundaria das variáveis de ambiente
 
-- ".env.development"
-- ".env.staging"
-- ".env.testing"
-- ".env.production"
+- "dev.env.development"
+- "stag.env.staging"
+- "test.env.testing"
+- "prod.env.production"
 
 Exemplo de configuração secundária:
 ```

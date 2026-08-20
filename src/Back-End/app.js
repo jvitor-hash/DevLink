@@ -2,8 +2,13 @@ import express from 'express';
 import { engine } from 'express-handlebars';
 import { InitializeDatabase } from './database.js';
 import usuarioRouter from './Routes/usuario_routes.js';
+import { fileURLToPath } from 'node:url';
 import path from 'path';
+import cors from 'cors';
 import './config.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /*
     Nome: SetupRoutes
@@ -36,6 +41,9 @@ export function InitServer() {
   // Criação da instancia do express-js.
   const app = express();
 
+  // TODO(Jvitor): Configurar de forma apropriada o cors.
+  app.use(cors());
+
   // Configuração da handlebars.
   app.engine('handlebars', engine());
 
@@ -52,7 +60,7 @@ export function InitServer() {
 
   // Configuração da pasta das views e public.
   app.set('views', './src/Front-End');
-  // app.use(express.static(path.join(__dirname, "../../public")));
+  app.use(express.static(path.join(__dirname, "../../public")));
 
   SetupRoutes(app);
 
@@ -63,7 +71,7 @@ export function InitServer() {
   })();
 
   // Inicia a aplicação e começar a ouvir na porta definida nas variáveis de ambiente.
-  app.listen(port, () => {
-    console.log(`\x1b[42m\x1b[1;32m BACK-END \x1b[0m\x1b[0m Servidor esperando conexões na porta: ${port}`);
+  app.listen(port, process.env.HOST || "127.0.0.1", () => {
+    console.log(`\x1b[42m\x1b[1;32m BACK-END \x1b[0m\x1b[0m Servidor esperando conexões na porta: ${port} e ip ${process.env.HOST || "127.0.0.1"}`);
   });
 };

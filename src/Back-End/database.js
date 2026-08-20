@@ -78,7 +78,7 @@ async function AuthenticateDatabase() {
 /*
     Nome: PendingMigrations
     Autor: Jvitor
-    Desc: Retornar uma lista de migrations de acordo com os arquivos na 
+    Desc: Retornar uma lista de migrations de acordo com os arquivos na
     pasta migration e retorna as instâncias pendentens.
     @return: Pendentes (array[str])
 */
@@ -88,13 +88,19 @@ async function PendingMigrations(sequelize, migrationsDir) {
         .filter(file => file.endsWith('.js'))
         .sort();
 
-    const [rows] = await sequelize.query(
-        'SELECT name FROM "SequelizeMeta"'
-    );
+    try {
+        const [rows] = await sequelize.query(
+            'SELECT name FROM "SequelizeMeta"'
+        );
 
-    const executed = new Set(rows.map(row => row.name));
+        const executed = new Set(rows.map(row => row.name));
 
-    return files.filter(file => !executed.has(file));
+        return files.filter(file => !executed.has(file));
+    } catch (error) {
+        console.warn(`\x1b[41m\x1b[1;32m DATABASE \x1b[0m\x1b[0m Banco de dados indisponível. Pulando check de migrations.`);
+
+        return [];
+    }
 }
 
 /*
@@ -129,7 +135,7 @@ export async function InitializeDatabase() {
         const executed = await ExecutedMigrations(sequelize);
         await LoadModels();
         await RunSeeds();
-        
+
         if (pending)
             console.log(`\x1b[43m\x1b[1;30m DATABASE | ${process.env.NODE_ENV} \x1b[0m\x1b[0m Migrations pendentes: ${pending}.`);
         else if (pending == null) {
@@ -138,7 +144,7 @@ export async function InitializeDatabase() {
 
         if (executed)
             console.log(`\x1b[42m\x1b[1;30m DATABASE | ${process.env.NODE_ENV} \x1b[0m\x1b[0m Migrations executados: ${executed}.`);
-        else if (executed == null) 
+        else if (executed == null)
             throw Error(`\x1b[41m\x1b[1;32m DATABASE | ${process.env.NODE_ENV} \x1b[0m\x1b[0m Não foi possível retornar as instâncias executadas/criadas do banco de dados.`);
 
     } catch(error) {
