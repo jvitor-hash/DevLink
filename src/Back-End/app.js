@@ -1,88 +1,51 @@
-import { engine } from 'express-handlebars';
-import { InitializeDatabase } from './database.js';
-import { fileURLToPath } from "node:url";
-import { rateLimiter } from './Middleware/rate_limiter.js';
-import usuarioRouter from './Routes/usuario_routes.js';
 import express from 'express';
-import path from 'path';
-import cors from 'cors';
-import './config.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { engine } from 'express-handlebars';
 
 /*
     Nome: SetupRoutes
-    Autor: Jvitor
-    Desc: Lista a rotas e os métodos sendo usados por estas rotas,
+    Desc: 
+    Lista a rotas e os métodos sendo usados por estas rotas,
     além dos arquivos associados a partir da pasta Front-End/
-    @params: App (express)
 */
 function SetupRoutes(app) {
-  // Configuração das rotas.
-  app.use('/api/usuario', usuarioRouter);
-
-  app.get('/', (req, res) => {
-    res.render('home', {
-      ip: process.env.IP || '127.0.0.1',
-      port: process.env.PORT || 8080
+    app.get('/', (req, res) => {
+        res.render('home');
     });
-  });
 }
 
 /*
     Nome: InitServer
-    Autor: Jvitor
-    Desc: O ponto de partido do Back-end dando início a estabelecer
+    Desc: 
+    O ponto de partido do Back-end dando início a estabelecer
     uma conexão com o banco de dados, caso seja a primeira vez o servidor
     irá iniciar as migrations e preencher as tabelas com as seeds no banco de testes.
 */
 export function InitServer() {
-  const port = process.env.PORT || 8080;
+    const port = process.env.PORT;
 
-  console.log(`\x1b[42m\x1b[1;32m BACK-END \x1b[0m\x1b[0m Inicializando servidor | Porta: ${port}`);
+    console.log(`\x1b[42m\x1b[1;32m BACK-END \x1b[0m\x1b[0m: Inicializando servidor | Porta: ${port}`);
 
-  // Criação da instancia do express-js.
-  const app = express();
+    // Criação da instancia do express-js.
+    const app = express();
 
-  // TODO(Jvitor): Configurar de forma apropriada o cors.
-  app.use(cors({
-    origin: "*"
-  }));
+    // Configuração da handlebars.
+    app.engine('handlebars', engine());
 
-  // Configuração da handlebars.
-  app.engine('handlebars', engine());
+    // Definição dos arquivos usando .hbs
+    app.engine('hbs', engine({
+        extname: '.hbs'
+    }));
 
-  // Definição dos arquivos usando .hbs
-  app.engine('hbs', engine({
-    extname: '.hbs'
-  }));
+    app.set('view engine', 'hbs');
+    
 
-  app.set('view engine', 'hbs');
+    // Configuração da pasta das views.
+    app.set('views', './src/Front-End');
 
-  // Usar formatacão json.
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
+    SetupRoutes(app);
 
-  // Configuração da pasta das views e public.
-  app.set('views', './src/Front-End');
-  app.use(express.static(path.join(__dirname, "../public")));
-
-  app.use(rateLimiter({
-    windowMs: 60 * 1000, // 1 minuto
-    max: 5               // número maximo de requests em 1 minuto
-  }));
-
-  SetupRoutes(app);
-
-  // Nota: Utilizei uma anonymous function para circunver a parte assíncrona de lidar com banco de dados
-  (async () => {
-    if (process.env.NODE_ENV)
-      await InitializeDatabase();
-  })();
-
-  // Inicia a aplicação e começar a ouvir na porta definida nas variáveis de ambiente.
-  app.listen(port, process.env.HOST || "127.0.0.1", () => {
-    console.log(`\x1b[42m\x1b[1;32m BACK-END \x1b[0m\x1b[0m Servidor esperando conexões na porta: ${port} e ip ${process.env.HOST || "127.0.0.1"}`);
-  });
+    // Inicia a aplicação e começar a ouvir na porta definida nas variáveis de ambiente.
+    app.listen(port, () => {
+        console.log(`\x1b[42m\x1b[1;32m BACK-END \x1b[0m\x1b[0m: Servidor esperando conexões na porta: ${port}`);    
+    });
 };
