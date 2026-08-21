@@ -1,0 +1,301 @@
+<form id="loginForm">
+    <h3 id="form-title">Formulário de login</h3>
+
+    <!-- Tipo de cadastro: aparece somente no registro -->
+    <div id="register-type" class="btn-group btn-group-sm mt-2 mb-3 d-none"
+         role="group" aria-label="Tipo de cadastro">
+
+        <input type="radio" class="btn-check" name="userType" value="cliente" id="btnradio1" autocomplete="off" checked>
+        <label class="btn btn-outline-primary" for="btnradio1">Cliente</label>
+
+        <input type="radio" class="btn-check" name="userType" value="programador" id="btnradio2" autocomplete="off">
+        <label class="btn btn-outline-primary" for="btnradio2">Programador</label>
+    </div>
+
+    <!-- E-mail -->
+    <div class="mb-3">
+        <label for="email-form-input" class="form-label">E-mail</label>
+        <input type="email" name="email" class="form-control" id="email-form-input" minlength="3" maxlength="254" placeholder="nome@exemplo.com"  required>
+    </div>
+
+    <!-- Nome -->
+    <div class="mb-3">
+        <label for="nome-form-input" class="form-label">Nome</label>
+        <input type="text" name="name" class="form-control" id="nome-form-input" minlength="1" maxlength="254" placeholder="digite seu nome de usuário"required>
+    </div>
+
+    <!-- Senha -->
+    <div class="mb-3">
+        <label for="senha-form-input" class="form-label">Senha</label>
+        <div class="input-group">
+            <input type="password" name="password" class="form-control" minlength="8" maxlength="20" id="senha-form-input" placeholder="digite sua senha"required>
+            <button class="input-group-text" type="button" id="togglePassword" aria-label="Mostrar senha">
+                <i class="bi bi-eye"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Campos adicionais do registro -->
+    <div id="register-fields" class="d-none">
+
+        <!-- Descrição -->
+        <div class="mb-3">
+            <div class="form-floating">
+                <textarea class="form-control" name="description" placeholder="" id="floatingTextarea"></textarea>
+                <label for="floatingTextarea">Descrição (Opcional)</label>
+            </div>
+        </div>
+
+        <!-- Campos do programador -->
+        <div class="programador-inputs d-none">
+            <div class="mb-3">
+                <label for="programming-language" class="form-label">Linguagem de programação</label>
+                <select class="form-select" name="programmingLanguage" id="programming-language" disabled>
+                    <option value="python" selected>Python</option>
+                    <option value="javascript">Javascript</option>
+                    <option value="java">Java</option>
+                    <option value="csharp">C#</option>
+                    <option value="cpp">C++</option>
+                    <option value="typescript">Typescript</option>
+                    <option value="c">C</option>
+                    <option value="php">PHP</option>
+                    <option value="go">Go (Golang)</option>
+                    <option value="rust">Rust</option>
+                    <option value="kotlin">Kotlin</option>
+                    <option value="swift">Swift</option>
+                    <option value="ruby">Ruby</option>
+                    <option value="dart">Dart</option>
+                    <option value="scala">Scala</option>
+                    <option value="r">R</option>
+                    <option value="lua">Lua</option>
+                    <option value="objectivec">Objective-C</option>
+                    <option value="perl">Perl</option>
+                    <option value="haskell">Haskell</option>
+                </select>
+            </div>
+
+            <!-- Plataformas -->
+            <div class="mb-3">
+                <span class="d-block mb-2">Plataformas:</span>
+                <div class="d-flex gap-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="platforms" value="web" id="platform-web-check" disabled>
+                        <label class="form-check-label" for="platform-web-check">Web</label>
+                    </div>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="platforms" value="desktop" id="platform-desktop-check"disabled>
+                        <label class="form-check-label" for="platform-desktop-check">Desktop</label>
+                    </div>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="platforms" value="mobile" id="platform-mobile-check" disabled>
+                        <label class="form-check-label" for="platform-mobile-check">Mobile</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botão -->
+    <div class="mt-4">
+        <button type="submit"
+                id="submitButton"
+                class="ps-3 btn btn-outline-success">
+            Login
+        </button>
+    </div>
+
+</form>
+
+
+<!-- Alternar Login / Registro -->
+<div class="d-flex align-items-center mt-3">
+    <span id="switch-text">
+        Não possui uma conta?
+    </span>
+
+    <button type="button"
+            id="register-switch"
+            class="btn btn-link p-0 px-1">
+        Registre-se
+    </button>
+</div>
+
+
+<script>
+$(document).ready(function () {
+
+    console.log("login.js loaded");
+
+    const $form = $("#loginForm");
+
+    const $formTitle = $("#form-title");
+    const $submitButton = $("#submitButton");
+
+    const $registerType = $("#register-type");
+    const $registerFields = $("#register-fields");
+    const $programadorInputs = $(".programador-inputs");
+
+    const $switchText = $("#switch-text");
+    const $registerSwitch = $("#register-switch");
+
+    const $cliente = $("#btnradio1");
+    const $programador = $("#btnradio2");
+
+    const $programmerFields = $programadorInputs.find("select, input");
+
+    let isRegister = false;
+
+    // Login / Registro
+    $registerSwitch.on("click", function () {
+
+        isRegister = !isRegister;
+
+        if (isRegister) {
+
+            // Registro
+            $formTitle.text("Formulário de registro");
+            $submitButton.text("Registrar-se");
+
+            $registerType.removeClass("d-none");
+            $registerFields.removeClass("d-none");
+
+            $switchText.text("Já possui uma conta?");
+            $registerSwitch.text("Faça login");
+
+        } else {
+
+            // Login
+            $formTitle.text("Formulário de login");
+            $submitButton.text("Login");
+
+            $registerType.addClass("d-none");
+            $registerFields.addClass("d-none");
+
+            // Desabilita os campos extras
+            $programmerFields.prop("disabled", true);
+
+            $switchText.text("Não possui uma conta?");
+            $registerSwitch.text("Registre-se");
+        }
+
+        toggleProgramador();
+    });
+
+    // Mostrar/OcultarSenha
+    $("#togglePassword").on("click", function () {
+
+        const $password = $("#senha-form-input");
+        const $icon = $(this).find("i");
+
+        if ($password.attr("type") === "password") {
+
+            $password.attr("type", "text");
+
+            $icon
+                .removeClass("bi-eye")
+                .addClass("bi-eye-slash");
+
+            $(this).attr("aria-label", "Ocultar senha");
+
+        } else {
+
+            $password.attr("type", "password");
+
+            $icon
+                .removeClass("bi-eye-slash")
+                .addClass("bi-eye");
+
+            $(this).attr("aria-label", "Mostrar senha");
+        }
+    });
+
+    // Cliente / Programador
+    function toggleProgramador() {
+
+        const isProgramador = $programador.is(":checked");
+
+        // Só mostra se estiver no modo registro
+        if (isRegister && isProgramador) {
+
+            $programadorInputs.removeClass("d-none");
+
+            $programmerFields.prop("disabled", false);
+
+        } else {
+
+            $programadorInputs.addClass("d-none");
+
+            $programmerFields.prop("disabled", true);
+        }
+    }
+
+
+    $cliente.on("change", toggleProgramador);
+    $programador.on("change", toggleProgramador);
+
+    // Envio do formulário
+    $form.on("submit", function (event) {
+
+        event.preventDefault();
+
+        const formData = new FormData(this);
+
+        const data = Object.fromEntries(formData.entries());
+
+        // Checkbox platforms pode ter vários valores.
+        data.platforms = formData.getAll("platforms");
+
+        // Identifica se é login ou registro
+        data.action = isRegister ? "register" : "login";
+
+        console.log(data);
+
+        /*
+         * Exemplos de resultado:
+         *
+         * LOGIN:
+         *
+         * {
+         *   email: "...",
+         *   name: "...",
+         *   password: "...",
+         *   platforms: [],
+         *   action: "login"
+         * }
+         *
+         *
+         * REGISTRO CLIENTE:
+         *
+         * {
+         *   email: "...",
+         *   name: "...",
+         *   password: "...",
+         *   description: "...",
+         *   userType: "cliente",
+         *   platforms: [],
+         *   action: "register"
+         * }
+         *
+         *
+         * REGISTRO PROGRAMADOR:
+         *
+         * {
+         *   email: "...",
+         *   name: "...",
+         *   password: "...",
+         *   description: "...",
+         *   userType: "programador",
+         *   programmingLanguage: "python",
+         *   platforms: ["web", "mobile"],
+         *   action: "register"
+         * }
+         */
+
+    });
+
+    toggleProgramador();
+
+});
+</script>
