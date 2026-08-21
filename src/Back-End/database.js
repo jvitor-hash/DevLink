@@ -129,16 +129,20 @@ async function RunSeeds() {
 
 export async function InitializeDatabase() {
     try {
+        let pending, executed = [];
+
         await EnsureDatabaseExists();
         await AuthenticateDatabase();
-        const pending = await PendingMigrations(sequelize, migrationsDir);
-        const executed = await ExecutedMigrations(sequelize);
+        pending = await PendingMigrations(sequelize, migrationsDir);
+        if (pending !== null)
+            executed = await ExecutedMigrations(sequelize);
+
         await LoadModels();
         await RunSeeds();
 
-        if (pending)
+        if (pending && pending.length > 0)
             console.log(`\x1b[43m\x1b[1;30m DATABASE | ${process.env.NODE_ENV} \x1b[0m\x1b[0m Migrations pendentes: ${pending}.`);
-        else if (pending == null) {
+        else if (pending === null) {
             throw Error(`\x1b[41m\x1b[1;32m DATABASE | ${process.env.NODE_ENV} \x1b[0m\x1b[0m Não foi possível retornar as instâncias pendentes do banco de dados.`);
         }
 

@@ -19,6 +19,11 @@ Usuario.init({
         allowNull: false,
         unique: true
     },
+    platforms: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+        defaultValue: [],
+        allowNull: false,
+    },
     description: {
         type: DataTypes.STRING,
         defaultValue: '',

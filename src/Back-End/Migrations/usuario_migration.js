@@ -1,4 +1,4 @@
-import { INTEGER, STRING, DATE } from "sequelize";
+import { INTEGER, STRING, DATE, ARRAY } from "sequelize";
 
 export async function up(queryInterface) {
     await queryInterface.createTable('Usuarios', {
@@ -16,6 +16,11 @@ export async function up(queryInterface) {
             type: STRING,
             allowNull: false,
             unique: true
+        },
+        platforms: {
+            type: ARRAY(STRING),
+            defaultValue: [],
+            allowNull: false
         },
         description: {
             type: STRING,

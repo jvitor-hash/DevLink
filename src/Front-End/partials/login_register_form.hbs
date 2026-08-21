@@ -229,32 +229,37 @@ $(document).ready(function () {
             data.action = isRegister ? "register" : "login";
 
             if (data.action == "login") {
+              // TODO(Jvitor): Substituir isso pela API centralizada.
                 $.ajax({
-                    url: 'localhost:8080/api/usuario/auth',
+                    url: `${window.API_URL_BASE}/api/usuario/auth`,
                     method: 'POST',
                     data: {
-                        "name": data.name,
                         "email": data.email,
                         "password": data.password,
                     },
                     dataType: 'json',
 
                     success: function(response) {
-                        $('body').prepend(
-                            '<div class=\"alert alert-sucess alert-dismissible fade show\" role=\"alert\">' +
-                            'Login com sucesso.' +
-                            '<button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\"></button>' +
-                            '</div>'
-                        );
+                      $('body').prepend(`
+                        <div class="alert alert-success alert-dismissible fade show position-fixed w-100 z-3" role="alert">
+                            Login com sucesso.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                      `);
                     },
 
                     error: function(xhr, status, error) {
-
+                      $('body').prepend(`
+                        <div class="alert alert-danger alert-dismissible fade show position-fixed w-100 z-3" role="alert">
+                          Falha ao se autenticar.
+                          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                      `);
                     }
                 });
             } else if (data.action == "register") {
                 $.ajax({
-                    url: "localhost:8080/api/usuario/",
+                    url: `${window.API_URL_BASE}/api/usuario/`,
                     method: 'POST',
                     data: {
                         "name": data.name,
@@ -267,20 +272,22 @@ $(document).ready(function () {
                     dataType: 'json',
 
                     success: function(response) {
-                        $('body').prepend(
-                            '<div class=\"alert alert-sucess alert-dismissible fade show\" role=\"alert\">' +
-                            'Registro de usuário com sucesso.' +
-                            '<button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\"></button>' +
-                            '</div>'
-                        );
+                      $('body').prepend(`
+                        <div class="alert alert-success alert-dismissible fade show position-fixed w-100" role="alert">
+                          Registro de usuário com sucesso.
+                          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                      `);
                     },
 
                     error: function(xhr, status, error) {
 
-                        $('body').prepend(
-                            '<div class=\"alert alert-danger alert-dismissible fade show\" role=\"alert\">' +
-                            'Falha ao se registra'
-                        )
+                      $('body').prepend(`
+                        <div class="alert alert-danger alert-dismissible fade show position-fixed w-100" role="alert">
+                          Falha ao se registra.
+                          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                      `);
                     }
                 });
             }

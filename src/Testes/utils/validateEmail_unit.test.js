@@ -14,6 +14,7 @@ describe('Testar a validação de emails', () => {
     it('Validar string contendo email inválido e retornar false', () => {
         const invalidStr = "@exemplo.com";
 
+        // Função espera uma string como entrada.
         const result = validateEmail(invalidStr);
 
         expect(result).toBe(false);

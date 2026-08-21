@@ -1,8 +1,9 @@
-import express from 'express';
 import { engine } from 'express-handlebars';
 import { InitializeDatabase } from './database.js';
+import { fileURLToPath } from "node:url";
+import { rateLimiter } from './Middleware/rate_limiter.js';
 import usuarioRouter from './Routes/usuario_routes.js';
-import { fileURLToPath } from 'node:url';
+import express from 'express';
 import path from 'path';
 import cors from 'cors';
 import './config.js';
@@ -22,7 +23,10 @@ function SetupRoutes(app) {
   app.use('/api/usuario', usuarioRouter);
 
   app.get('/', (req, res) => {
-    res.render('home');
+    res.render('home', {
+      ip: process.env.IP || '127.0.0.1',
+      port: process.env.PORT || 8080
+    });
   });
 }
 
@@ -42,7 +46,9 @@ export function InitServer() {
   const app = express();
 
   // TODO(Jvitor): Configurar de forma apropriada o cors.
-  app.use(cors());
+  app.use(cors({
+    origin: "*"
+  }));
 
   // Configuração da handlebars.
   app.engine('handlebars', engine());
@@ -60,7 +66,12 @@ export function InitServer() {
 
   // Configuração da pasta das views e public.
   app.set('views', './src/Front-End');
-  app.use(express.static(path.join(__dirname, "../../public")));
+  app.use(express.static(path.join(__dirname, "../public")));
+
+  app.use(rateLimiter({
+    windowMs: 60 * 1000, // 1 minuto
+    max: 5               // número maximo de requests em 1 minuto
+  }));
 
   SetupRoutes(app);
 

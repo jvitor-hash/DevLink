@@ -1,6 +1,6 @@
 {
-  "name": "DevLink",
-  "version": "1.0.0",
+  "name": "devlink",
+  "version": "1.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
