@@ -5,7 +5,8 @@ import { GetUsuarios, GetUsuarioById } from "../Back-End/Controllers/usuario_con
 vi.mock("../Back-End/Models/usuario_model", () => ({
   Usuario: {
     GetUsuarios: vi.fn(),
-    GetUsuarioById: vi.fn()
+    GetUsuarioById: vi.fn(),
+    GetUsuarioByName: vi.fn()
   }
 }));
 
@@ -48,4 +49,23 @@ describe("Retornar usuário através do id", () => {
 
     expect(Usuario.GetUsuarioById).toHaveBeenCalledOnce(1);
   });
+
+  it("Teste de mock do metodo de retornar um usuários através de um nome", () => {
+    vi.mocked(Usuario.GetUsuarioByName).mockResolvedValue({
+      [
+        {
+          id: 2,
+
+        },
+        {
+          id: 4
+
+        }
+      ]
+    });
+
+    const result = Usuario.GetUsuarioByName('Carlos');
+
+
+  })
 });

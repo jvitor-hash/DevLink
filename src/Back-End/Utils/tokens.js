@@ -1,4 +1,12 @@
 import jwt from "jsonwebtoken";
+import pino from 'pino';
+
+const logger = pino({
+  level: process.env.LOG_LEVEL || 'info',
+  transport: {
+    target: 'pino-pretty'
+  }
+});
 
 /*
   Nome: CreateAccessToken
@@ -49,7 +57,7 @@ export function CreateRefreshToken(data) {
     },
     REFRESH_TOKEN_SECRET,
     {
-      expiresIn: "1d",
+      expiresIn: "7d",
       issuer: "devlink-api",
       audience: "client",
     },
@@ -61,19 +69,22 @@ export function DecodeAccessToken(token) {
     const ACCESS_TOKEN_SECRET = String(process.env.ACCESS_TOKEN_SECRET);
 
     if (!ACCESS_TOKEN_SECRET)
-      throw new Error("Falha nas variáveis de ambiente: ACCESS_TOKEN_SECRET");
+      logger.error("Error nas variáveis de ambiente: ACCESS_TOKEN_SECRET");
 
     const verifyResult = jwt.verify(token, ACCESS_TOKEN_SECRET);
 
-    if (!verifyResult) throw new Error("Error ao verificar token");
+    if (!verifyResult)
+      logger.warn("Falha ao verificar token");
 
     const data = jwt.decode(token, ACCESS_TOKEN_SECRET);
 
-    if (!data) throw new Error("Dados inválidos do token provido.");
+    if (!data)
+      logger.warn("Dados inválidos do token provido.");
 
     return data;
   } catch (error) {
-    console.error(`\x1b[41m\x1b[1;32m BACK-END \x1b[0m\x1b[0m ${error}`);
+    logger.error(error);
+    throw new Error(error);
   }
 }
 
@@ -82,18 +93,21 @@ export function DecodeRefreshToken(token) {
     const REFRESH_TOKEN_SECRET = String(process.env.REFRESH_TOKEN_SECRET);
 
     if (!REFRESH_TOKEN_SECRET)
-      throw new Error("Falha nas variáveis de ambiente: REFRESH_TOKEN_SECRET");
+      logger.error("Error nas variáveis de ambiente: REFRESH_TOKEN_SECRET");
 
     const verifyResult = jwt.verify(token, REFRESH_TOKEN_SECRET);
 
-    if (!verifyResult) throw new Error("Error ao verificar token");
+    if (!verifyResult)
+      logger.warn("Falha ao verificar token");
 
     const data = jwt.decode(token, REFRESH_TOKEN_SECRET);
 
-    if (!data) throw new Error("Dados inválidos do token provido.");
+    if (!data)
+      logger.warn("Dados inválidos do token provido.");
 
     return data;
   } catch (error) {
-    console.error(`\x1b[41m\x1b[1;32m BACK-END \x1b[0m\x1b[0m ${error}`);
+    logger.error(error);
+    throw new Error(error);
   }
 }

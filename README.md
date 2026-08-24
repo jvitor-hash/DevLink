@@ -2,13 +2,13 @@
 Versão: v1.1.0
 
 *(Nota: Testes são rodados automaticamente após um pull-request ou push)*
-*(Nota - 2: As rotas sendo enviadas do front-end podem varias dependendo da porta sendo usada.)*
 
 ## Tecnologias utilizadas
 - Node.js
 - Express.js
 - Sequelize (PostgreSQL)
 - JWT (Autenticação)
+- Pino ()
 - Vitest (Framework de testes)
 - Dotenv (Variáveis de ambiente)
 - Bcrypt (Encriptação de senhas)
@@ -20,15 +20,15 @@ Versão: v1.1.0
 
 
 ## Pré-requisitos
-- Node.js (Versão 18+)
-- PostgreSQL(Versão 18+)
+- Node.js (Versão 21.0+)
+- PostgreSQL(Versão 18.0+)
 
 # Instalação
 
 1. Clonar o repositório:
 ```
-git clone https://github.com/jvitor-hash/Projeto-sem-nome
-cd '.\Projeto sem nome\'
+git clone https://github.com/jvitor-hash/DevLink
+cd '.\DevLink\'
 ```
 
 2. Instalação das dependências do projeto:
@@ -42,6 +42,7 @@ npm install
 NODE_ENV=development 
 SALT_ROUNDS=12
 PORT=8080
+LOG_LEVEL="info"
 IP="127.0.0.1"
 ```
 

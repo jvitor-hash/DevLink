@@ -6,7 +6,15 @@ import usuarioRouter from './Routes/usuario_routes.js';
 import express from 'express';
 import path from 'path';
 import cors from 'cors';
+import pino from 'pino';
 import './config.js';
+
+const logger = pino({
+  level: process.env.LOG_LEVEL || 'info',
+  transport: {
+    target: 'pino-pretty'
+  }
+});
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -28,6 +36,18 @@ function SetupRoutes(app) {
       port: process.env.PORT || 8080
     });
   });
+
+  app.get('/config', (req, res) => {
+    res.render('configuracao');
+  });
+
+  app.get('/questionario', (req, res) => {
+    res.render('questionario');
+  });
+
+  app.get('/projetos', (req, res) => {
+    res.render('projetos');
+  });
 }
 
 /*
@@ -39,8 +59,9 @@ function SetupRoutes(app) {
 */
 export function InitServer() {
   const port = process.env.PORT || 8080;
+  const ip = process.env.IP || "127.0.0.1";
 
-  console.log(`\x1b[42m\x1b[1;32m BACK-END \x1b[0m\x1b[0m Inicializando servidor | Porta: ${port}`);
+  logger.info(`Inicializando servidor | Porta: ${port}`);
 
   // Criação da instancia do express-js.
   const app = express();
@@ -66,7 +87,7 @@ export function InitServer() {
 
   // Configuração da pasta das views e public.
   app.set('views', './src/Front-End');
-  app.use(express.static(path.join(__dirname, "../public")));
+  app.use(express.static(path.join(__dirname, "../../public")));
 
   app.use(rateLimiter({
     windowMs: 60 * 1000, // 1 minuto
@@ -82,7 +103,7 @@ export function InitServer() {
   })();
 
   // Inicia a aplicação e começar a ouvir na porta definida nas variáveis de ambiente.
-  app.listen(port, process.env.HOST || "127.0.0.1", () => {
-    console.log(`\x1b[42m\x1b[1;32m BACK-END \x1b[0m\x1b[0m Servidor esperando conexões na porta: ${port} e ip ${process.env.HOST || "127.0.0.1"}`);
+  app.listen(port, ip, () => {
+    logger.info(`Servidor esperando conexões na porta: ${port} e ip ${ip}`);
   });
 };

@@ -52,8 +52,12 @@ export function validateInputs(inputs) {
           throw new Error("E-mail invalido.");
         break;
       case 'description':
-        if (validateSQLInjection(value) === false)
-          throw new Error("Descricao invalida.");
+        break;
+      case 'platforms':
+        value.forEach((elem) => {
+          if (validateStr(elem) === false)
+            throw new Error("Platforma invalida.")
+        })
         break;
       case 'password':
         if (validateStr(value) === false)

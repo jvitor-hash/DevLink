@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg bg-body-tertiary">
+<nav class="navbar sticky-top navbar-expand-lg bg-body-tertiary px-1">
   <div class="container-fluid">
     <span class="navbar-brand" href="#">DevLink</span>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -7,19 +7,28 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="#">Home</a>
+          <a class="nav-link active" aria-current="page" href="/">Home</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Questionário</a>
+          <a class="nav-link" href="/questionario">Questionário</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Teste - 2</a>
+          <a class="nav-link" href="/projetos">Projetos</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="#">Teste - 3</a>
         </li>
       </ul>
-      <button id="dark-mode-toggle" class="btn" type="button"><i id="theme-icon" class="bi bi-moon"></i></button>
+
+      <div id="signed-in" class="d-none">
+        <a href="/config" class="btn"><i class="bi bi-gear"></i></a>
+        <a href="/notificacao" class="btn"><i class="bi bi-bell"></i></a>
+      </div>
+
+      <div id="signed-out">
+        <button id="dark-mode-toggle" type="button" class="btn"><i id="theme-icon" class="bi bi-moon"></i></button>
+      </div>
+
       <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#login_modal">Login</button>
     </div>
   </div>
@@ -41,4 +50,23 @@
       ? 'bi bi-moon'
       : 'bi bi-sun';
   });
+
+
+  let signedIn = localStorage.getItem('signedIn');
+
+  if (signedIn === null)
+    signedIn = 'false';
+    localStorage.setItem('signedIn', signedIn);
+
+  if(signedIn === 'true') {
+    const elem = $('#signed-in');
+
+    if (elem)
+      elem.className = signedIn ? "" : "d-none";
+  } else if (signedIn === 'false') {
+    const elem = $('#signed-out');
+
+    if (elem)
+      elem.className = signedIn ? "d-none" : "";
+  }
 </script>

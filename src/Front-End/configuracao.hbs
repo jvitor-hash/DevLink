@@ -1,0 +1,24 @@
+<div class="d-flex flex-1">
+    <!-- Sidebar -->
+    <div class="d-flex gap-3 flex-column">
+        <button class="btn btn-link" style="color: black;">Teste</button>
+    </div>
+
+    <!-- Configurações -->
+    <div class="d-flex gap-3 flex-column">
+        <div id="register-type" class="btn-group btn-group-sm mt-2 mb-3 d-none" role="group" aria-label="Modo escuro/claro">
+            <input type="radio" class="btn-check" name="userType" value="cliente" id="btnradio1" autocomplete="off">
+            <label class="btn btn-outline-primary" for="btnradio1">Escuro</label>
+
+            <input type="radio" class="btn-check" name="userType" value="programador" id="btnradio2" autocomplete="off" checked>
+            <label class="btn btn-outline-primary" for="btnradio2">Claro</label>
+        </div>
+    </div>
+</div>
+
+<script>
+    $('body').on('attr', () => {
+        const html = document.documentElement;
+        const isDark = html.getAttribute('data-bs-theme') === 'dark';
+    })
+</script>

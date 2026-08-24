@@ -35,10 +35,16 @@
     <!-- Campos adicionais do registro -->
     <div id="register-fields" class="d-none">
 
+        <!-- Nome -->
+        <div class="mb-3">
+            <label for="name-form-input" class="form-label">Nome</label>
+            <input type="text" name="name" class="form-control" id="name-form-input" minlength="2" maxlength="100" placeholder="Seu nome completo">
+        </div>
+
         <!-- Descrição -->
         <div class="mb-3">
             <div class="form-floating">
-                <textarea class="form-control" name="description" placeholder="" id="floatingTextarea"></textarea>
+                <textarea class="form-control" style="resize: none;" name="description" placeholder="" id="floatingTextarea"></textarea>
                 <label for="floatingTextarea">Descrição (Opcional)</label>
             </div>
         </div>
@@ -229,67 +235,40 @@ $(document).ready(function () {
             data.action = isRegister ? "register" : "login";
 
             if (data.action == "login") {
-              // TODO(Jvitor): Substituir isso pela API centralizada.
-                $.ajax({
-                    url: `${window.API_URL_BASE}/api/usuario/auth`,
-                    method: 'POST',
-                    data: {
-                        "email": data.email,
-                        "password": data.password,
-                    },
-                    dataType: 'json',
+              API.post("/api/usuario/auth", {
+                email: data.email,
+                password: data.password
+              })
+              .done((response) => {
+                localStorage.setItem("AccessToken", response.accessToken);
 
-                    success: function(response) {
-                      $('body').prepend(`
-                        <div class="alert alert-success alert-dismissible fade show position-fixed w-100 z-3" role="alert">
-                            Login com sucesso.
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                      `);
-                    },
-
-                    error: function(xhr, status, error) {
-                      $('body').prepend(`
-                        <div class="alert alert-danger alert-dismissible fade show position-fixed w-100 z-3" role="alert">
-                          Falha ao se autenticar.
-                          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                      `);
-                    }
-                });
+                API.get("/api/usuario/me")
+                  .done((response) => {
+                    localStorage.setItem("Username", response.response.name);
+                    localStorage.setItem("signedIn", "true");
+                  })
+                  .fail((xhr) => {
+                    console.error("Erro ao conseguir informacoes sobre o usuario: ", xhr.responseJSON);
+                  })
+              })
+              .fail((xhr) => {
+                console.error("Login falhou: ", xhr.responseJSON)
+              });
             } else if (data.action == "register") {
-                $.ajax({
-                    url: `${window.API_URL_BASE}/api/usuario/`,
-                    method: 'POST',
-                    data: {
-                        "name": data.name,
-                        "email": data.email,
-                        "platforms": data.platforms,
-                        "description": data.description,
-                        "password": data.password,
-                        "userType": data.userType
-                    },
-                    dataType: 'json',
-
-                    success: function(response) {
-                      $('body').prepend(`
-                        <div class="alert alert-success alert-dismissible fade show position-fixed w-100" role="alert">
-                          Registro de usuário com sucesso.
-                          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                      `);
-                    },
-
-                    error: function(xhr, status, error) {
-
-                      $('body').prepend(`
-                        <div class="alert alert-danger alert-dismissible fade show position-fixed w-100" role="alert">
-                          Falha ao se registra.
-                          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                      `);
-                    }
-                });
+              API.post("/api/usuario/", {
+                name: data.name,
+                email: data.email,
+                platforms: data.platforms,
+                description: data.description,
+                password: data.password,
+                userType: data.userType
+              })
+              .done((response) => {
+                localStorage.setItem("AccessToken", response.accessToken);
+              })
+              .fail((xhr) => {
+                console.error("Registro falhou: ", xhr.responseJSON);
+              });
             }
         }
 

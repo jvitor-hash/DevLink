@@ -1,15 +1,31 @@
 ﻿import { Usuario } from "../Models/usuario_model.js";
 import { CreateUsuarioDTO, ResponseUsuarioDTO } from "../DTOs/usuario_dto.js";
-import {
-  DecodeAccessToken,
-  DecodeRefreshToken,
-  CreateRefreshToken,
-  CreateAccessToken,
-} from "../Utils/tokens.js";
+import { CreateRefreshToken, CreateAccessToken, DecodeAccessToken } from "../Utils/tokens.js";
 import { validateInputs } from "../Utils/validation.js";
 import { Op } from "sequelize";
 import "../config.js";
 import bcrypt from "bcrypt";
+import pino from 'pino';
+
+const ACCESS_TOKEN_SECRET = String(process.env.ACCESS_TOKEN_SECRET);
+const REFRESH_TOKEN_SECRET = String(process.env.REFRESH_TOKEN_SECRET);
+const SALT_ROUNDS = Number(process.env.SALT_ROUNDS);
+
+if (ACCESS_TOKEN_SECRET === null)
+  logger.error("Variável de ambiente [ACCESS_TOKEN_SECRET] esta inválida ou não existe");
+
+if (REFRESH_TOKEN_SECRET === null)
+  logger.error("Variável de ambiente [REFRESH_TOKEN_SECRET] esta inválida ou não existe");
+
+if (SALT_ROUNDS === null)
+  logger.error("Variável de ambiente [SALT_ROUNDS] esta inválida ou não existe");
+
+const logger = pino({
+  level: process.env.LOG_LEVEL || 'info',
+  transport: {
+    target: 'pino-pretty'
+  }
+});
 
 /*
   None: GetUsuarios
@@ -25,7 +41,7 @@ export const GetUsuarios = async (req, res) => {
 
     return res.status(200).json(response);
   } catch (error) {
-    console.error(`\x1b[41m\x1b[1;32m BACK-END \x1b[0m\x1b[0m ${error}.`);
+    logger.error(error);
     return res.status(500).json({
       message: "Falha ao buscar os usuários.",
     });
@@ -46,13 +62,14 @@ export const GetUsuarioById = async (req, res) => {
 
     const user = await Usuario.findByPk(id);
 
-    if (!user) throw new Error("Usuário não existe ou não foi encontrado.");
+    if (!user)
+      logger.warn("Usuário não existe ou não foi encontrado.");
 
     const dto = new ResponseUsuarioDTO(user);
 
     return res.status(200).json(dto);
   } catch (error) {
-    console.error(`\x1b[41m\x1b[1;32m BACK-END \x1b[0m\x1b[0m ${error}.`);
+    logger.error(error);
     return res.status(404).json({
       message: "Usuário não encontrado.",
     });
@@ -72,7 +89,7 @@ export const GetUsuarioByName = async (req, res) => {
     const name = String(req.query.name || "");
 
     // Previne um SQL wildcard quando buscando.
-    name = name.replace(/[%_]/g, '\\$g');
+    name = name.replace(/[%_]/g, '\\$&');
 
     const user = await Usuario.findAll({
       where: {
@@ -92,7 +109,7 @@ export const GetUsuarioByName = async (req, res) => {
       response,
     });
   } catch (error) {
-    console.error(`\x1b[41m\x1b[1;32m BACK-END \x1b[0m\x1b[0m ${error}.`);
+    logger.error(error);
     return res.status(404).json({
       message: "Usuário não encontrado.",
     });
@@ -114,19 +131,14 @@ export const GetUsuarioByName = async (req, res) => {
 */
 export const CreateUsuario = async (req, res) => {
   try {
-    const saltRounds = Number(process.env.SALT_ROUNDS);
-
-    if (saltRounds === null)
-      throw new Error(
-        "Variável de ambiente [SALT_ROUNDS] esta inválida ou não existe",
-      );
+    console.log(req.body);
 
     // Utils(validation.js) -> validateInputs
     validateInputs(req.body);
 
     // Geração de salt e o hash a partir da provida no req.body
     const { password } = req.body;
-    const salt = await bcrypt.genSalt(saltRounds);
+    const salt = await bcrypt.genSalt(SALT_ROUNDS);
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const { email } = req.body;
@@ -138,7 +150,7 @@ export const CreateUsuario = async (req, res) => {
       });
 
     if (hashedPassword === null || hashedPassword === "")
-      throw new Error("Hash de senha inválida.");
+      logger.warn("Hash de senha inválida.");
 
     const dto = new CreateUsuarioDTO({
       ...req.body, // E ajustado para (n) argumentos passados
@@ -147,11 +159,25 @@ export const CreateUsuario = async (req, res) => {
 
     const user = await Usuario.create(dto);
 
-    const response = new ResponseUsuarioDTO(user);
+    if (!user)
+      logger.error("Error ao criar um novo usuario.");
 
-    return res.status(201).json(response);
+    const refreshToken = CreateRefreshToken(user)
+    const accessToken = CreateAccessToken(user);
+
+    // Salva o token de refresh no cookies de forma segura
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict"
+    });
+
+    return res.status(201).json({
+      message: "Usuário criado com sucesso.",
+      accessToken: accessToken
+    });
   } catch (error) {
-    console.error(`\x1b[41m\x1b[1;32m BACK-END \x1b[0m\x1b[0m ${error}.`);
+    logger.error(error);
     return res.status(400).json({
       message: "Falha ao criar o usuário.",
     });
@@ -171,7 +197,8 @@ export const UpdateUsuario = async (req, res) => {
     const id = req.params.id;
     const user = await Usuario.findByPk(id);
 
-    if (!user) throw new Error("Usuário não encontrado.");
+    if (!user)
+      logger.error("Usuário não encontrado.");
 
     validateInputs(req.body);
 
@@ -187,15 +214,11 @@ export const UpdateUsuario = async (req, res) => {
           { where: { id: id } },
         );
 
-        // TODO: Restrict this to only show the message. It should refresh the tokens and apply it to the client.
-        const response = new ResponseUsuarioDTO(user);
-
         return res.status(200).json({
-          message: "Usuário atualizado com sucesso.",
-          response,
+          message: "Usuário atualizado com sucesso."
         });
       } else {
-        throw new Error("Falha ao gerar hash de nova senha.");
+        logger.error("Falha ao gerar hash de nova senha.");
       }
     }
 
@@ -205,7 +228,7 @@ export const UpdateUsuario = async (req, res) => {
       message: "Usuário atualizado com sucesso.",
     });
   } catch (error) {
-    console.error(`\x1b[41m\x1b[1;32m BACK-END \x1b[0m\x1b[0m ${error}.`);
+    logger.error(error);
     return res.status(404).json({
       message: "Usuário não encontrado.",
     });
@@ -228,13 +251,14 @@ export const DeleteUsuario = async (req, res) => {
       },
     });
 
-    if (!user) throw new Error("Cliente não encontrado.");
+    if (!user)
+      logger.warn("Cliente não encontrado.");
 
     return res.status(200).json({
       message: "Usuário excluido com sucesso.",
     });
   } catch (error) {
-    console.error(`\x1b[41m\x1b[1;32m BACK-END \x1b[0m\x1b[0m ${error}.`);
+    logger.error(error);
     return res.status(404).json({
       message: "Usuário não encontrado.",
     });
@@ -263,25 +287,33 @@ export const LoginUsuario = async (req, res) => {
 
     const { password } = req.body;
 
-    if (password === null) throw new Error("Senha não fornecida.");
+    if (password === null)
+      logger.warn("Senha não fornecida.");
 
     const passwordValid = await bcrypt.compare(password, user.password);
 
-    const response = new ResponseUsuarioDTO(user);
-
     if (passwordValid) {
-      // TODO(Jvitor): Temporario, deve utilizar o jwt para criação e validação de tokens
+      const accessToken = CreateAccessToken(user);
+      const refreshToken = CreateRefreshToken(user);
+
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict"
+      });
+
       return res.status(200).json({
         message: "Login com success",
-        response,
+        accessToken
       });
+
     } else {
       return res.status(403).json({
         message: "Senha incorreta",
       });
     }
   } catch (error) {
-    console.error(`\x1b[41m\x1b[1;32m BACK-END \x1b[0m\x1b[0m ${error}.`);
+    logger.error(error);
     return res.status(500).json({
       message: "Falha na tentativa de login.",
     });
@@ -297,26 +329,11 @@ export const LoginUsuario = async (req, res) => {
 */
 export const GetCurrentUsuario = async (req, res) => {
   try {
-    const { accessToken, refreshToken } = req.body;
+    // Surely this won't come to be bite me in the ass later
+    const user = await Usuario.findByPk(req.user?.id);
 
-    if (!accessToken)
-      throw new Error("Error ao recolher o access token do request.");
-
-    if (!refreshToken)
-      throw new Error("Error ao recolher o refresh token do request.");
-
-    const accessResult = DecodeAccessToken(accessToken);
-    const refreshResult = DecodeRefreshToken(refreshToken);
-
-    if (!accessResult)
-      throw new Error("Falha ao decodificar o token de acesso.");
-
-    if (!refreshResult)
-      throw new Error("Falha ao decodificar o token de refresh.");
-
-    const user = await Usuario.findByPk(accessResult.sub.id);
-
-    if (!user) throw new Error("Error nao foi possivel encontrar um usuario.");
+    if (!user)
+      logger.warn("Falha nao foi possivel encontrar um usuario.");
 
     const response = new ResponseUsuarioDTO(user);
 
@@ -324,9 +341,65 @@ export const GetCurrentUsuario = async (req, res) => {
       response,
     });
   } catch (error) {
-    console.error(`\x1b[41m\x1b[1;32m BACK-END \x1b[0m\x1b[0m ${error}.`);
+    logger.error(error);
     return res.status(500).json({
       message: "Falha ao trazer os dados relevante ao usuário.",
+    });
+  }
+};
+
+/*
+  Nome: RefreshToken
+  Autor: Jvitor
+  Desc: Responsável por receber as requesicoes feitas pelo usuario a cada 10 minutos e validar a autenticidade
+  @params: $1: AccessToken(JWT Token), $2: RefreshToken(JWT Token)
+*/
+export const RefreshToken = async (req, res) => {
+  try {
+    const { refreshToken } = req.cookies;
+
+    if (!refreshToken) {
+      return res.status(401).json({
+        message: "Token não existente",
+      });
+    }
+
+    const payload = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET);
+
+    if (!payload?.sub) {
+      return res.status(401).json({
+        message: "Token inválido ou expirado.",
+      });
+    }
+
+    const accessToken = jwt.sign({
+        sub: payload.sub,
+      },
+      ACCESS_TOKEN_SECRET,
+      {
+        expiresIn: "15m",
+      });
+
+    return res.status(200).json({
+      accessToken,
+    });
+  } catch (error) {
+    logger.error(error);
+
+    if (error instanceof jwt.TokenExpiredError) {
+      return res.status(401).json({
+        message: "Refresh token expirado.",
+      });
+    }
+
+    if (error instanceof jwt.JsonWebTokenError) {
+      return res.status(401).json({
+        message: "Refresh token inválido.",
+      });
+    }
+
+    return res.status(500).json({
+      message: "Falha ao renovar o token.",
     });
   }
 };

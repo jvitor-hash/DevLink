@@ -4,7 +4,15 @@ import { Client } from "pg";
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
+import pino from 'pino';
 import './config.js';
+
+const logger = pino({
+  level: process.env.LOG_LEVEL || 'info',
+  transport: {
+    target: 'pino-pretty'
+  }
+});
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,7 +23,7 @@ export const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER,
     host: process.env.DB_HOST,
     port: process.env.DB_PORT || 5432,
     dialect: 'postgres',
-    logging: (...msg) => console.log(`\x1b[42m\x1b[1;32m DATABASE | ${process.env.NODE_ENV} \x1b[0m\x1b[0m ${msg}.`)
+    logging: (...msg) => logger.info(`ENV: ${process.env.NODE_ENV} | ${msg}`)
 });
 
 /*
@@ -46,12 +54,12 @@ async function EnsureDatabaseExists() {
         if (result.rowCount === 0) {
             await client.query(`CREATE DATABASE ${dbName}`);
 
-            console.log(`\x1b[42m\x1b[1;32m DATABASE | ${process.env.NODE_ENV} \x1b[0m\x1b[0m Banco de dados criado com sucesso`);
+            logger.info(`ENV: ${process.env.NODE_ENV} | Banco de dados criado com sucesso`);
         } else {
-            console.log(`\x1b[42m\x1b[1;32m DATABASE | ${process.env.NODE_ENV} \x1b[0m\x1b[0m Banco de dados existe`);
+            logger.info(`ENV: ${process.env.NODE_ENV} | Banco de dados existe`);
         }
     } catch(error) {
-        console.log(`\x1b[41m\x1b[1;32m DATABASE | ${process.env.NODE_ENV} \x1b[0m\x1b[0m ${error}.`);
+        logger.error(`ENV: ${process.env.NODE_ENV} | ${error}`);
         throw error;
     } finally {
         await client.end();
@@ -68,9 +76,9 @@ async function AuthenticateDatabase() {
         await sequelize.authenticate();
         await sequelize.sync();
 
-        console.log(`\x1b[42m\x1b[1;32m DATABASE | ${process.env.NODE_ENV} \x1b[0m\x1b[0m Conexão com banco de dados esbelecida.`);
+        logger.info(`ENV: ${process.env.NODE_ENV} | Conexão com banco de dados esbelecida`);
     } catch(error) {
-        console.error(`\x1b[41m\x1b[1;32m DATABASE | ${process.env.NODE_ENV} \x1b[0m\x1b[0m ${error}.`);
+        logger.error(`ENV: ${process.env.NODE_ENV} | ${error}`);
         throw error;
     }
 }
@@ -97,7 +105,7 @@ async function PendingMigrations(sequelize, migrationsDir) {
 
         return files.filter(file => !executed.has(file));
     } catch (error) {
-        console.warn(`\x1b[41m\x1b[1;32m DATABASE \x1b[0m\x1b[0m Banco de dados indisponível. Pulando check de migrations.`);
+        logger.warn(`Banco de dados indisponível. Pulando check de migrations.`);
 
         return [];
     }
@@ -141,18 +149,18 @@ export async function InitializeDatabase() {
         await RunSeeds();
 
         if (pending && pending.length > 0)
-            console.log(`\x1b[43m\x1b[1;30m DATABASE | ${process.env.NODE_ENV} \x1b[0m\x1b[0m Migrations pendentes: ${pending}.`);
+            logger.info(`ENV: ${process.env.NODE_ENV} | Migrations pendentes: ${pending}`);
         else if (pending === null) {
-            throw Error(`\x1b[41m\x1b[1;32m DATABASE | ${process.env.NODE_ENV} \x1b[0m\x1b[0m Não foi possível retornar as instâncias pendentes do banco de dados.`);
+            logger.error(`ENV: ${process.env.NODE_ENV} | Não foi possível retornar as instâncias pendentes do banco de dados`);
         }
 
         if (executed)
-            console.log(`\x1b[42m\x1b[1;30m DATABASE | ${process.env.NODE_ENV} \x1b[0m\x1b[0m Migrations executados: ${executed}.`);
+            logger.info(`ENV: ${process.env.NODE_ENV} | Migrations executados: ${executed}`);
         else if (executed == null)
-            throw Error(`\x1b[41m\x1b[1;32m DATABASE | ${process.env.NODE_ENV} \x1b[0m\x1b[0m Não foi possível retornar as instâncias executadas/criadas do banco de dados.`);
+            logger.error(`ENV: ${process.env.NODE_ENV} | Não foi possível retornar as instâncias executadas/criadas do banco de dados`);
 
     } catch(error) {
-        console.error(`\x1b[41m\x1b[1;32m DATABASE | ${process.env.NODE_ENV} \x1b[0m\x1b[0m ${error}.`);
+        logger.error(`ENV: ${process.env.NODE_ENV} | ${error}`);
         throw error;
     }
 }

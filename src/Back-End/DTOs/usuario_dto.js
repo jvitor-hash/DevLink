@@ -1,5 +1,5 @@
 ﻿export class CreateUsuarioDTO {
-  constructor({ name, email, password, platforms, description, userType }) {
+  constructor({ name, email, platforms, description, password, userType }) {
     this.name = name;
     this.email = email;
     this.platforms = platforms;
