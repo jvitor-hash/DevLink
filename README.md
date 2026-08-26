@@ -1,4 +1,4 @@
-# Projeto sem nome
+# DevLink
 Versão: v1.1.0
 
 *(Nota: Testes são rodados automaticamente após um pull-request ou push)*
@@ -31,12 +31,7 @@ git clone https://github.com/jvitor-hash/DevLink
 cd '.\DevLink\'
 ```
 
-2. Instalação das dependências do projeto:
-```
-npm install
-```
-
-3. Configuração das variáveis de ambiente:
+2. Configuração das variáveis de ambiente:
 ```
 # development, staging, testing, production
 NODE_ENV=development 
@@ -46,11 +41,14 @@ LOG_LEVEL="info"
 IP="127.0.0.1"
 ```
 
+3. Instalação das dependências do projeto:
+```
+npm install
+```
+
 4. Configuração secundaria das variáveis de ambiente
 
 - "dev.env.development"
-- "stag.env.staging"
-- "test.env.testing"
 - "prod.env.production"
 
 Exemplo de configuração secundária:

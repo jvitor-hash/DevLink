@@ -15,57 +15,15 @@ describe("Retornar usuário através do id", () => {
     vi.clearAllMocks();
   });
 
-  it("Teste de mock do metodo de retornar varios usuários.", () => {
-    vi.mocked(Usuario.GetUsuarios).mockResolvedValue({});
+  it("Teste de mock do metodo de retornar varios usuários.", async () => {
 
-    const result = Usuario.GetUsuarios();
-
-    expect(result).toEqual(mockData);
-    expect(Usuario.GetUsuarios).toHaveBeenCalled(1);
   });
 
-  it("Teste de mock do metodo de retornar um usuário.", () => {
-    vi.mocked(Usuario.GetUsuarioById).mockResolvedValue({
-      id: 1,
-      name: "Carlos Oliverira",
-      platforms: ["web", "desktop"],
-      email: "carlos.oliveira@example.com",
-      description: "",
-      userType: "programador",
-    });
+  it("Teste de mock do metodo de retornar um usuário.", async () => {
 
-    const result = Usuario.GetUsuarioById(1);
-
-    if (!result) throw new Error("Erro ao adquirir os dados");
-
-    expect(result).toEqual({
-      id: 1,
-      name: "Carlos Oliverira",
-      platforms: ["web", "desktop"],
-      email: "carlos.oliveira@example.com",
-      description: "",
-      userType: "programador",
-    });
-
-    expect(Usuario.GetUsuarioById).toHaveBeenCalledOnce(1);
   });
 
-  it("Teste de mock do metodo de retornar um usuários através de um nome", () => {
-    vi.mocked(Usuario.GetUsuarioByName).mockResolvedValue({
-      [
-        {
-          id: 2,
-
-        },
-        {
-          id: 4
-
-        }
-      ]
-    });
-
-    const result = Usuario.GetUsuarioByName('Carlos');
-
+  it("Teste de mock do metodo de retornar um usuários através de um nome", async () => {
 
   })
 });

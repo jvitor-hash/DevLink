@@ -6,7 +6,7 @@ import {
   GetUsuarioByName, RefreshToken, GetCurrentUsuario
 } from '../Controllers/usuario_controller.js';
 
-const router = express.Router()
+const router = express.Router();
 
 router.post("/", CreateUsuario);
 router.post("/auth", LoginUsuario);

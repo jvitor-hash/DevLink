@@ -48,6 +48,10 @@ function SetupRoutes(app) {
   app.get('/projetos', (req, res) => {
     res.render('projetos');
   });
+
+  app.get('/perfil', (req, res) => {
+    res.render('perfil');
+  });
 }
 
 /*

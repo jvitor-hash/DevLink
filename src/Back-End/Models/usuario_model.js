@@ -1,5 +1,6 @@
 import { DataTypes, Model } from "sequelize";
 import { sequelize } from '../database.js';
+import { Projeto } from "./projeto_model.js";
 
 export class Usuario extends Model {};
 
@@ -49,3 +50,9 @@ Usuario.init({
     sequelize,
     modelName: "Usuario"
 });
+
+Usuario.hasMany(Projeto, {
+  foreignKey: 'autorId'
+});
+
+Projeto.belongsTo(Usuario);

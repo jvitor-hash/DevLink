@@ -20,16 +20,25 @@
         </li>
       </ul>
 
-      <div id="signed-in" class="d-none">
-        <a href="/config" class="btn"><i class="bi bi-gear"></i></a>
+      <div id="signed-in" class="d-none d-flex flex-row align-items-center">
         <a href="/notificacao" class="btn"><i class="bi bi-bell"></i></a>
-      </div>
-
-      <div id="signed-out">
         <button id="dark-mode-toggle" type="button" class="btn"><i id="theme-icon" class="bi bi-moon"></i></button>
+        <a href="/perfil" class="text-body" style="text-decoration: none;"><span id="username-text">test</span></a>
+        <div class="dropdown">
+          <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"></button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a href="/config" class="dropdown-item">Configuracoes</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><button class="dropdown-item text-danger" id="disconnect-button" type="button">Desconetar-se</button></li>
+          </ul>
+        </div>
       </div>
 
-      <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#login_modal">Login</button>
+
+      <div id="signed-out" class="d-none">
+        <button id="dark-mode-toggle" type="button" class="btn"><i id="theme-icon" class="bi bi-moon"></i></button>
+        <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#login_modal">Login</button>
+      </div>
     </div>
   </div>
 </nav>
@@ -37,10 +46,17 @@
 {{> modal_login}}
 
 <script>
-  const button = document.getElementById('dark-mode-toggle');
-  const icon = document.getElementById('theme-icon');
+  const button = $('#dark-mode-toggle');
+  const icon = $('#theme-icon');
+  const disconnectButton = $('#disconnect-button');
 
-  button.addEventListener('click', () => {
+  disconnectButton.on('click', () => {
+    localStorage.clear();
+    location.reload();
+    window.location.href="/";
+  });
+
+  button.on('click', () => {
     const html = document.documentElement;
     const isDark = html.getAttribute('data-bs-theme') === 'dark';
 
@@ -58,15 +74,17 @@
     signedIn = 'false';
     localStorage.setItem('signedIn', signedIn);
 
-  if(signedIn === 'true') {
-    const elem = $('#signed-in');
+  if(signedIn === 'false') {
+    const elem = $("#signed-out");
+    elem.removeClass("d-none");
+  } else if (signedIn === 'true') {
+    const elem = $("#signed-in");
+    const username = $("#username-text");
+    const storedUsername = localStorage.getItem("Username");
 
-    if (elem)
-      elem.className = signedIn ? "" : "d-none";
-  } else if (signedIn === 'false') {
-    const elem = $('#signed-out');
+    elem.removeClass("d-none");
+    if (storedUsername !== null)
+      username.text(storedUsername ?? "teste");
 
-    if (elem)
-      elem.className = signedIn ? "d-none" : "";
   }
 </script>
