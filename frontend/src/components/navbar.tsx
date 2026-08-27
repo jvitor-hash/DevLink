@@ -3,15 +3,16 @@ import ThemeToggle from "../components/theme_toggle";
 
 function Navbar() {
   return (
-    <div className="navbar sticky top-0 bg-neutral-100 dark:bg-neutral-800 dark:text-white shadow-sm">
+    <div className="navbar sticky top-0 bg-neutral-100 dark:bg-neutral-800 dark:text-white shadow-sm z-10">
       <div className="navbar-start">
         <div className="dropdown">
           <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
             <i className="bi bi-list text-xl"></i>
           </div>
           <ul tabIndex={1} className="menu menu-md rounded-sm dropdown-content bg-neutral-100 dark:bg-neutral-700 text-base z-1 mt-3 w-50 p-4 gap-1 shadow">
-            <li><Link to="/" className="hover:bg-white/5">Home</Link></li>
-            <li><Link to="/questionarion" className="hover:bg-white/5">Questionario</Link></li>
+            <li><Link to="/" className="hover:bg-black/5 dark:hover:bg-white/5">Home</Link></li>
+            <li><Link to="/questionario" className="hover:bg-black/5 dark:hover:bg-white/5">Questionario</Link></li>
+            <li><Link to="/projetos" className="hover:bg-black/5 dark:hover:bg-white/5">Projetos</Link></li>
           </ul>
         </div>
       </div>
