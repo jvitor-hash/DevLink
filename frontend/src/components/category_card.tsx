@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import '../styles/category_card_link.css';
 
 type CategoryLink = {
   label: string
@@ -17,11 +18,11 @@ function CategoryCard({ title, links }: CategoryCardProps) {
         <h5 className="font-bold dark:text-white">{title}</h5>
       </div>
 
-      <div className="card-body dark:text-white">
-        <ul>
+      <div className="card-body dark:text-white font-sans">
+        <ul className="list-none pl-0 space-y-1">
           {links.map((link) => (
-            <li key={link.to}>
-              <Link to={link.to} className="block"><i className="bi bi-chevron-right me-1"></i>{link.label}</Link>
+            <li key={link.to} className="nav-link">
+              <Link to={link.to} className="text-base"><i className="bi bi-chevron-right me-1 chevron"></i>{link.label}</Link>
             </li>
           ))}
         </ul>

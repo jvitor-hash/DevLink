@@ -3,7 +3,7 @@ import ThemeToggle from "../components/theme_toggle";
 
 function Navbar() {
   return (
-    <div className="navbar sticky top-0 bg-neutral-100 dark:bg-neutral-800 dark:text-white shadow-sm z-10">
+    <div className="navbar sticky top-0 bg-neutral-100 dark:bg-neutral-800 dark:text-white shadow-sm z-10 font-sans">
       <div className="navbar-start">
         <div className="dropdown">
           <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
@@ -24,7 +24,7 @@ function Navbar() {
       <div className="navbar-end gap-2">
         <button type="button" className="btn btn-link text-black dark:text-white h-auto py-1.5 px-1"><i className="bi bi-bell text-xl"></i></button>
         <ThemeToggle />
-        <button type="button" className="btn btn-outline btn-primary border-sky-500 h-auto px-4 py-1.5">Login</button>
+        <button type="button" className="btn btn-outline btn-primary hover:border-primary h-auto px-4 py-1.5">Login</button>
       </div>
     </div>
   )

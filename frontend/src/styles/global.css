@@ -3,6 +3,12 @@
   themes: false;
 };
 
+body {
+    @apply bg-white dark:bg-neutral-900 text-base-100;
+}
+
+/* oklch(89.925% .016 262.749) */
+
 @plugin "daisyui/theme" {
   name: "app";
   default: true;
@@ -12,7 +18,7 @@
   --color-base-300: var(--color-base-300);
   --color-base-content: var(--color-base-content);
 
-  --color-primary: var(--color-sky-500);
+  --color-primary: oklch(85.9% 0.069 257.417);
   --color-primary-content: white;
 
   --color-secondary: var(--color-mist-500);

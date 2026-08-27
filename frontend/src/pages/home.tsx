@@ -2,7 +2,7 @@ import CategoryCard from "../components/category_card";
 
 function Home() {
   return (
-    <div className="bg-white dark:bg-neutral-900 w-full">
+    <div className="w-full">
       <section className="hero bg-neutral-900 grid-background dark:text-white py-52">
         <div className="hero-content text-center w-full">
           <div className="flex flex-col items-center max-w-2xl gap-10 mx-auto">

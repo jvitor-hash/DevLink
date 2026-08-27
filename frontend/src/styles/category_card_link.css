@@ -1,0 +1,23 @@
+.nav-link {
+  display: block;
+  align-items: center;
+  transition:
+    color 0.25s ease;
+}
+
+.chevron {
+  opacity: 0;
+  transform: translateX(-8px);
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+
+.nav-link:hover {
+    color: var(--color-primary);
+}
+
+.nav-link:hover .chevron {
+  opacity: 1;
+  transform: translateX(0);
+}
