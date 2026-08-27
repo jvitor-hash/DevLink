@@ -3,6 +3,7 @@ import { InitializeDatabase } from './database.js';
 import { fileURLToPath } from "node:url";
 import { rateLimiter } from './Middleware/rate_limiter.js';
 import usuarioRouter from './Routes/usuario_routes.js';
+import projetoRouter from './Routes/projetos_routes.js';
 import express from 'express';
 import path from 'path';
 import cors from 'cors';
@@ -29,6 +30,7 @@ const __dirname = path.dirname(__filename);
 function SetupRoutes(app) {
   // Configuração das rotas.
   app.use('/api/usuario', usuarioRouter);
+  app.use('/api/projeto', projetoRouter);
 
   app.get('/', (req, res) => {
     res.render('home', {
@@ -47,6 +49,10 @@ function SetupRoutes(app) {
 
   app.get('/projetos', (req, res) => {
     res.render('projetos');
+  });
+
+  app.get('/notificacao', (req, res) => {
+    res.render('notificacao');
   });
 
   app.get('/perfil', (req, res) => {

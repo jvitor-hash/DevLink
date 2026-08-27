@@ -19,9 +19,7 @@ const __dirname = path.dirname(__filename);
 // Caminho da pasta migrations para verificação.
 const migrationsDir = path.resolve(__dirname, './Migrations');
 
-export const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT || 5432,
+export const sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialect: 'postgres',
     logging: (...msg) => logger.info(`ENV: ${process.env.NODE_ENV} | ${msg}`)
 });
@@ -33,33 +31,59 @@ export const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER,
           cria o banco configurado nas variáveis de ambiente.
 */
 async function EnsureDatabaseExists() {
-    const dbName = process.env.DB_NAME;
+    const databaseUrl = process.env.DATABASE_URL;
 
-    // Validacao do nome do banco antes de executar uma query.
-    if (!dbName || !/^[a-z_][a-z0-9_]*$/.test(dbName)) {
-        throw new Error('Invalid DB_NAME');
+    if (!databaseUrl) {
+        throw new Error('DATABASE_URL is not defined');
     }
 
+    let url;
+
+    try {
+        url = new URL(databaseUrl);
+    } catch {
+        throw new Error('Invalid DATABASE_URL');
+    }
+
+    const dbName = decodeURIComponent(url.pathname.slice(1));
+
+    // Validate database name before using it in CREATE DATABASE.
+    if (!dbName || !/^[a-z_][a-z0-9_]*$/i.test(dbName)) {
+        throw new Error('Invalid database name');
+    }
+
+    // Connect to the "postgres" maintenance database,
+    // not the database we're trying to create/check.
+    url.pathname = '/postgres';
+
     const client = new Client({
-        host: process.env.DB_HOST,
-        port: Number(process.env.DB_PORT) || 5432,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        database: 'postgres'
+        connectionString: url.toString()
     });
 
     try {
         await client.connect();
-        const result = await client.query('SELECT 1 FROM pg_database WHERE datname = $1', [dbName]);
-        if (result.rowCount === 0) {
-            await client.query(`CREATE DATABASE ${dbName}`);
 
-            logger.info(`ENV: ${process.env.NODE_ENV} | Banco de dados criado com sucesso`);
+        const result = await client.query(
+            'SELECT 1 FROM pg_database WHERE datname = $1',
+            [dbName]
+        );
+
+        if (result.rowCount === 0) {
+            await client.query(`CREATE DATABASE "${dbName}"`);
+
+            logger.info(
+                `ENV: ${process.env.NODE_ENV} | Banco de dados criado com sucesso`
+            );
         } else {
-            logger.info(`ENV: ${process.env.NODE_ENV} | Banco de dados existe`);
+            logger.info(
+                `ENV: ${process.env.NODE_ENV} | Banco de dados existe`
+            );
         }
-    } catch(error) {
-        logger.error(`ENV: ${process.env.NODE_ENV} | ${error}`);
+    } catch (error) {
+        logger.error(
+            `ENV: ${process.env.NODE_ENV} | ${error}`
+        );
+
         throw error;
     } finally {
         await client.end();
@@ -125,16 +149,6 @@ async function ExecutedMigrations(sequelize) {
   return rows.map(row => row.name);
 }
 
-async function LoadModels() {
-    // TODO: Carregar modelos.
-    return;
-}
-
-async function RunSeeds() {
-    // TODO: Executar as seeds
-    return;
-}
-
 export async function InitializeDatabase() {
     try {
         let pending, executed = [];
@@ -144,9 +158,6 @@ export async function InitializeDatabase() {
         pending = await PendingMigrations(sequelize, migrationsDir);
         if (pending !== null)
             executed = await ExecutedMigrations(sequelize);
-
-        await LoadModels();
-        await RunSeeds();
 
         if (pending && pending.length > 0)
             logger.info(`ENV: ${process.env.NODE_ENV} | Migrations pendentes: ${pending}`);

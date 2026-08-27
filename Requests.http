@@ -9,7 +9,10 @@ GET http://localhost:8888/api/usuario HTTP/1.1
 GET http://localhost:8888/api/usuario/1 HTTP/1.1
 
 # Retornar um único usuário através do nome do usuário
-GET localhost:8080/api/usuario/name/?name=Silva
+GET localhost:8888/api/usuario/name/?name=Silva
+
+
+GET localhost:8888/api/projeto/ HTTP/1.1
 
 # ================================ #
 #           REQUEST POST           #

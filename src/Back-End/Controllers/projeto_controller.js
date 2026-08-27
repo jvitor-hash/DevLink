@@ -1,4 +1,5 @@
-import { Projeto } from '../Models/projeto_model';
+import { Projeto } from '../Models/projeto_model.js';
+import { CreateProjetoDTO, ResponseProjetoDTO, ResponseShortProjetoDTO } from '../DTOs/projetos_dto.js';
 import pino from 'pino';
 
 const logger = pino({
@@ -18,6 +19,12 @@ export const GetProjetos = async (req, res) => {
   try {
     const projetos = await Projeto.findAll();
 
+    if (!projetos)
+      logger.error("Error ao tentar retornar todos os projetos");
+
+    const response = projetos.map((projeto) => new ResponseProjetoDTO(projeto));
+
+    return res.status(200).json({response});
   } catch (error) {
     logger.error(error);
     return res.status(500).json({

@@ -6,8 +6,6 @@ dotenv.config({ path: "./env.env" });
 // Acrescenta informações do banco baseado no ambiente configurado.
 const envFiles = {
     "Development": "./dev.env.development",
-    "Testing": "./test.env.testing",
-    "Staging": "./stag.env.staging",
     "Production": "./prod.env.production"
 };
 

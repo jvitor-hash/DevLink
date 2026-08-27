@@ -1,5 +1,5 @@
 # DevLink
-Versão: v1.1.0
+Versão: v1.2.1a
 
 *(Nota: Testes são rodados automaticamente após um pull-request ou push)*
 
@@ -53,11 +53,7 @@ npm install
 
 Exemplo de configuração secundária:
 ```
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=db_development
-DB_USER=postgres
-DB_PASSWORD=123
+DATABASE_URL="postgres://postgres:admin@localhost:5432/testdb"
 ```
 
 # Commandos

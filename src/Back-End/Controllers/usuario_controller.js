@@ -94,7 +94,7 @@ export const GetUsuarioByName = async (req, res) => {
     const user = await Usuario.findAll({
       where: {
         name: {
-          [Op.like]: `%${filteredName}%`
+          [Op.iLike]: `%${filteredName}%`
         },
       },
     });
@@ -339,9 +339,7 @@ export const GetCurrentUsuario = async (req, res) => {
 
     const response = new ResponseUsuarioDTO(user);
 
-    return res.status(200).json({
-      response,
-    });
+    return res.status(200).json(response);
   } catch (error) {
     logger.error(error);
     return res.status(500).json({
@@ -405,3 +403,22 @@ export const RefreshToken = async (req, res) => {
     });
   }
 };
+
+export const SignOut = async (req, res) => {
+  try {
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict"
+    });
+    
+    return res.status(200).json({
+      message: "Log-out com sucesso"
+    });
+  } catch (error) {
+    logger.error(error);
+    return res.status(500).json({
+      message: "Falha ao fazer log-out"
+    });
+  };
+}

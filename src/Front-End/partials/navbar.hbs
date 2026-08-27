@@ -20,23 +20,24 @@
         </li>
       </ul>
 
-      <div id="signed-in" class="d-none d-flex flex-row align-items-center">
+      <button id="dark-mode-toggle" type="button" class="btn">
+        <i id="theme-icon" class="bi bi-moon"></i>
+      </button>
+
+      <div id="signed-in" class="d-flex flex-row align-items-center">
         <a href="/notificacao" class="btn"><i class="bi bi-bell"></i></a>
-        <button id="dark-mode-toggle" type="button" class="btn"><i id="theme-icon" class="bi bi-moon"></i></button>
         <a href="/perfil" class="text-body" style="text-decoration: none;"><span id="username-text">test</span></a>
         <div class="dropdown">
           <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"></button>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a href="/config" class="dropdown-item">Configuracoes</a></li>
+            <li><a href="/config" class="dropdown-item">Configurações</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><button class="dropdown-item text-danger" id="disconnect-button" type="button">Desconetar-se</button></li>
           </ul>
         </div>
       </div>
 
-
-      <div id="signed-out" class="d-none">
-        <button id="dark-mode-toggle" type="button" class="btn"><i id="theme-icon" class="bi bi-moon"></i></button>
+      <div id="signed-out">
         <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#login_modal">Login</button>
       </div>
     </div>
@@ -46,45 +47,74 @@
 {{> modal_login}}
 
 <script>
+  const html = document.documentElement;
   const button = $('#dark-mode-toggle');
   const icon = $('#theme-icon');
-  const disconnectButton = $('#disconnect-button');
 
-  disconnectButton.on('click', () => {
-    localStorage.clear();
-    location.reload();
-    window.location.href="/";
+  function CleanUpLocalstorage() {
+    localStorage.setItem("signedIn", "false");
+    localStorage.removeItem("AccessToken");
+    localStorage.removeItem("username");
+
+    ShowSignedOut();
+  }
+
+  async function UpdateAuthUI() {
+    const isLoggedIn = localStorage.getItem("signedIn") !== "false";
+
+    if (!isLoggedIn || isLoggedIn === null) {
+        ShowSignedOut();
+        return;
+    }
+
+    ShowSignedIn();
+  }
+
+  function ShowSignedIn() {
+    const username = localStorage.getItem("username");
+    $('#signed-out').addClass('d-none');
+    $('#signed-in').removeClass('d-none');
+
+    $('#username-text').text(username);
+  }
+
+  function ShowSignedOut() {
+    $('#signed-in').addClass('d-none');
+    $('#signed-out').removeClass('d-none');
+  }
+
+  function SetTheme(theme) {
+    html.setAttribute('data-bs-theme', theme);
+
+    icon.attr(
+      'class',
+      theme === 'dark' ? 'bi bi-sun' : 'bi bi-moon'
+    );
+
+    localStorage.setItem('theme', theme);
+  }
+
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  SetTheme(savedTheme);
+
+  $('#disconnect-button').on('click', async () => {
+    API.post('/api/usuario/logout')
+      .done(function (response) {
+        CleanUpLocalstorage();
+      })
+      .fail(function (xhr) {
+        console.error("Falha ao fazer logout: ", xhr.responseJSON);
+        CleanUpLocalstorage();
+      });
+
+
+    window.location.href = '/';
   });
 
   button.on('click', () => {
-    const html = document.documentElement;
-    const isDark = html.getAttribute('data-bs-theme') === 'dark';
-
-    html.setAttribute('data-bs-theme', isDark ? 'light' : 'dark');
-
-    icon.className = isDark
-      ? 'bi bi-moon'
-      : 'bi bi-sun';
+    const currentTheme = html.getAttribute('data-bs-theme') || "light";
+    SetTheme(currentTheme === 'dark' ? 'light' : 'dark');
   });
 
-
-  let signedIn = localStorage.getItem('signedIn');
-
-  if (signedIn === null)
-    signedIn = 'false';
-    localStorage.setItem('signedIn', signedIn);
-
-  if(signedIn === 'false') {
-    const elem = $("#signed-out");
-    elem.removeClass("d-none");
-  } else if (signedIn === 'true') {
-    const elem = $("#signed-in");
-    const username = $("#username-text");
-    const storedUsername = localStorage.getItem("Username");
-
-    elem.removeClass("d-none");
-    if (storedUsername !== null)
-      username.text(storedUsername ?? "teste");
-
-  }
+  UpdateAuthUI();
 </script>

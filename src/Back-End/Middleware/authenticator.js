@@ -16,6 +16,7 @@ export function authenticateToken(req, res, next) {
 
     req.user = {
       id: payload.sub,
+      userType: payload.userType
     };
 
     next();

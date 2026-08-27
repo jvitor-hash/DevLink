@@ -115,7 +115,7 @@
 
 
 <script>
-$(document).ready(function () {
+(() => {
     const $form = $("#loginForm");
 
     const $formTitle = $("#form-title");
@@ -124,6 +124,7 @@ $(document).ready(function () {
     const $registerType = $("#register-type");
     const $registerFields = $("#register-fields");
     const $programadorInputs = $(".programador-inputs");
+    const $programmerFields = $programadorInputs.find("select, input");
 
     const $switchText = $("#switch-text");
     const $registerSwitch = $("#register-switch");
@@ -131,18 +132,15 @@ $(document).ready(function () {
     const $cliente = $("#btnradio1");
     const $programador = $("#btnradio2");
 
-    const $programmerFields = $programadorInputs.find("select, input");
+    const $password = $("#senha-form-input");
+    const $togglePassword = $("#togglePassword");
 
     let isRegister = false;
 
-    // Login / Registro
-    $registerSwitch.on("click", function () {
-
-        isRegister = !isRegister;
+    function SetMode(register) {
+        isRegister = register;
 
         if (isRegister) {
-
-            // Registro
             $formTitle.text("Formulário de registro");
             $submitButton.text("Registrar-se");
 
@@ -151,173 +149,115 @@ $(document).ready(function () {
 
             $switchText.text("Já possui uma conta?");
             $registerSwitch.text("Faça login");
-
         } else {
-
-            // Login
             $formTitle.text("Formulário de login");
             $submitButton.text("Login");
 
             $registerType.addClass("d-none");
             $registerFields.addClass("d-none");
 
-            // Desabilita os campos extras
-            $programmerFields.prop("disabled", true);
-
             $switchText.text("Não possui uma conta?");
             $registerSwitch.text("Registre-se");
         }
 
-        toggleProgramador();
-    });
-
-    // Mostrar / OcultarSenha
-    $("#togglePassword").on("click", function () {
-
-        const $password = $("#senha-form-input");
-        const $icon = $(this).find("i");
-
-        if ($password.attr("type") === "password") {
-
-            $password.attr("type", "text");
-
-            $icon
-                .removeClass("bi-eye")
-                .addClass("bi-eye-slash");
-
-            $(this).attr("aria-label", "Ocultar senha");
-
-        } else {
-
-            $password.attr("type", "password");
-
-            $icon
-                .removeClass("bi-eye-slash")
-                .addClass("bi-eye");
-
-            $(this).attr("aria-label", "Mostrar senha");
-        }
-    });
-
-    // Cliente / Programador
-    function toggleProgramador() {
-
-        const isProgramador = $programador.is(":checked");
-
-        // Só mostra se estiver no modo registro
-        if (isRegister && isProgramador) {
-            $programadorInputs.removeClass("d-none");
-            $programmerFields.prop("disabled", false);
-
-        } else {
-            $programadorInputs.addClass("d-none");
-            $programmerFields.prop("disabled", true);
-        }
+        ToggleProgramador();
     }
 
+    function ToggleProgramador() {
+        const shouldShow = isRegister && $programador.is(":checked");
 
-    $cliente.on("change", toggleProgramador);
-    $programador.on("change", toggleProgramador);
+        $programadorInputs.toggleClass("d-none", !shouldShow);
+        $programmerFields.prop("disabled", !shouldShow);
+    }
 
-    // Envio do formulário
+    function TogglePassword() {
+        const showingPassword = $password.attr("type") === "text";
+
+        $password.attr("type", showingPassword ? "password" : "text");
+        $togglePassword.find("i").toggleClass("bi-eye", showingPassword).toggleClass("bi-eye-slash", !showingPassword);
+        $togglePassword.attr("aria-label", showingPassword ? "Mostrar senha" : "Ocultar senha");
+    }
+
+    // ------ Login ------ //
+
+    function Login(data) {
+        API.post("/api/usuario/auth", {
+            email: data.email,
+            password: data.password
+        })
+        .done(function (response) {
+            localStorage.setItem("AccessToken", response.accessToken);
+
+            LoadCurrentUser();
+        })
+        .fail(function (xhr) {
+            console.error("Login falhou: ", xhr.responseJSON);
+        });
+    }
+
+    function LoadCurrentUser() {
+        API.get("/api/usuario/me")
+            .done(function (response) {
+                localStorage.setItem("username", response.name);
+                localStorage.setItem("userType", response.userType);
+                localStorage.setItem("signedIn", "true");
+
+                location.reload();
+            })
+            .fail(function (xhr) {
+                console.error("Erro ao conseguir informações do usuário: ", xhr.responseJSON);
+            });
+    }
+
+    function Register(data) {
+        API.post("/api/usuario/", {
+            name: data.name,
+            email: data.email,
+            platforms: data.platforms,
+            description: data.description,
+            password: data.password,
+            userType: data.userType
+        })
+        .done(function (response) {
+            localStorage.setItem("AccessToken", response.accessToken);
+            localStorage.setItem("signedIn", "true");
+
+            LoadCurrentUser();
+        })
+        .fail(function (xhr) {
+            console.error("Registro falhou: ", xhr.responseJSON);
+        });
+    }
+
+    // ------ Form ------ //
+
     $form.on("submit", function (event) {
         event.preventDefault();
 
         const formData = new FormData(this);
 
-        const data = Object.fromEntries(formData.entries());
+        const data = Object.fromEntries(
+            formData.entries()
+        );
 
-        if (data !== null) {
-            // Checkbox platforms pode ter vários valores.
-            data.platforms = formData.getAll("platforms");
+        data.platforms = formData.getAll("platforms");
 
-            // Identifica se é login ou registro
-            data.action = isRegister ? "register" : "login";
-
-            if (data.action == "login") {
-              API.post("/api/usuario/auth", {
-                email: data.email,
-                password: data.password
-              })
-              .done((response) => {
-                localStorage.setItem("AccessToken", response.accessToken);
-
-                API.get("/api/usuario/me")
-                  .done((response) => {
-                    localStorage.setItem("Username", response.response.name);
-                    localStorage.setItem("signedIn", "true");
-                  })
-                  .fail((xhr) => {
-                    console.error("Erro ao conseguir informacoes sobre o usuario: ", xhr.responseJSON);
-                  })
-              })
-              .fail((xhr) => {
-                console.error("Login falhou: ", xhr.responseJSON)
-              });
-            } else if (data.action == "register") {
-              API.post("/api/usuario/", {
-                name: data.name,
-                email: data.email,
-                platforms: data.platforms,
-                description: data.description,
-                password: data.password,
-                userType: data.userType
-              })
-              .done((response) => {
-                localStorage.setItem("AccessToken", response.accessToken);
-              })
-              .fail((xhr) => {
-                console.error("Registro falhou: ", xhr.responseJSON);
-              });
-            }
+        if (isRegister) {
+            Register(data);
+        } else {
+            Login(data);
         }
-
-        // console.log(data);
-
-        /*
-         * Exemplos de resultado:
-         *
-         * LOGIN:
-         *
-         * {
-         *   email: "...",
-         *   name: "...",
-         *   password: "...",
-         *   platforms: [],
-         *   action: "login"
-         * }
-         *
-         *
-         * REGISTRO CLIENTE:
-         *
-         * {
-         *   email: "...",
-         *   name: "...",
-         *   password: "...",
-         *   description: "...",
-         *   userType: "cliente",
-         *   platforms: [],
-         *   action: "register"
-         * }
-         *
-         *
-         * REGISTRO PROGRAMADOR:
-         *
-         * {
-         *   email: "...",
-         *   name: "...",
-         *   password: "...",
-         *   description: "...",
-         *   userType: "programador",
-         *   programmingLanguage: "python",
-         *   platforms: ["web", "mobile"],
-         *   action: "register"
-         * }
-         */
-
     });
 
-    toggleProgramador();
+    // ------ Eventos ------ //
+    $registerSwitch.on("click", function () {
+        SetMode(!isRegister);
+    });
 
-});
+    $cliente.on("change", ToggleProgramador);
+    $programador.on("change", ToggleProgramador);
+    $togglePassword.on("click", TogglePassword);
+
+    SetMode(false);
+})();
 </script>

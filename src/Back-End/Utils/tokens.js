@@ -20,6 +20,7 @@ export function CreateAccessToken(data) {
   const ACCESS_TOKEN_SECRET = String(process.env.ACCESS_TOKEN_SECRET);
   const userId = Number(data.id);
   const userEmail = String(data.email);
+  const userType = String(data.userType);
 
   if (!userId || !userEmail)
     throw new Error("Erro ao tentar criar um token a partir do email e id.");
@@ -28,6 +29,7 @@ export function CreateAccessToken(data) {
     {
       sub: userId,
       email: userEmail,
+      userType: userType
     },
     ACCESS_TOKEN_SECRET,
     {
@@ -64,6 +66,14 @@ export function CreateRefreshToken(data) {
   );
 }
 
+/*
+  Nome: DecodeAccessToken
+  Autor: Jvitor
+  Desc: Ao passar um token esta função verifica o token 
+  e se o token estiver valido o token decodificado será retornado.
+  @params: $1: token(JWT Token)
+  @return: data (Object)
+*/
 export function DecodeAccessToken(token) {
   try {
     const ACCESS_TOKEN_SECRET = String(process.env.ACCESS_TOKEN_SECRET);
@@ -88,6 +98,13 @@ export function DecodeAccessToken(token) {
   }
 }
 
+/*
+  Nome: DecodeRefreshToken
+  Autor: Jvitor
+  Desc: Mesmo conceito do DecodeAccessToken
+  @params: $1: Token(JWT Token)
+  @return: data (Object)
+*/
 export function DecodeRefreshToken(token) {
   try {
     const REFRESH_TOKEN_SECRET = String(process.env.REFRESH_TOKEN_SECRET);

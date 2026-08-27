@@ -106,6 +106,7 @@ describe("Teste de mock do usuários", () => {
   // TESTE - 4
   it("Metodo deve atualizar com sucesso um usuário.", async () => {
     vi.spyOn(Usuario, "findByPk").mockResolvedValue(mock_usuarios[0]);
+    // Sequelize normalmente retorna um array com o numero de columnas afetadas apos um update
     vi.spyOn(Usuario, "update").mockResolvedValue([1]);
 
     const req = {
