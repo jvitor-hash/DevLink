@@ -64,7 +64,7 @@ describe("Teste de mock do usuários", () => {
 
     const req = {
       params: {
-        id: 6
+        id: 1
       }
     };
 
@@ -76,7 +76,7 @@ describe("Teste de mock do usuários", () => {
     await GetUsuarioById(req, res);
 
     expect(Usuario.findByPk).toHaveBeenCalledOnce();
-    // expect(Usuario.findByPk).toHaveBeenCalledWith(1);
+    expect(Usuario.findByPk).toHaveBeenCalledWith(1);
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalled();
   });
