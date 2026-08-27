@@ -1,4 +1,3 @@
-import { engine } from 'express-handlebars';
 import { InitializeDatabase } from './database.js';
 import { fileURLToPath } from "node:url";
 import { rateLimiter } from './Middleware/rate_limiter.js';
@@ -21,46 +20,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /*
-    Nome: SetupRoutes
-    Autor: Jvitor
-    Desc: Lista a rotas e os métodos sendo usados por estas rotas,
-    além dos arquivos associados a partir da pasta Front-End/
-    @params: App (express)
-*/
-function SetupRoutes(app) {
-  // Configuração das rotas.
-  app.use('/api/usuario', usuarioRouter);
-  app.use('/api/projeto', projetoRouter);
-
-  app.get('/', (req, res) => {
-    res.render('home', {
-      ip: process.env.IP || '127.0.0.1',
-      port: process.env.PORT || 8080
-    });
-  });
-
-  app.get('/config', (req, res) => {
-    res.render('configuracao');
-  });
-
-  app.get('/questionario', (req, res) => {
-    res.render('questionario');
-  });
-
-  app.get('/projetos', (req, res) => {
-    res.render('projetos');
-  });
-
-  app.get('/notificacao', (req, res) => {
-    res.render('notificacao');
-  });
-
-  app.get('/perfil', (req, res) => {
-    res.render('perfil');
-  });
-}
-
-/*
     Nome: InitServer
     Autor: Jvitor
     Desc: O ponto de partido do Back-end dando início a estabelecer
@@ -81,22 +40,11 @@ export function InitServer() {
     origin: "*"
   }));
 
-  // Configuração da handlebars.
-  app.engine('handlebars', engine());
-
-  // Definição dos arquivos usando .hbs
-  app.engine('hbs', engine({
-    extname: '.hbs'
-  }));
-
-  app.set('view engine', 'hbs');
-
   // Usar formatacão json.
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  // Configuração da pasta das views e public.
-  app.set('views', './src/Front-End');
+  // Configuração da pasta public.
   app.use(express.static(path.join(__dirname, "../../public")));
 
   app.use(rateLimiter({
@@ -104,7 +52,8 @@ export function InitServer() {
     max: 5               // número maximo de requests em 1 minuto
   }));
 
-  SetupRoutes(app);
+  app.use('/api/usuario', usuarioRouter);
+  app.use('/api/projeto', projetoRouter);
 
   // Nota: Utilizei uma anonymous function para circunver a parte assíncrona de lidar com banco de dados
   (async () => {
