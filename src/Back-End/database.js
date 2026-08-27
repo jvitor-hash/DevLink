@@ -21,7 +21,7 @@ const migrationsDir = path.resolve(__dirname, './Migrations');
 
 export const sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialect: 'postgres',
-    logging: (...msg) => logger.info(`ENV: ${process.env.NODE_ENV} | ${msg}`)
+    logging: (...msg) => logger.info(`${msg}`)
 });
 
 /*
@@ -71,19 +71,12 @@ async function EnsureDatabaseExists() {
         if (result.rowCount === 0) {
             await client.query(`CREATE DATABASE "${dbName}"`);
 
-            logger.info(
-                `ENV: ${process.env.NODE_ENV} | Banco de dados criado com sucesso`
-            );
+            logger.info(`Banco de dados criado com sucesso`);
         } else {
-            logger.info(
-                `ENV: ${process.env.NODE_ENV} | Banco de dados existe`
-            );
+            logger.info(`Banco de dados existe`);
         }
     } catch (error) {
-        logger.error(
-            `ENV: ${process.env.NODE_ENV} | ${error}`
-        );
-
+        logger.error(error);
         throw error;
     } finally {
         await client.end();
@@ -100,9 +93,9 @@ async function AuthenticateDatabase() {
         await sequelize.authenticate();
         await sequelize.sync();
 
-        logger.info(`ENV: ${process.env.NODE_ENV} | Conexão com banco de dados esbelecida`);
+        logger.info(`Conexão com banco de dados esbelecida`);
     } catch(error) {
-        logger.error(`ENV: ${process.env.NODE_ENV} | ${error}`);
+        logger.error(`${error}`);
         throw error;
     }
 }
@@ -160,18 +153,18 @@ export async function InitializeDatabase() {
             executed = await ExecutedMigrations(sequelize);
 
         if (pending && pending.length > 0)
-            logger.info(`ENV: ${process.env.NODE_ENV} | Migrations pendentes: ${pending}`);
+            logger.info(`Migrations pendentes: ${pending}`);
         else if (pending === null) {
-            logger.error(`ENV: ${process.env.NODE_ENV} | Não foi possível retornar as instâncias pendentes do banco de dados`);
+            logger.error(`Não foi possível retornar as instâncias pendentes do banco de dados`);
         }
 
         if (executed)
-            logger.info(`ENV: ${process.env.NODE_ENV} | Migrations executados: ${executed}`);
+            logger.info(`Migrations executados: ${executed}`);
         else if (executed == null)
-            logger.error(`ENV: ${process.env.NODE_ENV} | Não foi possível retornar as instâncias executadas/criadas do banco de dados`);
+            logger.error(`Não foi possível retornar as instâncias executadas/criadas do banco de dados`);
 
     } catch(error) {
-        logger.error(`ENV: ${process.env.NODE_ENV} | ${error}`);
+        logger.error(error);
         throw error;
     }
 }

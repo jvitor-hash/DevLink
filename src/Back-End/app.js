@@ -108,8 +108,7 @@ export function InitServer() {
 
   // Nota: Utilizei uma anonymous function para circunver a parte assíncrona de lidar com banco de dados
   (async () => {
-    if (process.env.NODE_ENV)
-      await InitializeDatabase();
+    await InitializeDatabase();
   })();
 
   // Inicia a aplicação e começar a ouvir na porta definida nas variáveis de ambiente.
