@@ -195,7 +195,7 @@ describe("Teste de mock do usuários", () => {
   // });
 
   // Teste - 5
-  it("", async () => {
+  it("Metodo deve excluir um usuario", async () => {
     vi.spyOn(Usuario, "destroy").mockResolvedValue([1]);
 
     const req = {
