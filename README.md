@@ -1,5 +1,5 @@
 # DevLink
-Versão: v1.2.1a
+Versão: v1.2.2a
 
 *(Nota: Testes são rodados automaticamente após um pull-request ou push)*
 
