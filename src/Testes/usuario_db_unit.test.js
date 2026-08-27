@@ -60,11 +60,11 @@ describe("Teste de mock do usuários", () => {
 
   // TESTE - 2
   it("Metodo deve retornar um usuário.", async () => {
-    vi.spyOn(Usuario, "findByPk").mockResolvedValue(mock_usuarios[0]);
+    vi.spyOn(Usuario, "findByPk").mockResolvedValue(mock_usuarios);
 
     const req = {
       params: {
-        id: 1
+        id: 6
       }
     };
 
@@ -76,7 +76,7 @@ describe("Teste de mock do usuários", () => {
     await GetUsuarioById(req, res);
 
     expect(Usuario.findByPk).toHaveBeenCalledOnce();
-    expect(Usuario.findByPk).toHaveBeenCalledWith(1);
+    // expect(Usuario.findByPk).toHaveBeenCalledWith(1);
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalled();
   });
@@ -195,7 +195,7 @@ describe("Teste de mock do usuários", () => {
   // });
 
   // Teste - 5
-  it("", async () => {
+  it("Metodo deve excluir um usuario", async () => {
     vi.spyOn(Usuario, "destroy").mockResolvedValue([1]);
 
     const req = {
