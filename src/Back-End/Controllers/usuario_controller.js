@@ -89,12 +89,12 @@ export const GetUsuarioByName = async (req, res) => {
     const name = String(req.query.name || "");
 
     // Previne um SQL wildcard quando buscando.
-    name = name.replace(/[%_]/g, '\\$&');
+    const filteredName = name.replace(/[%_]/g, "\\$&");
 
     const user = await Usuario.findAll({
       where: {
         name: {
-          [Op.like]: `%${name}%`
+          [Op.like]: `%${filteredName}%`
         },
       },
     });
@@ -191,6 +191,8 @@ export const CreateUsuario = async (req, res) => {
   @param: $1: id(Int), $2: name(Str), $3: email(Str), $4: password(Str)
   @return: Cliente (Response DTO)
 */
+
+// FIXME: Resolver query de resultados para nao retornar todos
 export const UpdateUsuario = async (req, res) => {
   try {
     const saltRounds = Number(process.env.SALT_ROUNDS);

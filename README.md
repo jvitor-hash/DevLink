@@ -8,7 +8,7 @@ Versão: v1.1.0
 - Express.js
 - Sequelize (PostgreSQL)
 - JWT (Autenticação)
-- Pino ()
+- Pino (Logger)
 - Vitest (Framework de testes)
 - Dotenv (Variáveis de ambiente)
 - Bcrypt (Encriptação de senhas)
