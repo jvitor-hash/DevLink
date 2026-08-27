@@ -1,13 +1,17 @@
-import './App.css'
+import { Routes, Route } from 'react-router-dom'
+import Navbar from './components/navbar';
+import Home from './pages/home';
+import Questionario from './pages/questionario'
 
 function App() {
   return (
     <>
-      <section id="center">
-        <div className="hero">
-          <h1>Hello, World</h1>
-        </div>
-      </section>
+      <Navbar/>
+
+      <Routes>
+        <Route path="/" element={<Home />}/>
+        <Route path="/questionario" element={<Questionario/>} />
+      </Routes>
     </>
   )
 }
