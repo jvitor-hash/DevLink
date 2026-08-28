@@ -12,7 +12,7 @@ function Home() {
         </div>
       </section>
 
-      <section className="grid grid-rows-2 grid-cols-4 gap-10 p-15">
+      <section className="grid grid-rows-2 grid-cols-1 lg:grid-cols-4 gap-10 p-15">
         <CategoryCard title="Websites" links={[
           { label: "WordPress",                 to: "/" },
           { label: "Shopify",                   to: "/" },

@@ -7,21 +7,21 @@ Versão: v1.2.2a
 - Node.js
 - Express.js
 - Sequelize (PostgreSQL)
+- React.Js (interface)
+- Tailwindcss (CSS Framework)
+- DaisyUI (Biblioteca de componentes)
 - JWT (Autenticação)
 - Pino (Logger)
 - Vitest (Framework de testes)
 - Dotenv (Variáveis de ambiente)
 - Bcrypt (Encriptação de senhas)
 - Socket.io (Comunicação por meio de chat)
-- Handlebars (Engine de renderização de páginas) 
-- Bootstrap (Framework de componentes HTML)
-- Bootstrap-icons (Icones)
 - Nodemon (Ambiente de desenvolvimento)
 
 
 ## Pré-requisitos
-- Node.js (Versão 21.0+)
-- PostgreSQL(Versão 18.0+)
+- Node.js (Versão 24.0+)
+- PostgreSQL(Versão 16.0+)
 
 # Instalação
 
@@ -34,7 +34,9 @@ cd '.\DevLink\'
 2. Configuração das variáveis de ambiente:
 ```
 # development, staging, testing, production
-NODE_ENV=development 
+DATABASE_URL="postgres://postgres:admin@localhost:5432/testdb"
+ACCESS_TOKEN_SECRET="HEX32"
+REFRESH_TOKEN_SECRET="HEX32"
 SALT_ROUNDS=12
 PORT=8080
 LOG_LEVEL="info"
@@ -44,16 +46,6 @@ IP="127.0.0.1"
 3. Instalação das dependências do projeto:
 ```
 npm install
-```
-
-4. Configuração secundaria das variáveis de ambiente
-
-- "dev.env.development"
-- "prod.env.production"
-
-Exemplo de configuração secundária:
-```
-DATABASE_URL="postgres://postgres:admin@localhost:5432/testdb"
 ```
 
 # Commandos

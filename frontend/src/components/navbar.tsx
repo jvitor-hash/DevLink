@@ -22,9 +22,14 @@ function Navbar() {
       </div>
 
       <div className="navbar-end gap-2">
-        <button type="button" className="btn btn-link text-black dark:text-white h-auto py-1.5 px-1"><i className="bi bi-bell text-xl"></i></button>
+        <button type="button" className="hidden btn btn-link text-black dark:text-white h-auto py-1.5 px-1">
+          <i className="bi bi-bell text-xl relative">
+            <span className="hidden badge badge-sm rounded-full absolute -top-0.75 -right-0.75 bg-error px-0 h-3 w-3 text-white text-xs">1</span>
+          </i>
+        </button>
+
         <ThemeToggle />
-        <button type="button" className="btn btn-outline btn-primary hover:border-primary h-auto px-4 py-1.5">Login</button>
+        <button type="button" className="btn bg-primary/50 text-black hover:text-white border-primary hover:bg-primary h-auto px-8 py-1.5">Login</button>
       </div>
     </div>
   )
