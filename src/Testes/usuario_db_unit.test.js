@@ -150,42 +150,42 @@ describe("Teste de mock do usuários", () => {
   });
 
   // Teste - 4 (Feito para falhar ao rodar)
-  it("Metodo feito para falhar", async () => {
-    vi.spyOn(Usuario, "findByPk").mockResolvedValue(mock_usuarios[0]);
-    vi.spyOn(Usuario, "update").mockResolvedValue([1]);
-    const req = {
-      params: {
-        id: 1
-      },
-      body: {
-        name: "Teste123",
-        email: "Teste@exemplo.com",
-        password: "987654321"
-      }
-    };
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn()
-    }
-    await UpdateUsuario(req, res);
-    expect(Usuario.findByPk).toHaveBeenCalledOnce();
-    expect(Usuario.findByPk).toHaveBeenCalledWith(1);
-    expect(Usuario.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        name: "Teste123",
-        email: "Teste@exemplo.com"
-      }),
-      {
-        where: {
-          id: 3
-        }
-      }
-    );
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({
-      message: "Usuário atualizado com sucesso."
-    });
-  });
+  // it("Metodo feito para falhar", async () => {
+  //   vi.spyOn(Usuario, "findByPk").mockResolvedValue(mock_usuarios[0]);
+  //   vi.spyOn(Usuario, "update").mockResolvedValue([1]);
+  //   const req = {
+  //     params: {
+  //       id: 1
+  //     },
+  //     body: {
+  //       name: "Teste123",
+  //       email: "Teste@exemplo.com",
+  //       password: "987654321"
+  //     }
+  //   };
+  //   const res = {
+  //     status: vi.fn().mockReturnThis(),
+  //     json: vi.fn()
+  //   }
+  //   await UpdateUsuario(req, res);
+  //   expect(Usuario.findByPk).toHaveBeenCalledOnce();
+  //   expect(Usuario.findByPk).toHaveBeenCalledWith(1);
+  //   expect(Usuario.update).toHaveBeenCalledWith(
+  //     expect.objectContaining({
+  //       name: "Teste123",
+  //       email: "Teste@exemplo.com"
+  //     }),
+  //     {
+  //       where: {
+  //         id: 3
+  //       }
+  //     }
+  //   );
+  //   expect(res.status).toHaveBeenCalledWith(200);
+  //   expect(res.json).toHaveBeenCalledWith({
+  //     message: "Usuário atualizado com sucesso."
+  //   });
+  // });
 
   // Teste - 5
   it("Metodo deve excluir um usuário", async () => {
