@@ -11,7 +11,7 @@ function Navbar() {
           </div>
           <ul tabIndex={1} className="menu menu-md rounded-sm dropdown-content bg-neutral-100 dark:bg-neutral-700 text-base z-1 mt-3 w-50 p-4 gap-1 shadow">
             <li><Link to="/" className="hover:bg-black/5 dark:hover:bg-white/5">Home</Link></li>
-            <li><Link to="/questionario" className="hover:bg-black/5 dark:hover:bg-white/5">Questionario</Link></li>
+            <li><Link to="/questionario" className="hover:bg-black/5 dark:hover:bg-white/5">Questionário</Link></li>
             <li><Link to="/projetos" className="hover:bg-black/5 dark:hover:bg-white/5">Projetos</Link></li>
           </ul>
         </div>

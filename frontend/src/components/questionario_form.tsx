@@ -1,4 +1,7 @@
 import { useState } from "react";
+import SelectorTemplate from "./selector_template.tsx";
+import CheckboxTemplate from "./checkbox_template.tsx";
+import RadioTemplate from "./radio_template.tsx";
 
 function QuestionarioForm() {
   const subCategorias: Record<string, string[]> = {
@@ -66,8 +69,6 @@ function QuestionarioForm() {
     setPageNum((prev) => Math.max(prev - 1, 0));
   };
 
-  const progress = ((pageNum + 1) / totalPages) * 100;
-
   return (
     <div className="card p-5 bg-neutral-50 dark:bg-neutral-800 border border-black/15 dark:border-white/15 shadow-sm">
       <div className="card-title">
@@ -76,151 +77,148 @@ function QuestionarioForm() {
 
       <div className="card-body p-0 py-2">
         <p className="dark:text-white">Descreva sua ideia com suas palavras</p>
+
         <div>
-          <div className="flex flex-row justify-between dark:text-white">
-            <span>Etapas</span>
-            <span>
-              {pageNum + 1} de {totalPages}
-            </span>
+          <div className="mb-3 mt-3">
+            <p className="text-base mb-2 dark:text-white">Qual será o título do seu projeto?</p>
+            <input type="text" placeholder="Digite o título do projeto..." className="input bg-white dark:bg-neutral-700 border border-black/25 w-full dark:border-white/25 dark:text-white" />
           </div>
-          <progress className="progress progress-primary w-full" value={progress} max="100"></progress>
+
+          <div className="mb-3 grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 dark:text-white">
+            {/* Categoria */}
+            <div>
+              <SelectorTemplate title="Categoria" onChange={handleCategory} options={[
+                { name: "Website",                  value: "web"           },
+                { name: "Desenvolvimento de App",   value: "apps"          },
+                { name: "Plataforma Mobile",        value: "mobile"        },
+                { name: "Suporte e Cibersegurança", value: "cybersecurity" },
+                { name: "Blockchain & Web3",        value: "web3"          }
+              ]} />
+            </div>
+
+            {/* Sub-Categoria */}
+            <div>
+              <p className="text-base mb-2">Sub-Categoria</p>
+              <select value={subCategory} onChange={handleSubCategory} className="select w-full bg-white dark:bg-neutral-700 [&::picker(select)]:max-h-26 border border-black/25 dark:border-white/25">
+                {subCategorias[category].map((elem) => (
+                  <option key={elem} value={elem}>
+                    {elem}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="mb-3 grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-2 dark:text-white">
+            {/* Linguagem */}
+            <div>
+              <SelectorTemplate title="Qual linguagem de programação será usada?" options={[
+                { name: "Python",      value: "python"     },
+                { name: "Javascript",  value: "javascript" },
+                { name: "Java",        value: "java"       },
+                { name: "C#",          value: "csharp"     },
+                { name: "C++",         value: "cpp"        },
+                { name: "Typescript",  value: "typescript" },
+                { name: "C",           value: "c"          },
+                { name: "PHP",         value: "php"        },
+                { name: "Go",          value: "golang"     },
+                { name: "Rust",        value: "rust"       },
+                { name: "Kotlin",      value: "kotlin"     },
+                { name: "Swift",       value: "swift"      },
+                { name: "Dart",        value: "dart"       },
+                { name: "Scala",       value: "scala"      },
+                { name: "R",           value: "r"          },
+                { name: "Lua",         value: "lua"        },
+                { name: "Objective-C", value: "objectivec" },
+                { name: "Perl",        value: "perl"       },
+                { name: "Haskell",     value: "haskell"    } 
+              ]}/>
+            </div>
+
+            {/* Público-alvo */}
+            <SelectorTemplate title="Qual é o público-alvo deste projeto?" options={[
+              { name: "Pessoal",          value: "personal" },
+              { name: "Clientes",         value: "clients"  },
+              { name: "Minha Equipe",     value: "team"     },
+              { name: "Público em geral", value: "public"   }
+            ]}/>
+          </div>
+         
+          {/* Plataforma */}
+          <CheckboxTemplate title="Em qual plataforma este projeto será desenvolvido?" options={[
+            { label: "Web"     },
+            { label: "Desktop" },
+            { label: "Mobile"  }
+          ]}/>
+
+          <div className="grid grid-rows-2 grid-cols-1 md:grid-cols-2 mb-3">
+            {/* Sistema de login */}
+            <RadioTemplate title="As pessoas vão precisar criar uma conta ou fazer login?" options={[
+              { label: "Sim",    value: "yes"   },
+              { label: "Não",    value: "no"    },
+              { label: "Talvez", value: "maybe" }
+            ]} name="loginSys" />
+  
+            {/* Sistema de pagamento */}
+            <RadioTemplate title="Vai envolver pagamento dentro do sistema?" options={[
+              { label: "Sim",    value: "yes"   },
+              { label: "Não",    value: "no"    },
+              { label: "Talvez", value: "maybe" }
+            ]} name="payment" />
+            
+            {/* Painel administrativo */}
+            <RadioTemplate title="Vai ter algum painel administrativo para gerenciar o conteúdo?" options={[
+              { label: "Sim",    value: "yes"   },
+              { label: "Não",    value: "no"    },
+            ]} name="adminPanel" />
+
+            {/* Identidade visual/Branding */}
+            <RadioTemplate title="Já tem logo ou identidade visual pronta?" options={[
+              { label: "Sim",    value: "yes"   },
+              { label: "Não",    value: "no"    },
+            ]} name="branding" />
+          </div>
+
+          <div className="mb-3">
+            <p className="text-base dark:text-white">O que o usuário precisa conseguir fazer?</p>
+            <textarea className="textarea dark:bg-neutral-800 border border-black/25 dark:border-white/25 w-full resize-none"></textarea>
+          </div>
+
+          <div className="mb-3">
+            <p className="text-base mb-2 dark:text-white">Você tem alguma cor ou estilo visual em mente?</p>
+            <input type="text" placeholder="Ex: Tons de azul, estilo minimalista e moderno" className="input bg-white dark:bg-neutral-700 border border-black/25 w-full dark:border-white/25 dark:text-white" />
+          </div>
+
+          <div className="mb-3">
+            <p className="text-base mb-2 dark:text-white">Tem algum site ou app que você quer usar de inspiração?</p>
+            <input type="text" placeholder="Opcional: Cole links ou nomes de referências" className="input bg-white dark:bg-neutral-700 border border-black/25 w-full dark:border-white/25 dark:text-white" />
+          </div>
+
+          <SelectorTemplate title="Quando você gostaria que estivesse pronto?" options={[
+            { name: "1 Dia",    value: "1day"    },
+            { name: "1 Semana", value: "1week"   },
+            { name: "1 Mês",    value: "1month"  },
+            { name: "3 Meses",  value: "3months" },
+            { name: "6 Meses",  value: "6months" },
+            { name: "1 Ano",    value: "1year"   },
+            { name: "1+ Anos",  value: "nyears"  }
+          ]} />
+
+          <div className="mt-3 mb-3 w-full">
+            <p className="text-base">Valor planejado para investimento (R$)</p>
+            <div className="flex gap-5">
+              <label className="input">
+                <span>R$</span>
+                <input type="number" placeholder="Valor minimo" className="input validator border border-black/25 dark:border-white/25" min={0} max={999999} />
+              </label>
+
+              <label className="input">
+                <span>R$</span>
+                <input type="number" placeholder="Valor maximo" className="input validator border border-black/25 dark:border-white/25" min={0} max={999999} />
+              </label>
+            </div>
+          </div>
         </div>
-
-        {/* Pagina 1 */}
-        {pageNum === 0 && (
-          <div>
-            <div className="mb-3 mt-3">
-              <p className="m-0 dark:text-white">Qual será o título do seu projeto?</p>
-              <input type="text" placeholder="Digite o título do projeto..." className="input border border-black/25 w-full dark:border-white/25 dark:text-white"/>
-            </div>
-
-            <div className="mb-3 grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 dark:text-white">
-              {/* Categoria */}
-              <div>
-                <p className="text-base mb-2">Categoria</p>
-                <select value={category} onChange={handleCategory} className="select w-full bg-white dark:bg-neutral-700 border border-black/25 dark:border-white/25">
-                  <option value="web">Website</option>
-                  <option value="apps">Desenvolvimento de App</option>
-                  <option value="mobile">Plataforma Mobile</option>
-                  <option value="cybersecurity">Suporte e Cibersegurança</option>
-                  <option value="web3">Blockchain & Web3</option>
-                </select>
-              </div>
-
-              {/* Sub-Categoria */}
-              <div>
-                <p className="text-base mb-2">Sub-Categoria</p>
-                <select value={subCategory} onChange={handleSubCategory} className="select w-full bg-white dark:bg-neutral-700 [&::picker(select)]:max-h-26 border border-black/25 dark:border-white/25">
-                  {subCategorias[category].map((elem) => (
-                    <option key={elem} value={elem}>
-                      {elem}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="mb-3 grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-2 dark:text-white">
-              {/* Linguagem */}
-              <div>
-                <p className="text-base mb-2">Qual linguagem de programação será usada?</p>
-                <select className="select w-full bg-white dark:bg-neutral-700 border border-black/25 dark:border-white/25" name="programmingLanguage" id="programming-language">
-                  <option value="python">Python</option>
-                  <option value="javascript">Javascript</option>
-                  <option value="java">Java</option>
-                  <option value="csharp">C#</option>
-                  <option value="cpp">C++</option>
-                  <option value="typescript">Typescript</option>
-                  <option value="c">C</option>
-                  <option value="php">PHP</option>
-                  <option value="go">Go (Golang)</option>
-                  <option value="rust">Rust</option>
-                  <option value="kotlin">Kotlin</option>
-                  <option value="swift">Swift</option>
-                  <option value="ruby">Ruby</option>
-                  <option value="dart">Dart</option>
-                  <option value="scala">Scala</option>
-                  <option value="r">R</option>
-                  <option value="lua">Lua</option>
-                  <option value="objectivec">Objective-C</option>
-                  <option value="perl">Perl</option>
-                  <option value="haskell">Haskell</option>
-                </select>
-              </div>
-
-              {/* Público-alvo */}
-              <div>
-                <p className="text-base mb-2">Qual é o público-alvo deste projeto?</p>
-                <select defaultValue="clients" className="select w-full bg-white dark:bg-neutral-700 border border-black/25 dark:border-white/25">
-                  <option value="me">Pessoal</option>
-                  <option value="clients">Clientes</option>
-                  <option value="team">Minha equipe</option>
-                  <option value="public">Público em geral</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="mb-3">
-              <p className="text-base dark:text-white">Em qual plataforma este projeto será desenvolvido?</p>
-              <div className="flex flex-row gap-5">
-                <div className="flex flex-row gap-2 dark:text-white">
-                  <p>Web:</p>
-                  <input type="checkbox" className="checkbox dark:bg-neutral-800 border border-black/50 dark:border-white/50" />
-                </div>
-                <div className="flex flex-row gap-2 dark:text-white">
-                  <p>Desktop:</p>
-                  <input type="checkbox" className="checkbox dark:bg-neutral-800 border border-black/50 dark:border-white/50" />
-                </div>
-                <div className="flex flex-row gap-2 dark:text-white">
-                  <p>Mobile:</p>
-                  <input type="checkbox" className="checkbox dark:bg-neutral-800 border border-black/50 dark:border-white/50" />
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-rows-1 grid-cols-1 md:grid-cols-2 mb-3">
-              <div>
-                <p className="text-base">As pessoas vão precisar criar uma conta ou fazer login?</p>
-                <div className="flex flex-row gap-3 dark:text-white">
-                  <span className="text-base">Sim</span>
-                  <input className="radio" type="radio" name="loginSys" value="Sim" defaultChecked/>
-                  <span className="text-base">Não</span>
-                  <input className="radio" type="radio" name="loginSys" value="Não"/>
-                  <span className="text-base">Talvez</span>
-                  <input className="radio" type="radio" name="loginSys" value="Talvez"/>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex flex-row gap-3 dark:text-white">
-                  <input className="radio" type="radio" name="payment" value="yes"/>
-                  <span className="text-base">Sim</span>
-                  <input className="form-check-input" type="radio" name="payment" value="no" defaultChecked/>
-                  <span className="text-base">Não</span>
-                  <input className="radio" type="radio" name="payment" value="maybe"/>
-                  <span className="text-base">Talvez</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Pagina - 2 */}
-        {pageNum === 1 && (
-          <div>
-            <p className="dark:text-white">test</p>
-          </div>
-        )}
-
-        {/* Pagina - 3 */}
-        {pageNum === 2 && (
-          <div>
-            <p className="dark:text-white">test 2</p>
-            <div className="flex flex-row-reverse gap-5">
-              <button type="submit" className="btn bg-success/50 text-white px-10 border border-success">Submit</button>
-              <button type="reset" className="btn bg-error/50 text-white px-10 border border-error">Reset</button>
-            </div>
-          </div>
-        )}
 
         {/* Navegação */}
         <div className="flex justify-between">
@@ -241,7 +239,7 @@ function QuestionarioForm() {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 export default QuestionarioForm;

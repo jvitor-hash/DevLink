@@ -7,25 +7,37 @@ function Questionario() {
         <p
           className="w-fit mx-auto px-4 py-1 bg-neutral-200/35 dark:text-white
           rounded-full border border-dashed border-black/25 dark:border-white/25 text-base">Três etapas, nenhuma exige saber programar</p>
+        <h1 className="text-2xl dark:text-white font-bold mx-10">Como funciona?</h1>
         <p className="text-xl dark:text-white mx-10">Você não precisa conhecer termos técnicos. As perguntas são objetivas e o sistema organiza tudo no formato ideal que um desenvolvedor precisa.</p>
       </section>
 
-      <section className="max-w-4xl mx-auto mb-5">
-        <div tabIndex={0} className="join join-vertical bg-neutral-50 dark:bg-neutral-800 w-full dark:text-white">
-          <div className="collapse collapse-arrow join-item border border-black/15 dark:border-white/15">
-            <input type="radio" name="my-accordion-4" defaultChecked />
-            <div className="collapse-title font-semibold">1. Responda o questionário</div>
-            <div className="collapse-content text-sm">Perguntas curtas, de múltipla escolha ou resposta livre, organizadas por tema — da ideia ao orçamento.</div>
+      <section className="w-full mx-auto mb-10">
+        <div className="flex flex-row justify-center gap-5 dark:text-white">
+          <div className="card bg-neutral-50 border border-black/5 dark:border-white/5 dark:bg-neutral-800 dark:text-white p-4 max-w-xs shadow-md">
+            <div className="card-title">
+              <h4 className="font-semibold">1. Responda o questionário</h4>
+            </div>
+            <div className="card-body">
+              <p className="text-base">Perguntas curtas, de múltipla escolha ou resposta livre, organizadas por tema — da ideia ao orçamento.</p>
+            </div>
           </div>
-          <div tabIndex={1} className="collapse collapse-arrow join-item border border-black/15 dark:border-white/15">
-            <input type="radio" name="my-accordion-4" />
-            <div className="collapse-title font-semibold">2. Transforme em especificação</div>
-            <div className="collapse-content text-sm">O sistema organiza automaticamente todas as suas respostas em um documento técnico e estruturado.</div>
+
+          <div className="card bg-neutral-50 border border-black/5 dark:border-white/5 dark:bg-neutral-800 dark:text-white p-4 max-w-xs shadow-md">
+            <div className="card-title ">
+              <h4 className="font-semibold">2. Transforme em especificação</h4>
+            </div>
+            <div className="card-body">
+              <p className="text-base">O sistema organiza automaticamente todas as suas respostas em um documento técnico e estruturado.</p>
+            </div>
           </div>
-          <div tabIndex={2} className="collapse collapse-arrow join-item border border-black/15 dark:border-white/15">
-            <input type="radio" name="my-accordion-4" />
-            <div className="collapse-title font-semibold">3. Publique seu projeto</div>
-            <div className="collapse-content text-sm">Após responder todas as etapas, seu projeto estará pronto para ser publicado e orçado.</div>
+
+          <div className="card bg-neutral-50 border border-black/5 dark:border-white/5 dark:bg-neutral-800 dark:text-white p-4 max-w-xs shadow-md">
+            <div className="card-title ">
+              <h4 className="font-semibold">1. Responda o questionário</h4>
+            </div>
+            <div className="card-body">
+              <p className="text-base">Perguntas curtas, de múltipla escolha ou resposta livre, organizadas por tema — da ideia ao orçamento.</p>
+            </div>
           </div>
         </div>
       </section>
