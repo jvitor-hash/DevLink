@@ -45,7 +45,6 @@ function QuestionarioForm() {
 
   const [category, setCategory] = useState("web");
   const [subCategory, setSubCategory] = useState(subCategorias.web[0]);
-  const [pageNum, setPageNum] = useState(0);
 
   const handleCategory = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newCategory = event.target.value;
@@ -56,17 +55,6 @@ function QuestionarioForm() {
 
   const handleSubCategory = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSubCategory(event.target.value);
-  };
-
-  // Handling pages
-  const totalPages = 3;
-
-  const handleNextPage = () => {
-    setPageNum((next) => Math.min(next + 1, totalPages - 1));
-  };
-
-  const handlePrevPage = () => {
-    setPageNum((prev) => Math.max(prev - 1, 0));
   };
 
   return (
@@ -81,7 +69,7 @@ function QuestionarioForm() {
         <div>
           <div className="mb-3 mt-3">
             <p className="text-base mb-2 dark:text-white">Qual será o título do seu projeto?</p>
-            <input type="text" placeholder="Digite o título do projeto..." className="input bg-white dark:bg-neutral-700 border border-black/25 w-full dark:border-white/25 dark:text-white" />
+            <input type="text" placeholder="Digite o título do projeto..." className="input bg-white dark:bg-neutral-800 border border-black/25 w-full dark:border-white/25 dark:text-white" />
           </div>
 
           <div className="mb-3 grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 dark:text-white">
@@ -99,7 +87,7 @@ function QuestionarioForm() {
             {/* Sub-Categoria */}
             <div>
               <p className="text-base mb-2">Sub-Categoria</p>
-              <select value={subCategory} onChange={handleSubCategory} className="select w-full bg-white dark:bg-neutral-700 [&::picker(select)]:max-h-26 border border-black/25 dark:border-white/25">
+              <select value={subCategory} onChange={handleSubCategory} className="select w-full bg-white dark:bg-neutral-800 border border-black/25 dark:border-white/25">
                 {subCategorias[category].map((elem) => (
                   <option key={elem} value={elem}>
                     {elem}
@@ -131,7 +119,7 @@ function QuestionarioForm() {
                 { name: "Lua",         value: "lua"        },
                 { name: "Objective-C", value: "objectivec" },
                 { name: "Perl",        value: "perl"       },
-                { name: "Haskell",     value: "haskell"    } 
+                { name: "Haskell",     value: "haskell"    }
               ]}/>
             </div>
 
@@ -143,7 +131,7 @@ function QuestionarioForm() {
               { name: "Público em geral", value: "public"   }
             ]}/>
           </div>
-         
+
           {/* Plataforma */}
           <CheckboxTemplate title="Em qual plataforma este projeto será desenvolvido?" options={[
             { label: "Web"     },
@@ -158,14 +146,14 @@ function QuestionarioForm() {
               { label: "Não",    value: "no"    },
               { label: "Talvez", value: "maybe" }
             ]} name="loginSys" />
-  
+
             {/* Sistema de pagamento */}
             <RadioTemplate title="Vai envolver pagamento dentro do sistema?" options={[
               { label: "Sim",    value: "yes"   },
               { label: "Não",    value: "no"    },
               { label: "Talvez", value: "maybe" }
             ]} name="payment" />
-            
+
             {/* Painel administrativo */}
             <RadioTemplate title="Vai ter algum painel administrativo para gerenciar o conteúdo?" options={[
               { label: "Sim",    value: "yes"   },
@@ -186,12 +174,12 @@ function QuestionarioForm() {
 
           <div className="mb-3">
             <p className="text-base mb-2 dark:text-white">Você tem alguma cor ou estilo visual em mente?</p>
-            <input type="text" placeholder="Ex: Tons de azul, estilo minimalista e moderno" className="input bg-white dark:bg-neutral-700 border border-black/25 w-full dark:border-white/25 dark:text-white" />
+            <input type="text" placeholder="Ex: Tons de azul, estilo minimalista e moderno" className="input bg-white dark:bg-neutral-800 border border-black/25 w-full dark:border-white/25 dark:text-white" />
           </div>
 
           <div className="mb-3">
             <p className="text-base mb-2 dark:text-white">Tem algum site ou app que você quer usar de inspiração?</p>
-            <input type="text" placeholder="Opcional: Cole links ou nomes de referências" className="input bg-white dark:bg-neutral-700 border border-black/25 w-full dark:border-white/25 dark:text-white" />
+            <input type="text" placeholder="Opcional: Cole links ou nomes de referências" className="input bg-white dark:bg-neutral-800 border border-black/25 w-full dark:border-white/25 dark:text-white" />
           </div>
 
           <SelectorTemplate title="Quando você gostaria que estivesse pronto?" options={[
@@ -204,7 +192,7 @@ function QuestionarioForm() {
             { name: "1+ Anos",  value: "nyears"  }
           ]} />
 
-          <div className="mt-3 mb-3 w-full">
+          <div className="mt-3 mb-3 w-full dark:text-white">
             <p className="text-base">Valor planejado para investimento (R$)</p>
             <div className="flex gap-5">
               <label className="input">
@@ -222,20 +210,8 @@ function QuestionarioForm() {
 
         {/* Navegação */}
         <div className="flex justify-between">
-          <button
-            type="button"
-            className="btn bg-secondary/50 text-white disabled:cursor-not-allowed disabled:text-gray-500 border-secondary px-10"
-            onClick={handlePrevPage}
-            disabled={pageNum === 0}
-            tabIndex={0}
-          >Voltar</button>
-          <button
-            type="button"
-            className="btn bg-primary/50 text-black  dark:text-white disabled:cursor-not-allowed border-primary px-10"
-            onClick={handleNextPage}
-            disabled={pageNum === totalPages - 1}
-            tabIndex={1}
-          >Proximo</button>
+          <button type="reset" className="btn bg-primary/50 text-black dark:text-white border-primary px-10">Reset</button>
+          <button type="button" className="btn bg-success/50 text-black  dark:text-white border-success px-10">Submit</button>
         </div>
       </div>
     </div>

@@ -64,6 +64,10 @@ export const GetUsuarioById = async (req, res) => {
 
     if (!user)
       logger.warn("Usuário não existe ou não foi encontrado.");
+      res.status(404).json({
+        code: "USER_NOT_FOUND",
+        message: "Usuário não existe ou não foi encontrado."
+      })
 
     const dto = new ResponseUsuarioDTO(user);
 
@@ -100,7 +104,11 @@ export const GetUsuarioByName = async (req, res) => {
     });
 
     if (!user || user.length === 0)
-      throw new Error("Falha ao buscar um usuário");
+      logger.error("Falha ao buscar um usuários");
+      res.status(404).json({
+        code: "USER_NOT_FOUND",
+        message: "Falha ao buscar um usuários"
+      })
 
     const response = user.map((u) => new ResponseUsuarioDTO(u));
 
@@ -145,9 +153,10 @@ export const CreateUsuario = async (req, res) => {
     const existingEmail = await Usuario.findOne({ where: { email: email } });
 
     if (existingEmail)
-      return res.status(409).json({
-        message: "E-mail já sendo utilizado.",
-      });
+        return res.status(409).json({
+            code: "EMAIL_ALREADY_EXISTING",
+            message: "E-mail já sendo utilizado.",
+        });
 
     if (hashedPassword === null || hashedPassword === "")
       logger.warn("Hash de senha inválida.");
@@ -255,6 +264,10 @@ export const DeleteUsuario = async (req, res) => {
 
     if (!user)
       logger.warn("Cliente não encontrado.");
+      res.status(404).json({
+          code: "USER_NOT_FOUND",
+          message: "Cliente não encontrado."
+      })
 
     return res.status(200).json({
       message: "Usuário excluido com sucesso.",
@@ -336,6 +349,11 @@ export const GetCurrentUsuario = async (req, res) => {
 
     if (!user)
       logger.warn("Falha nao foi possivel encontrar um usuario.");
+      res.status(404).json({
+          code: "USER_NOT_FOUND",
+          message: "Falha nao foi possivel encontrar um usuario."
+      });
+      
 
     const response = new ResponseUsuarioDTO(user);
 
@@ -411,7 +429,7 @@ export const SignOut = async (req, res) => {
       secure: true,
       sameSite: "strict"
     });
-    
+
     return res.status(200).json({
       message: "Log-out com sucesso"
     });

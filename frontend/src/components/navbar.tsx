@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import ThemeToggle from "../components/theme_toggle";
 
-function Navbar() {
+function Navbar({ onLoginClick }) {
   return (
     <div className="navbar sticky top-0 bg-neutral-100 dark:bg-neutral-800 dark:text-white shadow-sm z-10 font-sans">
       <div className="navbar-start">
@@ -29,7 +29,12 @@ function Navbar() {
         </button>
 
         <ThemeToggle />
-        <button type="button" className="btn bg-primary/50 text-black hover:text-white border-primary hover:bg-primary h-auto px-8 py-1.5">Login</button>
+        <button
+          type="button"
+          className="btn bg-primary/50 text-black hover:text-white border-primary
+          hover:bg-primary h-auto px-8 py-1.5"
+          onClick={onLoginClick}
+        >Login</button>
       </div>
     </div>
   )

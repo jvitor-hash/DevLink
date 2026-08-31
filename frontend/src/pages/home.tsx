@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import CategoryCard from "../components/category_card";
 
-function Home() {
+export default function Home() {
   return (
     <div className="w-full">
       <section className="hero bg-neutral-900 grid-background dark:text-white py-52">
@@ -9,7 +9,7 @@ function Home() {
           <div className="flex flex-col items-center max-w-2xl gap-10 mx-auto">
             <h1 className="text-6xl text-white">Transforme suas ideias em especificaçoes técnicas.</h1>
             <div className="w-fit mx-auto px-4 py-1 bg-neutral-700/50 rounded-full border border-dashed border-white/50 text-primary">Do jeito que o cliente fala <i className="bi bi-arrow-right"></i> do jeito que o programador precisa</div>
-            <div className="flex flex-row gap-10">
+            <div className="flex gap-10">
               <Link to="/questionario" className="btn btn-outline border border-primary text-primary hover:bg-primary hover:text-white px-10">Questionário</Link>
               <Link to="/questionario#como-funciona"className="btn btn-outline border border-white text-white hover:bg-white hover:text-black px-10">Como funciona<i className="bi bi-chevron-right"></i></Link>
             </div>
@@ -58,5 +58,3 @@ function Home() {
     </div>
   )
 }
-
-export default Home;

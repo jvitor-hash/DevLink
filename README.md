@@ -26,7 +26,7 @@ Versão: v1.2.2a
 # Instalação
 
 1. Clonar o repositório:
-```
+```console
 git clone https://github.com/jvitor-hash/DevLink
 cd '.\DevLink\'
 ```
@@ -44,13 +44,13 @@ IP="127.0.0.1"
 ```
 
 3. Instalação das dependências do projeto:
-```
-npm install
+```console
+$ npm install
 ```
 
 # Commandos
 
-```
+```console
 npm start
 npm test
 npm run test:run # Executa uma unica vez e não espera para o usuário precionar 'q'

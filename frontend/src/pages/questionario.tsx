@@ -12,8 +12,8 @@ function Questionario() {
       </section>
 
       <section className="w-full mx-auto mb-10">
-        <div className="flex flex-row justify-center gap-5 dark:text-white">
-          <div className="card bg-neutral-50 border border-black/5 dark:border-white/5 dark:bg-neutral-800 dark:text-white p-4 max-w-xs shadow-md">
+        <div className="flex justify-center gap-5 dark:text-white">
+          <div className="card hover-shadow bg-neutral-50 border border-black/5 dark:border-white/5 dark:bg-neutral-800 dark:text-white p-4 max-w-xs shadow-md">
             <div className="card-title">
               <h4 className="font-semibold">1. Responda o questionário</h4>
             </div>
@@ -22,7 +22,7 @@ function Questionario() {
             </div>
           </div>
 
-          <div className="card bg-neutral-50 border border-black/5 dark:border-white/5 dark:bg-neutral-800 dark:text-white p-4 max-w-xs shadow-md">
+          <div className="card hover-shadow bg-neutral-50 border border-black/5 dark:border-white/5 dark:bg-neutral-800 dark:text-white p-4 max-w-xs shadow-md">
             <div className="card-title ">
               <h4 className="font-semibold">2. Transforme em especificação</h4>
             </div>
@@ -31,12 +31,12 @@ function Questionario() {
             </div>
           </div>
 
-          <div className="card bg-neutral-50 border border-black/5 dark:border-white/5 dark:bg-neutral-800 dark:text-white p-4 max-w-xs shadow-md">
+          <div className="card hover-shadow bg-neutral-50 border border-black/5 dark:border-white/5 dark:bg-neutral-800 dark:text-white p-4 max-w-xs shadow-md">
             <div className="card-title ">
-              <h4 className="font-semibold">1. Responda o questionário</h4>
+              <h4 className="font-semibold">3. Publique seu projeto</h4>
             </div>
             <div className="card-body">
-              <p className="text-base">Perguntas curtas, de múltipla escolha ou resposta livre, organizadas por tema — da ideia ao orçamento.</p>
+              <p className="text-base">Após responder todas as etapas, seu projeto estará pronto para ser publicado e orçado.</p>
             </div>
           </div>
         </div>
