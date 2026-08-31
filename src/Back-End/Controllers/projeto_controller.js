@@ -21,6 +21,10 @@ export const GetProjetos = async (req, res) => {
 
     if (!projetos)
       logger.error("Error ao tentar retornar todos os projetos");
+      res.status(404).json({
+          code: "PROJECT_NOT_FOUND",
+          message: "Error ao tentar retornar todos os projetos"
+      });
 
     const response = projetos.map((projeto) => new ResponseProjetoDTO(projeto));
 
@@ -39,8 +43,18 @@ export const GetProjetos = async (req, res) => {
   Desc: ...
 */
 export const GetProjetoById = async (req, res) => {
-  try {
+    try {
+        const id = req.params.id;
 
+        if (!id)
+            return res.status(500).json({
+                message: "Faltando id necessario para busca"
+            });
+        
+        const projects = await Project.findByPk(id);
+
+        
+        
   } catch (error) {
     logger.error(error);
     return res.status(500).json({
@@ -56,7 +70,7 @@ export const GetProjetoById = async (req, res) => {
 */
 export const GetProjetoShortById = async (req, res) => {
   try {
-
+      
   } catch (error) {
     logger.error(error);
     return res.status(500).json({

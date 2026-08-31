@@ -1,11 +1,25 @@
+import { useState } from 'react';
 import CheckboxTemplate from "../components/checkbox_template.tsx";
 import SelectorTemplate from "../components/selector_template.tsx";
+// import API from '../components/api.ts';
 
 export default function Projetos() {
+  const [results, setResults] = useState(0);
+
+  // interface user {
+  //   id?: number
+  //   name?: string
+  //   email?: string
+  //   userType?: string
+  // }
+
+  // useEffect( async () => {
+  //   const users = await API.get<user>("/api/usuario/");
+  // })
   return (
     <>
       <section>
-        <div className="flex w-full px-2">
+        <div className="flex w-full px-2 mb-5">
           <form className="w-full">
             {/* Pesquisa */}
             <div className="flex gap-3 mb-3 mt-5">
@@ -68,7 +82,13 @@ export default function Projetos() {
       </section>
 
       <section>
-
+        <p className="text-xl">Resultados: { results }</p>
+        <div className="flex"></div>
+        <div className="card bg-white dark:bg-neutral-800 border border-black/15 dark:border-white/15 shadow-sm max-w-xl">
+          <div className="card-body">
+            <p className="text-base">TEADSAJD</p>
+          </div>
+        </div>
       </section>
     </>
   )

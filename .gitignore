@@ -139,3 +139,4 @@ dist
 *.env
 env.env
 env.env
+frontend/src/styles/\#global.css\#
