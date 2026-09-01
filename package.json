@@ -4,13 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "vitest",
-    "test:run": "vitest run",
+        "test": "vitest",
+        "test:run": "vitest run",
 		"start": "nodemon ./src/index.js",
-		"db:migrate": "npx sequelize-cli db:migrate --env development",
-    "db:migrate:undo": "sequelize-cli db:migrate:undo --env development",
-    "db:seed": "sequelize-cli db:seed:all --config src/Config/database.cjs --seeders-path src/Back-End/Seeds --env development",
-    "db:seed:undo": "sequelize-cli db:seed:undo:all --config src/Config/database.cjs --seeders-path src/Back-End/Seeds --env development"
+		"db:migrate": "npx sequelize-cli db:migrate --config src/Config/database.cjs --migrations-path src/Back-End/Migrations --env development",
+        "db:migrate:undo": "sequelize-cli db:migrate:undo --config src/Config/database.cjs --migrations-path src/Back-End/Migrations --env development",
+        "db:seed": "sequelize-cli db:seed:all --config src/Config/database.cjs --seeders-path src/Back-End/Seeds --env development",
+        "db:seed:undo": "sequelize-cli db:seed:undo:all --config src/Config/database.cjs --seeders-path src/Back-End/Seeds --env development"
   },
   "keywords": [],
   "author": "",
