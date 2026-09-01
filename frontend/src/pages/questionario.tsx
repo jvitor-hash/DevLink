@@ -12,7 +12,7 @@ function Questionario() {
       </section>
 
       <section className="w-full mx-auto mb-10">
-        <div className="flex justify-center gap-5 dark:text-white">
+        <div className="flex flex-col justify-center items-center lg:flex-row lg:items-stretch gap-5 dark:text-white">
           <div className="card hover-shadow bg-neutral-50 border border-black/5 dark:border-white/5 dark:bg-neutral-800 dark:text-white p-4 max-w-xs shadow-md">
             <div className="card-title">
               <h4 className="font-semibold">1. Responda o questionário</h4>

@@ -169,7 +169,7 @@ function QuestionarioForm() {
 
           <div className="mb-3">
             <p className="text-base dark:text-white">O que o usuário precisa conseguir fazer?</p>
-            <textarea className="textarea dark:bg-neutral-800 border border-black/25 dark:border-white/25 w-full resize-none"></textarea>
+            <textarea className="textarea bg-white dark:bg-neutral-800 border border-black/25 dark:border-white/25 w-full resize-none"></textarea>
           </div>
 
           <div className="mb-3">

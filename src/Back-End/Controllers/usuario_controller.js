@@ -60,15 +60,24 @@ export const GetUsuarioById = async (req, res) => {
   try {
     const id = req.params.id;
 
+    if (!id) {
+        logger.warn("Faltando id para buscar um usuário");
+        return res.status(500).json({
+            code: "MISSING_ARGUMENTS",
+            message: "Faltando id para buscar um usuário"
+        });
+    }
+      
     const user = await Usuario.findByPk(id);
 
-    if (!user)
+    if (!user) {
       logger.warn("Usuário não existe ou não foi encontrado.");
-      res.status(404).json({
+      return res.status(404).json({
         code: "USER_NOT_FOUND",
         message: "Usuário não existe ou não foi encontrado."
-      })
-
+      });
+    }
+      
     const dto = new ResponseUsuarioDTO(user);
 
     return res.status(200).json(dto);
@@ -153,7 +162,8 @@ export const CreateUsuario = async (req, res) => {
     const existingEmail = await Usuario.findOne({ where: { email: email } });
 
     if (existingEmail)
-        return res.status(409).json({
+      logger.warn("Usuário tentando se registrar-se com um e-mail utilizado");
+        res.status(409).json({
             code: "EMAIL_ALREADY_EXISTING",
             message: "E-mail já sendo utilizado.",
         });

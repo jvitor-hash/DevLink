@@ -1,15 +1,21 @@
-function LoginModal({ onClose }) {
+import type { RefObject } from "react";
+
+type LoginModalProps = {
+    onClose?: () => void
+    ref?: RefObject<HTMLDialogElement>
+}
+
+export default function LoginModal({ onClose, ref } : LoginModalProps) {
     return (
-        <dialog className="modal bg-black">
-            <div className="modal-box">
+        <dialog ref={ref} className="modal ">
+            <div className="modal-box bg-white">
+                <div className="flex flex-row-reverse">
+                    <button 
+                        className="px-1 bg-transparent cursor-pointer border-none dark:text-white" 
+                        onClick={onClose}><i className="bi bi-x text-2xl"></i></button>
+                </div>
                 <p>Test</p>
             </div>
-
-            <form method="dialog" className="modal-backdrop">
-                <button className="btn bg-neutral-50 dark:bg-neutral-800 dark:text-white" onClick={onClose}>Fechar</button>
-            </form>
         </dialog>
     )
 }
-
-export default LoginModal;

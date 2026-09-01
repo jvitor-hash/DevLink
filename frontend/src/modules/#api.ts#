@@ -1,4 +1,4 @@
-const BASE_URL = null || "127.0.0.1";
+const BASE_URL = "http://127.0.0.1:8888";
 
 type ApiError = {
   status: number;

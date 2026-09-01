@@ -1,21 +1,10 @@
 import { useState } from 'react';
 import CheckboxTemplate from "../components/checkbox_template.tsx";
 import SelectorTemplate from "../components/selector_template.tsx";
-// import API from '../components/api.ts';
 
 export default function Projetos() {
   const [results, setResults] = useState(0);
 
-  // interface user {
-  //   id?: number
-  //   name?: string
-  //   email?: string
-  //   userType?: string
-  // }
-
-  // useEffect( async () => {
-  //   const users = await API.get<user>("/api/usuario/");
-  // })
   return (
     <>
       <section>

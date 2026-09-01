@@ -13,7 +13,7 @@ type CategoryCardProps = {
 
 function CategoryCard({ title, links }: CategoryCardProps) {
   return (
-    <div className="card bg-base-200 dark:bg-neutral-800 shadow-sm border border-black/15 p-4">
+    <div className="card bg-base-200 dark:bg-neutral-800 shadow-sm border border-black/15 p-4 w-max whitespace-nowrap">
       <div className="card-title">
         <h5 className="font-bold dark:text-white">{title}</h5>
       </div>
@@ -21,7 +21,7 @@ function CategoryCard({ title, links }: CategoryCardProps) {
       <div className="card-body dark:text-white font-sans">
         <ul className="list-none pl-0 space-y-1">
           {links.map((link) => (
-            <li key={link.to} className="nav-link">
+            <li key={link.label} className="nav-link">
               <Link to={link.to} className="text-base"><i className="bi bi-chevron-right me-1 chevron"></i>{link.label}</Link>
             </li>
           ))}
