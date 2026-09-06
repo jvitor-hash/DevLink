@@ -1,29 +1,20 @@
-# Projeto sem nome
-Versão: v1.1.0
-
-*(Nota: Testes são rodados automaticamente após um pull-request ou push)*
-*(Nota - 2: As rotas sendo enviadas do front-end podem varias dependendo da porta sendo usada.)*
+# DevLink
+Versão: v2.0.0
 
 ## Tecnologias utilizadas
-- Node.js
-- Express.js
-- Sequelize (PostgreSQL)
-- JWT (Autenticação)
-- Vitest (Framework de testes)
-- Dotenv (Variáveis de ambiente)
-- Bcrypt (Encriptação de senhas)
-- Socket.io (Comunicação por meio de chat)
-- Handlebars (Engine de renderização de páginas) 
-- Bootstrap (Framework de componentes HTML)
-- Bootstrap-icons (Icones)
-- Nodemon (Ambiente de desenvolvimento)
-
+- Bun.js (Runtime)
+- Typescript
+- Elysia (Similar ao express)
+- Better Auth (Autenticação)
+- Drizzle-orm
+- Next.js (Framework Front-End)
+- Postgresql (Banco de dados)
 
 ## Pré-requisitos
-- Node.js (Versão 18+)
-- PostgreSQL(Versão 18+)
+- Bun.js (1.4.0+)
+- PostgreSQL(Versão 17+)
 
-# Instalação
+## Instalação
 
 1. Clonar o repositório:
 ```
@@ -38,37 +29,8 @@ npm install
 
 3. Configuração das variáveis de ambiente:
 ```
-# development, staging, testing, production
-NODE_ENV=development 
-SALT_ROUNDS=12
-PORT=8080
-IP="127.0.0.1"
-```
-
-4. Configuração secundaria das variáveis de ambiente
-
-- "dev.env.development"
-- "stag.env.staging"
-- "test.env.testing"
-- "prod.env.production"
-
-Exemplo de configuração secundária:
-```
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=db_development
-DB_USER=postgres
-DB_PASSWORD=123
-```
-
-# Commandos
-
-```
-npm start
-npm test
-npm run test:run # Executa uma unica vez e não espera para o usuário precionar 'q'
-npm run db:migrate
-npm run db:migrate:undo # Desfaz todas as migrations criadas
-npm run db:seed
-npm run db:seed:undo # Mesmo conceito do commando 'db:migrate:undo'
+BETTER_AUTH_SECRET=
+BETTER_AUTH_URL=
+DATABASE_URL=
+PORT=3333
 ```
