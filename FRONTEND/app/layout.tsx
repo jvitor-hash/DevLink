@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/layout/navbar_layout";
 import { Jost } from 'next/font/google';
+import SmoothScroll from "@/components/ui/smooth_scroll_component";
 
 const jost = Jost({
   weight: '400',
@@ -18,6 +19,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en">
       <body className={jost.className}>
         <Navbar />
+        <SmoothScroll/>
         {children}
       </body>
     </html>

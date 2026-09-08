@@ -11,6 +11,12 @@ export const auth = betterAuth({
     schema: schemas
   }),
 
+  advanced: {
+    database: {
+      generateId: "uuid",
+    },
+  },
+
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.BETTER_AUTH_URL,
   basePath: "/api/auth",
@@ -18,6 +24,9 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
+    resetPassword: {
+      enabled: true,
+    },
 
     password: {
       hash: async (password) => {

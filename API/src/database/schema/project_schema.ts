@@ -1,16 +1,33 @@
-import { integer, varchar, timestamp, uuid, text, boolean } from "drizzle-orm/pg-core";
+import { varchar, timestamp, uuid, text, index } from "drizzle-orm/pg-core";
 import { schemas } from './index';
 import { pgTable } from "drizzle-orm/pg-core/table";
+import { platformTypeEnum, programmingLanguageEnum, projectStatusEnum } from "@/database/schema/enums_schema";
 
 export const project = pgTable("project", {
-  id: integer("id").primaryKey(),
-  authorId: text("user_id").notNull().references(() => schemas.user.id),
-  title: varchar("title", { length: 255 }).notNull().unique(),
-  category: varchar("category", { length: 255}).notNull(),
-  subcategory: varchar("sub_category", { length: 255 }).notNull(),
-  problem: text("problem").notNull(),
-  public: varchar("public", { length: 128 }).notNull(),
-  programming_language: varchar("programming_language", { length: 50 }).notNull(),
-  internet_access: boolean("internet_access").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull()
-});
+  id: uuid("id").defaultRandom().primaryKey(),
+  clientId: uuid("client_id")
+      .notNull()
+      .references(() => schemas.user.id, {
+    onDelete: "cascade",
+  }),
+  programmerId: uuid("programmer_id")
+  .references(() => schemas.user.id, {
+    onDelete: "set null",
+  }),
+  title: varchar("title", { length: 200 }).notNull(),
+  description: text("description").notNull(),
+  category: varchar("category", { length: 200 }).notNull(),
+  sub_category: varchar("sub_category", { length: 200 }).notNull(),
+  primaryLanguage: programmingLanguageEnum("primaryLanguage").default("CSHARP").notNull(),
+  platforms: platformTypeEnum("platforms").array().notNull(),
+  status: projectStatusEnum("status").default("OPEN").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  completedAt: timestamp("completed_at"),
+  },
+  (table) => [
+    index("projects_client_id_idx").on(table.clientId),
+    index("projects_programmer_id_idx").on(table.programmerId),
+    index("projects_status_idx").on(table.status),
+  ],
+);

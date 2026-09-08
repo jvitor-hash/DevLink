@@ -47,7 +47,7 @@ export default function LoginModal({ show, onClose }: LoginModalProps) {
             "pointer-events-none opacity-0"}`}
       />
 
-      <dialog ref={dialogRef} onCancel={handleClose} className="animated-dialog m-auto text-white rounded-md p-6 border" style={{ backgroundColor: "var(--surface-1)", borderColor: "var(--border-subtle)" }}>
+      <dialog ref={dialogRef} onCancel={handleClose} className="animated-dialog bg-(--surface-1) m-auto text-white rounded-md p-6 border border-(--border-subtle)">
         {method === 0 && (
           <div>
             <div className="w-full flex justify-between">

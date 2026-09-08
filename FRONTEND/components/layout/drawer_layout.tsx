@@ -51,7 +51,7 @@ export default function Drawer({ open, onClose, children }: DrawerProps) {
         <hr className="border-t-(--primary)"/>
 
         {/* Content */}
-        <div className="p-4 text-white">
+        <div className="flex flex-col gap-4 p-4 text-white">
           {children}
         </div>
       </aside>

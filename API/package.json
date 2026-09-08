@@ -7,7 +7,7 @@
     "db:generate": "bunx --bun drizzle-kit generate",
     "db:migrate": "bunx --bun drizzle-kit migrate",
     "db:push": "bunx --bun drizzle-kit push",
-    "auth:generate": "bunx --bun auth geneate",
+    "auth:generate": "bunx --bun auth generate",
     "test": "bun test"
   },
   "dependencies": {

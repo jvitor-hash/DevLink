@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Menu } from 'react-feather';
+import { ChevronRight, Menu } from 'react-feather';
 import LoginModal from "./login_modal_layout";
 import Button from '../ui/button_component';
 import Link from 'next/link';
@@ -29,7 +29,9 @@ export default function Navbar() {
 
       <LoginModal show={openLogin} onClose={() => setOpenLogin(false)} />
       <Drawer open={openDrawer} onClose={() => setOpenDrawer(false)}>
-        <Link href="/" className="text-xl w-full hover:text-(--primary) transition-colors">Test</Link>
+        <Link href="/questionnaire" className="text-xl w-full hover:text-(--primary) transition-colors"><ChevronRight className='inline'/>Questionário</Link>
+        <Link href="/project" className="text-xl w-full hover:text-(--primary) transition-colors"><ChevronRight className='inline'/>Projetos</Link>
+        <Link href="/profile" className="text-xl w-full hover:text-(--primary) transition-colors"><ChevronRight className='inline'/>Perfil</Link>
       </Drawer>
     </header>
   )

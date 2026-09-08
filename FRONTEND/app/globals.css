@@ -65,3 +65,18 @@ dialog.animated-dialog:not([open]) {
   transform: scale(0.95) translateY(-10px);
   box-shadow: 0 0 0 0 transparent;
 }
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-down {
+  animation: slideDown 0.3s ease-out forwards;
+}

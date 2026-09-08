@@ -1,10 +1,7 @@
-
-import { InfiniteScroller } from "@/components/ui/infinite_scroller_component";
 import Button from "@/components/ui/button_component";
-
-import Link from "next/link";
 import WaveEffect from "@/components/ui/wave_shader_component";
 import LinkList from "@/components/ui/links_list_component";
+import Link from "next/link";
 
 export default function Home() {
 

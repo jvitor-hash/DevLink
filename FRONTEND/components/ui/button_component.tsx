@@ -7,9 +7,10 @@ type ButtonProps = {
   buttonType?: "button" | "reset" | "submit"
   colorType?: "primary" | "secondary" | "success" | "warning" | "error" | "info"
   onClick?: ReactEventHandler<HTMLButtonElement>
+  className?: string
 }
 
-export default function Button({ label, buttonType, colorType = "primary", onClick }: ButtonProps) {
+export default function Button({ label, buttonType, colorType = "primary", onClick, className }: ButtonProps) {
   const colors = {
     "primary": "var(--primary)",
     "secondary": "var(--secondary)",
@@ -21,7 +22,7 @@ export default function Button({ label, buttonType, colorType = "primary", onCli
 
   return (
     <button
-      className="rounded-full hover:cursor-pointer px-8 py-2 text-white"
+      className={`rounded-full hover:cursor-pointer px-8 py-2 text-white ${className}`}
       style={{
         backgroundColor: colors[colorType],
       }}
