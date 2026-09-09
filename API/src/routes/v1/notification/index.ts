@@ -1,109 +1,121 @@
 import Elysia from "elysia";
-import { z } from 'zod';
+import { z } from "zod";
 import { NotificationService } from "./service";
-import { NotificationSchema, NotificationCreateSchema, NotificationUpdateSchema } from "@/database/data-transfer-object/notification_dto";
-import { eq } from "drizzle-orm";
+import { NotificationSchema, NotificationCreateSchema, NotificationUpdateSchema, type NotificationCreate, type NotificationUpdate } from "@/database/data-transfer-object/notification_dto";
+import { and, eq, type SQL } from "drizzle-orm";
 import { schemas } from "@/database/schema";
+import { ErrorSchema } from "@/modules/error_schema";
+import { authPlugin } from "@/modules/auth_plugin";
 
-const ErrorSchema = z.object({
-  error: z.string(),
-});
-
-export const NotificationRouter = new Elysia({ prefix: "/api/v1/notification" })
-  .post("/", async ({ body, set }) => {
+export const NotificationRouter = new Elysia({ prefix: "/api/v1/notifications" })
+  .use(authPlugin)
+  .post("/", async ({ body, user, set }) => {
     try {
-      return await NotificationService.create(body);
+      const data = body as NotificationCreate;
+      const newNotification = await NotificationService.create({
+        ...data,
+        userId: data.userId ?? (user as any).id,
+      });
+      set.status = 201;
+      return newNotification;
     } catch (error) {
       set.status = 500;
-      return { error: "Failed to create a notification" }
+      return { error: "Failed to create a notification" };
     }
   }, {
     body: NotificationCreateSchema,
     response: {
       201: NotificationSchema,
-      500: ErrorSchema
+      500: ErrorSchema,
     },
-    tags: ["Notification"],
-    auth: true
+    tags: ["Notifications"],
+    auth: true,
   })
-  .get("/", async ({ query, set }) => {
+  .get("/", async ({ query, user, set }) => {
     try {
       return await NotificationService.findAll(query.limit, query.offset);
     } catch (error) {
       set.status = 500;
-      return { error: "Failed to fetch notifications" }
+      return { error: "Failed to fetch notifications" };
     }
   }, {
     query: z.object({
-      limit: z.coerce.number().min(10).max(100).default(10),
+      limit: z.coerce.number().min(1).max(100).default(10),
       offset: z.coerce.number().min(0).default(0),
     }),
     response: {
       200: z.array(NotificationSchema),
-      404: ErrorSchema,
-      500: ErrorSchema
+      500: ErrorSchema,
     },
-    tags: ["Notification"],
-    auth: true
+    tags: ["Notifications"],
+    auth: true,
   })
-  .get("/:id", async ({ params, set }) => {
+  .get("/:id", async ({ params, user, set }) => {
     try {
-      const [notification] = await NotificationService.findWhere(eq(schemas.notification.id, params.id));
-      return notification;
+      const notificationItem = await NotificationService.findOne(
+        and(eq(schemas.notification.id, params.id), eq(schemas.notification.userId, (user as any).id)) as SQL<unknown>
+      );
+      return notificationItem;
     } catch (error) {
       set.status = 404;
-      return { error: "Notification not found" }
+      return { error: "Notification not found" };
     }
   }, {
     params: z.object({
-      id: z.uuid()
+      id: z.string().uuid(),
     }),
     response: {
       200: NotificationSchema,
       404: ErrorSchema,
-      500: ErrorSchema
+      500: ErrorSchema,
     },
-    tags: ["Notification"],
-    auth: true
+    tags: ["Notifications"],
+    auth: true,
   })
-  .put("/:id", async ({ params, body, set }) => {
+  .put("/:id", async ({ params, body, user, set }) => {
     try {
-      const [updated] = await NotificationService.update(eq(schemas.notification.id, params.id), body);
+      const data = body as NotificationUpdate;
+      const updated = await NotificationService.update(
+        and(eq(schemas.notification.id, params.id), eq(schemas.notification.userId, (user as any).id)) as SQL<unknown>,
+        data
+      );
       return updated;
     } catch (error) {
-      set.status = 500;
-      return { error: "Failed to update notification" }
+      set.status = 404;
+      return { error: "Notification not found or unauthorized" };
     }
   }, {
     params: z.object({
-      id: z.uuid()
+      id: z.string().uuid(),
     }),
     response: {
       200: NotificationSchema,
       404: ErrorSchema,
-      500: ErrorSchema
+      500: ErrorSchema,
     },
     body: NotificationUpdateSchema,
-    tags: ["Notification"],
-    auth: true
+    tags: ["Notifications"],
+    auth: true,
   })
-  .delete("/:id", async ({ params, set }) => {
+  .delete("/:id", async ({ params, user, set }) => {
     try {
-      const [deleted] = await NotificationService.remove(eq(schemas.notification.id, params.id));
+      const deleted = await NotificationService.remove(
+        and(eq(schemas.notification.id, params.id), eq(schemas.notification.userId, (user as any).id)) as SQL<unknown>
+      );
       return deleted;
     } catch (error) {
-      set.status = 500;
-      return { error: "Failed to delete notification" }
+      set.status = 404;
+      return { error: "Notification not found or unauthorized" };
     }
   }, {
     params: z.object({
-      id: z.uuid()
+      id: z.string().uuid(),
     }),
     response: {
       200: NotificationSchema,
       404: ErrorSchema,
-      500: ErrorSchema
+      500: ErrorSchema,
     },
-    tags: ["Notification"],
-    auth: true
+    tags: ["Notifications"],
+    auth: true,
   });

@@ -1,0 +1,102 @@
+import { describe, expect, test, beforeAll, afterAll } from "bun:test";
+import { Elysia } from "elysia";
+import { ProjectsRouter } from "../routes/v1/projects";
+import { NotificationRouter } from "../routes/v1/notification";
+import { MessageRouter } from "../routes/v1/message";
+import { UserPreferenceRouter } from "../routes/v1/user_preferences";
+import { SavedTicketRouter } from "../routes/v1/saved_ticket";
+import { ReviewRouter } from "../routes/v1/review";
+import { authPlugin } from "../modules/auth_plugin";
+
+describe("API Routes Integration Tests", () => {
+  let app: any;
+  let serverPort: number;
+
+  beforeAll(async () => {
+    app = new Elysia()
+      .use(authPlugin)
+      .use(ProjectsRouter)
+      .use(NotificationRouter)
+      .use(MessageRouter)
+      .use(UserPreferenceRouter)
+      .use(SavedTicketRouter)
+      .use(ReviewRouter)
+      .get("/health", () => ({ OK: true }))
+      .listen(0);
+
+    serverPort = Number(app.server?.port);
+  });
+
+  afterAll(async () => {
+    await app.stop();
+  });
+
+  describe("Health Endpoint", () => {
+    test("GET /health returns 200 OK status with { OK: true }", async () => {
+      const response = await fetch(`http://localhost:${serverPort}/health`);
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body.OK).toBe(true);
+    });
+  });
+
+  describe("Unauthenticated Protected Routes Guard", () => {
+    test("GET /api/v1/projects requires authentication (401)", async () => {
+      const response = await fetch(`http://localhost:${serverPort}/api/v1/projects`);
+      expect(response.status).toBe(401);
+    });
+
+    test("POST /api/v1/projects requires authentication (401)", async () => {
+      const response = await fetch(`http://localhost:${serverPort}/api/v1/projects`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: "Test" }),
+      });
+      expect(response.status).toBe(401);
+    });
+
+    test("GET /api/v1/notifications requires authentication (401)", async () => {
+      const response = await fetch(`http://localhost:${serverPort}/api/v1/notifications`);
+      expect(response.status).toBe(401);
+    });
+
+    test("GET /api/v1/messages requires authentication (401)", async () => {
+      const response = await fetch(`http://localhost:${serverPort}/api/v1/messages`);
+      expect(response.status).toBe(401);
+    });
+
+    test("GET /api/v1/user-preferences requires authentication (401)", async () => {
+      const response = await fetch(`http://localhost:${serverPort}/api/v1/user-preferences`);
+      expect(response.status).toBe(401);
+    });
+
+    test("GET /api/v1/saved-tickets requires authentication (401)", async () => {
+      const response = await fetch(`http://localhost:${serverPort}/api/v1/saved-tickets`);
+      expect(response.status).toBe(401);
+    });
+
+    test("GET /api/v1/reviews requires authentication (401)", async () => {
+      const response = await fetch(`http://localhost:${serverPort}/api/v1/reviews`);
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe("Route Structure Verification", () => {
+    test("All routers are properly mounted and respond to requests", async () => {
+      const endpoints = [
+        "/api/v1/projects",
+        "/api/v1/notifications",
+        "/api/v1/messages",
+        "/api/v1/user-preferences",
+        "/api/v1/saved-tickets",
+        "/api/v1/reviews",
+      ];
+
+      for (const endpoint of endpoints) {
+        const response = await fetch(`http://localhost:${serverPort}${endpoint}`);
+        // None of these routes should return 404 (Route not found)
+        expect(response.status).not.toBe(404);
+      }
+    });
+  });
+});

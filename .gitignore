@@ -139,6 +139,4 @@ dist
 .pnp.*
 *.development
 *.env
-*.env
-env.env
-env.env
+TODO.md

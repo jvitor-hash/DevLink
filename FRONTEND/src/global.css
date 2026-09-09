@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+:root {
+    --background: #1B1B1B;
+
+    --surface-1: #242424;
+    --surface-2: #2B2B2B;
+    --surface-3: #333333;
+
+    --border: #3A3A3A;
+    --border-subtle: #2D2D2D;
+
+    --text-primary: #D9D9D9;
+    --text-secondart: #B8B8B8;
+    --text-muted: #858585;
+    --text-disabled: #5F5F5F;
+
+    --primary: #B8322A;
+    --secondary: #454545;
+
+    --success: #4A7561;
+    --warning: #D9A441;
+    --error: #8F2922;
+    --info: #3A9FA8;
+
+    --font-xs: 0.65rem;
+    --font-sm: 0.75rem;
+    --font-rg: 1rem;
+    --font-md: 1.35rem;
+    --font-lg: 1.65rem;
+    --font-xl: 2rem;
+}
+
+body {
+    background-color: var(--background);
+    color: var(--text-primary);
+    font-size: var(--font-rg);
+}
+
+/* Enable transitions on discrete/animatable properties */
+dialog.animated-dialog {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  box-shadow: 0 0 100px 25px color-mix(in srgb, var(--primary) 30%, transparent);
+  transition:
+    opacity 0.3s ease-out,
+    transform 0.3s ease-out,
+    box-shadow 0.3s ease-out,
+    display 0.3s allow-discrete,
+    overlay 0.3s allow-discrete;
+}
+
+/* Entry state before the element is painted */
+@starting-style {
+  dialog.animated-dialog[open] {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+/* Closed state */
+dialog.animated-dialog:not([open]) {
+  opacity: 0;
+  transform: scale(0.95) translateY(-10px);
+  box-shadow: 0 0 0 0 transparent;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-down {
+  animation: slideDown 0.3s ease-out forwards;
+}
+
+@keyframes checkbox-pop {
+  0% {
+    transform: scale(0);
+  }
+  70% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.checkbox-input:checked::before {
+  animation: checkbox-pop 180ms ease-out;
+}

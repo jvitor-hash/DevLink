@@ -1,0 +1,16 @@
+[test]
+# Test configuration for Bun
+preload = []
+
+# Timeout for tests in milliseconds
+timeout = 5000
+
+# Update this to enable code coverage if needed
+# coverage = true
+
+# Test patterns
+# include = ["src/tests/**/*.test.ts"]
+
+[glob]
+# Disable glob expansion for test patterns
+disable = true

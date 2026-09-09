@@ -7,8 +7,10 @@
     "db:generate": "bunx --bun drizzle-kit generate",
     "db:migrate": "bunx --bun drizzle-kit migrate",
     "db:push": "bunx --bun drizzle-kit push",
+    "db:pull": "bunx --bun drizzle-kit pull",
     "auth:generate": "bunx --bun auth generate",
-    "test": "bun test"
+    "test": "bun test src/tests",
+    "test:coverage": "bun test --coverage src/tests"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "^1.7.2",

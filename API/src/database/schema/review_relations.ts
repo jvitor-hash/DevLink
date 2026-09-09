@@ -1,22 +1,23 @@
 import { relations } from "drizzle-orm/_relations";
 import { review } from "./review_schemas";
-import { schemas } from ".";
+import { project } from "./project_schema";
+import { user } from "./user_schema";
 
 export const reviewsRelations = relations(review, ({ one }) => ({
-  project: one(schemas.project, {
+  project: one(project, {
     fields: [review.projectId],
-    references: [schemas.project.id],
+    references: [project.id],
   }),
 
-  reviewer: one(schemas.user, {
+  reviewer: one(user, {
     fields: [review.reviewerId],
-    references: [schemas.user.id],
+    references: [user.id],
     relationName: "reviews_written",
   }),
 
-  reviewedUser: one(schemas.user, {
+  reviewedUser: one(user, {
     fields: [review.reviewedUserId],
-    references: [schemas.user.id],
+    references: [user.id],
     relationName: "reviews_received",
   }),
 }));

@@ -1,15 +1,16 @@
 import { relations } from "drizzle-orm/_relations";
 import { message } from "./message_schema";
-import { schemas } from ".";
+import { project } from "./project_schema";
+import { user } from "./user_schema";
 
 export const messagesRelations = relations(message, ({ one }) => ({
-  project: one(schemas.project, {
+  project: one(project, {
     fields: [message.projectId],
-    references: [schemas.project.id],
+    references: [project.id],
   }),
 
-  sender: one(schemas.user, {
+  sender: one(user, {
     fields: [message.senderId],
-    references: [schemas.user.id],
+    references: [user.id],
   }),
 }));

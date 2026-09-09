@@ -27,10 +27,16 @@ cd '.\Projeto sem nome\'
 npm install
 ```
 
-3. Configuração das variáveis de ambiente:
+3. Configuração das variáveis de ambiente: (BACK-END)
 ```
 BETTER_AUTH_SECRET=
 BETTER_AUTH_URL=
+FRONT_END_URL=
 DATABASE_URL=
 PORT=3333
+```
+
+3.1 Configuração das variáveis de ambiente: (FRONT-END)
+```
+API_URL=
 ```

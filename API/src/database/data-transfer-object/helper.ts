@@ -1,11 +1,14 @@
-import z from "zod";
+import { z } from "zod";
 
-export function createCrudSchemas<T extends z.ZodObject<any>, OmitCreate extends keyof T["shape"]>(baseSchema: T, omitFromCreate: OmitCreate[]) {
-  const createSchema = baseSchema.omit(
-    Object.fromEntries(
-      omitFromCreate.map((key) => [key, true])
-    ) as Record<OmitCreate, true>
-  );
+export function createCrudSchemas<T extends z.ZodObject<any>, OmitCreate extends keyof T["shape"]>(
+  baseSchema: T,
+  omitFromCreate: OmitCreate[]
+) {
+  const mask = Object.fromEntries(
+    omitFromCreate.map((key) => [key, true])
+  ) as { [K in OmitCreate]: true };
+
+  const createSchema = (baseSchema as any).omit(mask);
 
   return {
     dto: baseSchema,
@@ -17,6 +20,6 @@ export function createCrudSchemas<T extends z.ZodObject<any>, OmitCreate extends
 export const idSchema = z.string().uuid();
 
 export const timestampsSchema = z.object({
-  createdAt: z.union([z.date(), z.string().datetime(), z.string().uuid()]).nullable().optional(),
-  updatedAt: z.union([z.date(), z.string().datetime(), z.string().uuid()]).nullable().optional(),
+  createdAt: z.union([z.date(), z.string().datetime()]).nullable().optional(),
+  updatedAt: z.union([z.date(), z.string().datetime()]).nullable().optional(),
 });

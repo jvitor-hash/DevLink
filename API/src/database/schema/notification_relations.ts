@@ -1,15 +1,16 @@
 import { relations } from "drizzle-orm/_relations";
 import { notification } from "./notification_schema";
-import { schemas } from ".";
+import { project } from "./project_schema";
+import { user } from "./user_schema";
 
 export const notificationsRelations = relations(notification, ({ one }) => ({
-  user: one(schemas.user, {
+  user: one(user, {
     fields: [notification.userId],
-    references: [schemas.user.id],
+    references: [user.id],
   }),
 
-  project: one(schemas.project, {
+  project: one(project, {
     fields: [notification.projectId],
-    references: [schemas.project.id],
+    references: [project.id],
   }),
 }));

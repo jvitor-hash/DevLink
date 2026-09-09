@@ -1,24 +1,32 @@
 import Elysia from "elysia";
 import { ReviewService } from "./service";
-import { ReviewSchema, ReviewCreateSchema, ReviewUpdateSchema } from "@/database/data-transfer-object/review_dto";
-import z from "zod";
+import { ReviewSchema, ReviewCreateSchema, ReviewUpdateSchema, type ReviewCreate, type ReviewUpdate } from "@/database/data-transfer-object/review_dto";
+import { z } from "zod";
 import { ErrorSchema } from "@/modules/error_schema";
-import { eq } from "drizzle-orm";
+import { and, eq, type SQL } from "drizzle-orm";
 import { schemas } from "@/database/schema";
+import { authPlugin } from "@/modules/auth_plugin";
 
 export const ReviewRouter = new Elysia({ prefix: "/api/v1/reviews" })
-  .post("/", async ({ body, set }) => {
+  .use(authPlugin)
+  .post("/", async ({ body, user, set }) => {
     try {
-      await ReviewService.create(body);
+      const data = body as ReviewCreate;
+      const newReview = await ReviewService.create({
+        ...data,
+        reviewerId: (user as any).id,
+      });
+      set.status = 201;
+      return newReview;
     } catch (error) {
       set.status = 500;
-      return { error: "Failed to create reviews" };
+      return { error: "Failed to create review" };
     }
   }, {
     body: ReviewCreateSchema,
     response: {
       201: ReviewSchema,
-      500: ErrorSchema
+      500: ErrorSchema,
     },
     tags: ["Reviews"],
     auth: true,
@@ -29,14 +37,14 @@ export const ReviewRouter = new Elysia({ prefix: "/api/v1/reviews" })
     } catch (error) {
       set.status = 500;
       return { error: "Failed to fetch reviews" };
-    };
+    }
   }, {
     query: z.object({
-      limit: z.number().min(10).max(100).default(10),
-      offset: z.number().min(0).default(0),
+      limit: z.coerce.number().min(1).max(100).default(10),
+      offset: z.coerce.number().min(0).default(0),
     }),
     response: {
-      200: z.array(ReviewCreateSchema),
+      200: z.array(ReviewSchema),
       500: ErrorSchema,
     },
     tags: ["Reviews"],
@@ -44,62 +52,68 @@ export const ReviewRouter = new Elysia({ prefix: "/api/v1/reviews" })
   })
   .get("/:id", async ({ params, set }) => {
     try {
-      const [project] = await ReviewService.findWhere(eq(schemas.review.id, params.id));
-      return project;
+      const reviewItem = await ReviewService.findOne(eq(schemas.review.id, params.id));
+      return reviewItem;
     } catch (error) {
       set.status = 404;
       return { error: "Review not found" };
     }
   }, {
     params: z.object({
-      id: z.uuid()
+      id: z.string().uuid(),
     }),
     response: {
       200: ReviewSchema,
       404: ErrorSchema,
-      500: ErrorSchema
+      500: ErrorSchema,
     },
     tags: ["Reviews"],
-    auth: true
+    auth: true,
   })
-  .put("/:id", async ({ body, params, set }) => {
+  .put("/:id", async ({ body, params, user, set }) => {
     try {
-      return await ReviewService.update(eq(schemas.review.id, params.id), body);
+      const data = body as ReviewUpdate;
+      const updated = await ReviewService.update(
+        and(eq(schemas.review.id, params.id), eq(schemas.review.reviewerId, (user as any).id)) as SQL<unknown>,
+        data
+      );
+      return updated;
     } catch (error) {
       set.status = 404;
-      return { error: "Review not found" };
+      return { error: "Review not found or unauthorized" };
     }
   }, {
     params: z.object({
-      id: z.uuid()
+      id: z.string().uuid(),
     }),
     body: ReviewUpdateSchema,
     response: {
-      200: z.array(ReviewUpdateSchema),
+      200: ReviewSchema,
       404: ErrorSchema,
-      500: ErrorSchema
+      500: ErrorSchema,
     },
     tags: ["Reviews"],
-    auth: true
+    auth: true,
   })
-  .delete("/:id", async ({ params, set }) => {
+  .delete("/:id", async ({ params, user, set }) => {
     try {
-      return await ReviewService.remove(eq(schemas.review.id, params.id));
+      const deleted = await ReviewService.remove(
+        and(eq(schemas.review.id, params.id), eq(schemas.review.reviewerId, (user as any).id)) as SQL<unknown>
+      );
+      return deleted;
     } catch (error) {
-      set.status = 500;
-      return { error: "Failed to delete review" };
+      set.status = 404;
+      return { error: "Review not found or unauthorized" };
     }
   }, {
     params: z.object({
-      id: z.uuid()
+      id: z.string().uuid(),
     }),
     response: {
-      200: z.object({
-        id: z.number()
-      }),
+      200: ReviewSchema,
       404: ErrorSchema,
-      500: ErrorSchema
+      500: ErrorSchema,
     },
     tags: ["Reviews"],
-    auth: true
-  })
+    auth: true,
+  });

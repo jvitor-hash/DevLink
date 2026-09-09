@@ -1,4 +1,4 @@
-import z from "zod";
+import { z } from "zod";
 import { createCrudSchemas, idSchema, timestampsSchema } from "./helper";
 
 export const MessageSchema = z.object({
@@ -7,19 +7,18 @@ export const MessageSchema = z.object({
   senderId: idSchema,
   content: z.string().min(1),
   isRead: z.boolean().default(false),
-  createdAt: z.union([z.date(), z.string().datetime(), z.string().uuid()]).nullable().optional(),
-  updatedAt: z.union([z.date(), z.string().datetime(), z.string().uuid()]).nullable().optional(),
-});
+}).merge(timestampsSchema);
 
 const MessageDTOs = createCrudSchemas(MessageSchema, [
   "id",
+  "senderId",
   "createdAt",
-  "updatedAt"
+  "updatedAt",
 ]);
 
 export const MessageCreateSchema = MessageDTOs.create;
 export const MessageUpdateSchema = MessageDTOs.update;
 
-// export type MessageDTO = z.infer<typeof MessageDTOs.dto>;
-// export type MessageCreate = z.infer<typeof MessageDTOs.create>;
-// export type MessageUpdate = z.infer<typeof MessageDTOs.update>;
+export type MessageDTO = z.infer<typeof MessageSchema>;
+export type MessageCreate = z.infer<typeof MessageCreateSchema>;
+export type MessageUpdate = z.infer<typeof MessageUpdateSchema>;

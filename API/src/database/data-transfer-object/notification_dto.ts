@@ -1,25 +1,26 @@
-import z from "zod";
+import { z } from "zod";
 import { NotificationTypeEnum } from "./enums";
-import { createCrudSchemas, idSchema } from "./helper";
+import { createCrudSchemas, idSchema, timestampsSchema } from "./helper";
 
 export const NotificationSchema = z.object({
   id: idSchema,
   userId: idSchema,
   type: NotificationTypeEnum,
-  title: z.string().max(200),
-  message: z.string(),
+  title: z.string().min(1).max(200),
+  message: z.string().min(1),
   projectId: idSchema.nullable().optional(),
   isRead: z.boolean().default(false),
-  createdAt: z.union([z.date(), z.string().datetime(), z.string().uuid()]).nullable().optional(),
-});
+}).merge(timestampsSchema);
 
 const NotificationDTOs = createCrudSchemas(NotificationSchema, [
-  "id"
+  "id",
+  "createdAt",
+  "updatedAt",
 ]);
 
 export const NotificationCreateSchema = NotificationDTOs.create;
 export const NotificationUpdateSchema = NotificationDTOs.update;
 
-// export type NotificationDTO = z.infer<typeof NotificationDTOs.dto>;
-// export type NotificationCreate = z.infer<typeof NotificationDTOs.create>;
-// export type NotificationUpdate = z.infer<typeof NotificationDTOs.update>;
+export type NotificationDTO = z.infer<typeof NotificationSchema>;
+export type NotificationCreate = z.infer<typeof NotificationCreateSchema>;
+export type NotificationUpdate = z.infer<typeof NotificationUpdateSchema>;

@@ -11,10 +11,21 @@ export const auth = betterAuth({
     schema: schemas
   }),
 
+  rateLimit: {
+    enabled: true,
+    window: 10,
+    max: 100
+  },
+
   advanced: {
     database: {
       generateId: "uuid",
     },
+
+    ipAddress: {
+      ipAddressHeaders: ['x-forwarded-for', 'x-real-ip'],
+      trustedProxies: ['127.0.0.1', '::1', '0.0.0.0']
+    }
   },
 
   secret: env.BETTER_AUTH_SECRET,
@@ -24,6 +35,7 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
+    requireEmailVerification: false,
     resetPassword: {
       enabled: true,
     },
@@ -52,7 +64,8 @@ export const auth = betterAuth({
   },
 
   trustedOrigins: [
-    `http://localhost:${env.PORT}`
+    `http://localhost:${env.PORT}`,
+    "http://localhost:5173"
   ],
 
   plugins: [

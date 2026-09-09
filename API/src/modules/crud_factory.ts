@@ -8,15 +8,19 @@ function crud<T extends PgTable>(table: T) {
 
   const genericTable = table as PgTableWithColumns<any>;
 
-  async function create(data: Insert): Promise<Select[]> {
-    return (await db.insert(genericTable).values(data).returning()) as Select[];
+  async function create(data: Insert): Promise<Select> {
+    const [result] = (await db.insert(genericTable).values(data).returning()) as Select[];
+    if (!result) {
+      throw new Error("Failed to create record");
+    }
+    return result;
   }
 
   async function createMany(data: Insert[]): Promise<Select[]> {
     return (await db.insert(genericTable).values(data).returning()) as Select[];
   }
 
-  async function findAll(limit: number, offset: number): Promise<Select[]> {
+  async function findAll(limit: number = 10, offset: number = 0): Promise<Select[]> {
     if (limit < 0 || limit > 100) throw new Error("Limit exceeded");
     if (offset < 0) throw new Error("Offset below 0");
 
@@ -25,19 +29,31 @@ function crud<T extends PgTable>(table: T) {
 
   async function findWhere(condition: SQL<unknown>): Promise<Select[]> {
     const result = (await db.select().from(genericTable).where(condition)) as Select[];
-
-    if (result === null || result.length === 0)
+    if (!result || result.length === 0) {
       throw new Error("No results found");
-
+    }
     return result;
   }
 
-  async function update(condition: SQL<unknown>, data: Partial<Insert>): Promise<Select[]> {
-    return (await db.update(genericTable).set(data).where(condition).returning()) as Select[];
+  async function findOne(condition: SQL<unknown>): Promise<Select> {
+    const result = await findWhere(condition);
+    return result[0];
   }
 
-  async function remove(condition: SQL<unknown>): Promise<Select[]> {
-    return (await db.delete(genericTable).where(condition).returning()) as Select[];
+  async function update(condition: SQL<unknown>, data: Partial<Insert>): Promise<Select> {
+    const [result] = (await db.update(genericTable).set(data).where(condition).returning()) as Select[];
+    if (!result) {
+      throw new Error("Record not found");
+    }
+    return result;
+  }
+
+  async function remove(condition: SQL<unknown>): Promise<Select> {
+    const [result] = (await db.delete(genericTable).where(condition).returning()) as Select[];
+    if (!result) {
+      throw new Error("Record not found");
+    }
+    return result;
   }
 
   return {
@@ -45,6 +61,7 @@ function crud<T extends PgTable>(table: T) {
     createMany,
     findAll,
     findWhere,
+    findOne,
     update,
     remove,
   };
