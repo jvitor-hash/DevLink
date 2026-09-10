@@ -56,7 +56,7 @@ describe("Password Hashing", () => {
 
 ## Schema Validation Tests
 
-When testing Zod schemas, test both valid and invalid cases:
+When testing Zod schemas, test both valid and invalid cases including edge cases:
 
 ```typescript
 describe("SchemaName Validation", () => {
@@ -70,12 +70,22 @@ describe("SchemaName Validation", () => {
     expect(result.success).toBe(false);
   });
 
+  test("should reject missing required fields", () => {
+    const result = Schema.safeParse(incompleteData);
+    expect(result.success).toBe(false);
+  });
+
   test("should use default values", () => {
     const result = Schema.safeParse(minimalData);
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.field).toBe(defaultValue);
     }
+  });
+
+  test("should validate with null values for nullable fields", () => {
+    const result = Schema.safeParse(dataWithNulls);
+    expect(result.success).toBe(true);
   });
 });
 ```

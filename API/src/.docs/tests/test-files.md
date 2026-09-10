@@ -33,12 +33,19 @@ Detailed documentation for each test file in `src/tests/`.
 **Purpose**: Schema validation tests for projects
 
 **Tests**:
-- ✅ `ProjectCreateSchema should validate correctly` - Valid project data validation
-- ✅ `ProjectCreateSchema should reject invalid data` - Empty/invalid project data rejection
+- ✅ `ProjectCreateSchema should validate real project payload` - Valid project data with all required fields
+- ✅ `ProjectCreateSchema should validate with null problem and user_actions` - Nullable field handling
+- ✅ `ProjectCreateSchema should reject invalid data` - Invalid data rejection (empty title, empty platforms)
+- ✅ `ProjectCreateSchema should reject missing required fields` - Missing fields validation
+- ✅ `ProjectCreateSchema should reject when clientId is missing` - clientId required validation
+- ✅ `ProjectCreateSchema should reject invalid clientId` - UUID validation for clientId
 - ✅ `ProjectUpdateSchema should accept partial updates` - Partial update validation
-- ✅ `should have correct route structure` - Router structure verification
+- ✅ `ProjectUpdateSchema should accept empty update` - Empty partial update support
+- ✅ `ProjectDTOSchema should validate full entity with all fields` - Full DTO validation
+- ✅ `ProjectDTOSchema should validate entity with nullable programmerId` - Nullable programmerId handling
+- ✅ `ProjectsRouter is properly configured` - Router structure verification
 
-**Coverage**: Project DTO schemas and validation rules
+**Coverage**: Project DTO schemas (Create, Update, DTO), validation rules, required fields, nullable handling, default values
 
 ---
 
@@ -47,12 +54,18 @@ Detailed documentation for each test file in `src/tests/`.
 **Purpose**: Schema validation tests for notifications
 
 **Tests**:
-- ✅ `NotificationCreateSchema should validate correctly` - Valid notification data
-- ✅ `NotificationCreateSchema should reject empty title` - Validation error cases
-- ✅ `NotificationUpdateSchema should accept partial updates` - Partial update support
-- ✅ `should have correct route structure` - Router structure verification
+- ✅ `NotificationCreateSchema should validate correctly with real types` - Valid notification with userId, type, title, message
+- ✅ `NotificationCreateSchema should validate without projectId` - Optional projectId handling
+- ✅ `NotificationCreateSchema should reject empty title` - Title min length validation
+- ✅ `NotificationCreateSchema should reject invalid notification type` - Enum validation
+- ✅ `NotificationCreateSchema should reject invalid userId` - UUID validation
+- ✅ `NotificationUpdateSchema should accept partial updates` - Partial update (isRead)
+- ✅ `NotificationUpdateSchema should accept multiple field updates` - Multiple field partial update
+- ✅ `NotificationSchema should validate full entity` - Full DTO with all fields
+- ✅ `NotificationSchema should validate entity with projectId` - DTO with projectId set
+- ✅ `NotificationRouter is properly configured` - Router structure verification
 
-**Coverage**: Notification DTO schemas and validation rules
+**Coverage**: Notification DTO schemas (Create, Update, DTO), required userId, optional projectId, enum validation, default isRead=false
 
 ---
 
@@ -61,13 +74,14 @@ Detailed documentation for each test file in `src/tests/`.
 **Purpose**: Schema validation tests for reviews
 
 **Tests**:
-- ✅ `ReviewCreateSchema should validate correctly` - Valid review data
-- ✅ `ReviewCreateSchema should reject invalid rating` - Rating must be 1-5
-- ✅ `ReviewCreateSchema should reject invalid UUID` - Project ID validation
-- ✅ `ReviewUpdateSchema should accept partial updates` - Partial update support
-- ✅ `should have correct route structure` - Router structure verification
+- ✅ `ReviewCreateSchema should validate correctly with real schema` - Valid review data
+- ✅ `ReviewCreateSchema should reject invalid rating (> 5 or < 1)` - Rating range 1-5 validation
+- ✅ `ReviewCreateSchema should reject invalid UUID` - UUID validation for projectId
+- ✅ `ReviewUpdateSchema should accept partial updates` - Partial update (rating, description)
+- ✅ `ReviewSchema should validate full entity` - Full DTO validation
+- ✅ `ReviewRouter is properly configured` - Router structure verification
 
-**Coverage**: Review DTO schemas, rating validation, UUID validation
+**Coverage**: Review DTO schemas (Create, Update, DTO), rating min/max (1-5), UUID validation, title max 150 chars
 
 ---
 
@@ -76,12 +90,15 @@ Detailed documentation for each test file in `src/tests/`.
 **Purpose**: Schema validation tests for user preferences
 
 **Tests**:
-- ✅ `UserPreferenceCreateSchema should validate correctly` - Valid preference data
-- ✅ `UserPreferenceCreateSchema should use defaults` - Default values for theme, notifications, language
-- ✅ `UserPreferenceUpdateSchema should accept partial updates` - Partial update support
-- ✅ `should have correct route structure` - Router structure verification
+- ✅ `UserPreferenceCreateSchema should validate correctly` - Valid preference data with custom values
+- ✅ `UserPreferenceCreateSchema should apply defaults` - All defaults are true
+- ✅ `UserPreferenceUpdateSchema should accept partial updates` - Partial update with defaults applied to unspecified fields
+- ✅ `UserPreferenceUpdateSchema should accept empty update` - Empty partial update support
+- ✅ `UserPreferenceUpdateSchema should accept full update` - All fields update
+- ✅ `UserPreferenceSchema should validate full entity` - Full DTO validation
+- ✅ `UserPreferenceRouter is properly configured` - Router structure verification
 
-**Coverage**: User preference DTO schemas, default value handling
+**Coverage**: UserPreference DTO schemas (Create, Update, DTO), default values (all true), partial update behavior with defaults
 
 ---
 
@@ -90,12 +107,36 @@ Detailed documentation for each test file in `src/tests/`.
 **Purpose**: Schema validation tests for saved tickets
 
 **Tests**:
-- ✅ `SavedTicketCreateSchema should validate correctly` - Valid ticket data
-- ✅ `SavedTicketCreateSchema should enforce title length limits` - Title max 200 chars
-- ✅ `SavedTicketCreateSchema should use default status` - Default status "open"
-- ✅ `should have correct route structure` - Router structure verification
+- ✅ `SavedTicketCreateSchema should validate bookmark payload` - Valid create with projectId
+- ✅ `SavedTicketCreateSchema should reject invalid project UUID` - UUID validation
+- ✅ `SavedTicketCreateSchema should reject missing projectId` - Required field validation
+- ✅ `SavedTicketSchema should validate full entity` - Full DTO with createdAt
+- ✅ `SavedTicketSchema should validate entity with null createdAt` - Nullable createdAt handling
+- ✅ `SavedTicketUpdateSchema should accept partial updates` - Partial update (projectId)
+- ✅ `SavedTicketRouter is properly configured` - Router structure verification
 
-**Coverage**: Saved ticket DTO schemas, length limits, default values
+**Coverage**: SavedTicket DTO schemas (Create, Update, DTO), required projectId, nullable createdAt, userId required in DTO
+
+---
+
+### `message.test.ts`
+
+**Purpose**: Schema validation tests for messages
+
+**Tests**:
+- ✅ `MessageCreateSchema should validate message payload` - Valid message with projectId and content
+- ✅ `MessageCreateSchema should validate with default isRead` - Default isRead=false
+- ✅ `MessageCreateSchema should reject empty content` - Content min length validation
+- ✅ `MessageCreateSchema should reject invalid project UUID` - UUID validation
+- ✅ `MessageCreateSchema should reject missing required fields` - Required field validation
+- ✅ `MessageUpdateSchema should accept partial updates` - Content update
+- ✅ `MessageUpdateSchema should accept isRead update` - isRead toggle
+- ✅ `MessageUpdateSchema should accept empty update` - Empty partial update support
+- ✅ `MessageSchema should validate full entity` - Full DTO with all fields
+- ✅ `MessageSchema should validate entity with isRead true` - DTO with isRead=true
+- ✅ `MessageRouter is properly configured` - Router structure verification
+
+**Coverage**: Message DTO schemas (Create, Update, DTO), required projectId/senderId/content, default isRead=false, content min length 1
 
 ---
 
@@ -104,13 +145,13 @@ Detailed documentation for each test file in `src/tests/`.
 **Purpose**: Tests for auth module functionality
 
 **Tests**:
-- ✅ `should hash password using argon2id` - Password hashing functionality
+- ✅ `should hash password using argon2id` - Password hashing with argon2id algorithm
 - ✅ `should verify correct password` - Password verification success
 - ✅ `should reject incorrect password` - Password verification failure
-- ✅ `should validate BETTER_AUTH_SECRET length` - Secret must be 32+ chars
-- ✅ `should validate BETTER_AUTH_URL format` - URL must start with http://localhost:
+- ✅ `should have valid environment configuration loaded` - Env validation (BETTER_AUTH_SECRET, BETTER_AUTH_URL, DATABASE_URL, PORT)
+- ✅ `BetterAuth instance should be initialized with correct plugins and routes` - Auth instance verification
 
-**Coverage**: Password hashing, verification, environment validation
+**Coverage**: Password hashing (argon2id), verification, environment configuration validation, BetterAuth initialization
 
 ---
 
@@ -119,12 +160,14 @@ Detailed documentation for each test file in `src/tests/`.
 **Purpose**: Tests for enum validation
 
 **Tests**:
-- ✅ `ProjectStatus enum values` - Valid status values: active, completed, on_hold, cancelled
-- ✅ `ProjectStatus enum should reject invalid values` - Invalid status rejection
-- ✅ `NotificationType enum values` - Valid types: info, success, warning, error
-- ✅ `TicketStatus enum values` - Valid statuses: open, in_progress, resolved, closed
+- ✅ `ProjectStatusEnum values` - Valid: OPEN, NEGOTIATING, IN_DEVELOPMENT, COMPLETED, CANCELLED
+- ✅ `PlatformTypeEnum values` - Valid: WEB, DESKTOP, MOBILE
+- ✅ `ProgrammingLanguageEnum values` - Valid: CSHARP, TYPESCRIPT, RUST (and 9 more)
+- ✅ `AudienceEnum values` - Valid: CLIENTS, INTERNAL_TOOL
+- ✅ `NotificationTypeEnum values` - Valid: NEW_MESSAGE, NEW_REVIEW, PROJECT_UPDATE, PROJECT_COMPLETED, PROJECT_CANCELLED, TICKET_SAVED, SYSTEM
+- ✅ `UserRoleEnum values` - Valid: CLIENT, PROGRAMMER, ADMIN
 
-**Coverage**: Enum validation and allowed values
+**Coverage**: All enum types with valid values and invalid value rejection (throws on parse)
 
 ---
 
@@ -133,15 +176,18 @@ Detailed documentation for each test file in `src/tests/`.
 **Purpose**: Integration tests for all route structures
 
 **Tests**:
-- ✅ `GET /health returns OK status` - Health endpoint works
-- ✅ `Projects Routes - Validation` - POST/GET projects validation behavior
-- ✅ `Notification Routes - Validation` - POST/GET notification validation
-- ✅ `UserPreference Routes - Validation` - POST/GET user preferences validation
-- ✅ `SavedTicket Routes - Validation` - POST/GET saved ticket validation
-- ✅ `Review Routes - Validation` - POST/GET review validation
-- ✅ `Route Structure Verification` - All routers properly mounted
+- ✅ `GET /health returns 200 OK status with { OK: true }` - Health endpoint works
+- ✅ `GET /api/v1/projects requires authentication (401)` - Auth guard for GET
+- ✅ `POST /api/v1/projects returns validation error without auth (422)` - Body validation before auth
+- ✅ `POST /api/v1/projects without body returns validation error (422)` - Empty body validation
+- ✅ `GET /api/v1/notifications requires authentication (401)` - Auth guard
+- ✅ `GET /api/v1/messages requires authentication (401)` - Auth guard
+- ✅ `GET /api/v1/user-preferences requires authentication (401)` - Auth guard
+- ✅ `GET /api/v1/saved-tickets requires authentication (401)` - Auth guard
+- ✅ `GET /api/v1/reviews requires authentication (401)` - Auth guard
+- ✅ `All routers are properly mounted and respond to requests` - Route structure verification (no 404s)
 
-**Coverage**: End-to-end route structure and validation integration
+**Coverage**: End-to-end route structure, authentication guards, validation order (body validation before auth returns 422 not 401)
 
 ---
 
@@ -150,13 +196,14 @@ Detailed documentation for each test file in `src/tests/`.
 | Feature | File | Tests |
 |---------|------|-------|
 | Health Endpoint | `health.test.ts` | 2 |
-| Projects | `projects.test.ts` | 4 |
-| Notifications | `notification.test.ts` | 4 |
-| Reviews | `review.test.ts` | 5 |
-| User Preferences | `user_preferences.test.ts` | 4 |
-| Saved Tickets | `saved_ticket.test.ts` | 4 |
+| Projects | `projects.test.ts` | 11 |
+| Notifications | `notification.test.ts` | 10 |
+| Reviews | `review.test.ts` | 6 |
+| User Preferences | `user_preferences.test.ts` | 7 |
+| Saved Tickets | `saved_ticket.test.ts` | 7 |
+| Messages | `message.test.ts` | 11 |
 | Auth Module | `auth.test.ts` | 5 |
-| Enums | `enums.test.ts` | 4 |
-| Routes Integration | `routes.test.ts` | 12 |
+| Enums | `enums.test.ts` | 6 |
+| Routes Integration | `routes.test.ts` | 10 |
 
-**Total**: 44 tests across 9 files
+**Total**: 75 tests across 10 files

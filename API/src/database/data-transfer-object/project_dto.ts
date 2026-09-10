@@ -10,6 +10,8 @@ export const ProjectDTOSchema = z.object({
   description: z.string().min(1),
   category: z.string().min(1).max(200),
   sub_category: z.string().min(1).max(200),
+  problem: z.string().nullable(),
+  user_actions: z.string().nullable(),
   primaryLanguage: ProgrammingLanguageEnum.default("CSHARP"),
   platforms: z.array(PlatformTypeEnum).min(1),
   status: ProjectStatusEnum.default("OPEN"),
@@ -23,7 +25,6 @@ export const ProjectSchema = ProjectDTOSchema;
 
 const ProjectDTOs = createCrudSchemas(ProjectDTOSchema, [
   "id",
-  "clientId",
   "programmerId",
   "completedAt",
   "createdAt",

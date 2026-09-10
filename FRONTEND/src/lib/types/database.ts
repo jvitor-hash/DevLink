@@ -76,6 +76,8 @@ export interface ProjectDTO {
   sub_category: string;
   primaryLanguage: ProgrammingLanguage;
   platforms: PlatformType[];
+  problem?: string | null
+  user_actions?: string | null
   status: ProjectStatus;
   audience: Audience;
   minBudget: number;

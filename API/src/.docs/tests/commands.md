@@ -93,11 +93,26 @@ timeout = 5000  # 5 second timeout per test
 preload = []
 ```
 
+### Current Test Coverage (as of last run)
+
+```
+All files | 52.96% Funcs | 89.85% Lines
+```
+
+Highest coverage files (100%):
+- `src/client.ts`
+- `src/database/data-transfer-object/*.ts` (all DTOs)
+- `src/database/data-transfer-object/helper.ts`
+- `src/database/data-transfer-object/enums.ts`
+- `src/env.ts`
+- `src/modules/error_schema.ts`
+- All service files (`*.service.ts`)
+
 ## Quick Reference Table
 
 | Command | Description |
 |---------|-------------|
-| `npm test` | Run all tests |
+| `npm test` | Run all tests (75 tests) |
 | `npm run test:coverage` | Run tests with coverage report |
 | `bun test src/tests` | Run all tests directly |
 | `bun test --watch src/tests` | Watch mode |

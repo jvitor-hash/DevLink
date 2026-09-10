@@ -10,13 +10,13 @@ All test files are located in `src/tests/` and follow the naming convention `*.t
 
 | File                       | Description                                        |
 |----------------------------|----------------------------------------------------|
-| `setup.ts`                 | Test setup utilities and helper functions          |
 | `health.test.ts`           | Tests for the `/health` endpoint                   |
 | `projects.test.ts`         | Schema validation tests for projects               |
 | `notification.test.ts`     | Schema validation tests for notifications          |
 | `review.test.ts`           | Schema validation tests for reviews                |
 | `user_preferences.test.ts` | Schema validation tests for user preferences       |
 | `saved_ticket.test.ts`     | Schema validation tests for saved tickets          |
+| `message.test.ts`         | Schema validation tests for messages               |
 | `auth.test.ts`             | Tests for auth password hashing and env validation |
 | `enums.test.ts`            | Tests for enum validation                          |
 | `routes.test.ts`           | Integration tests for all route structures         |

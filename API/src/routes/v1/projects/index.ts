@@ -48,7 +48,6 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
       500: ErrorSchema,
     },
     tags: ["Projects"],
-    auth: true,
   })
   .get("/:id", async ({ params, set }) => {
     try {

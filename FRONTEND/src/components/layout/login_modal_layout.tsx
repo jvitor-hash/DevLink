@@ -75,8 +75,8 @@ export default function LoginModal({ show, onClose }: LoginModalProps) {
             <p className="mt-2">Não possui uma conta? <button type="button" className="text-(--info) hover:cursor-pointer" onClick={() => changeMode("register")}>Cadastre-se</button></p>
             {error && <p role="alert" className="mt-3 text-(--error)">{error}</p>}
             <form className="mt-5 flex flex-col gap-3" onSubmit={submit}>
-              <Input inputType="email" name="email" placeholder="Nome@Exemplo.com" label="E-mail" />
-              <Input inputType="password" name="password" placeholder="Digite sua senha" label="Senha" />
+              <Input icon="mail" inputType="email" name="email" placeholder="Nome@Exemplo.com" label="E-mail" />
+              <Input icon="lock" inputType="password" name="password" placeholder="Digite sua senha" label="Senha" />
               <label className="flex items-center"><Checkbox label="Salvar essa sessão?" checked /></label>
               <div className="flex justify-center gap-5 mt-2"><Button buttonType="submit" colorType="success" label={submitting ? "Entrando..." : "Login"} /><Button buttonType="reset" colorType="secondary" label="Limpar" /></div>
             </form>
@@ -88,8 +88,8 @@ export default function LoginModal({ show, onClose }: LoginModalProps) {
             {error && <p role="alert" className="mt-3 text-(--error)">{error}</p>}
             <form className="mt-5 flex flex-col gap-3" onSubmit={submit}>
               <Input inputType="text" name="name" placeholder="Digite seu nome" label="Nome" />
-              <Input inputType="email" name="email" placeholder="Nome@Exemplo.com" label="E-mail" />
-              <Input inputType="password" name="password" placeholder="Digite sua senha" label="Senha" />
+              <Input icon="mail" inputType="email" name="email" placeholder="Nome@Exemplo.com" label="E-mail" />
+              <Input icon="lock" inputType="password" name="password" placeholder="Digite sua senha" label="Senha" />
               <SegmentedButton title="Tipo de usuário" items={{ client: "Cliente", programmer: "Programador" }} defaultValue="client" />
               <div className="flex justify-center gap-5 mt-2"><Button buttonType="submit" colorType="success" label={submitting ? "Cadastrando..." : "Cadastre-se"} /><Button buttonType="reset" colorType="secondary" label="Limpar" /></div>
             </form>

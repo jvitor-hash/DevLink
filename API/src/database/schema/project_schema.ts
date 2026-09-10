@@ -21,6 +21,8 @@ export const project = pgTable("project", {
   primaryLanguage: programmingLanguageEnum("primary_language").default("CSHARP").notNull(),
   platforms: platformTypeEnum("platforms").array().notNull(),
   status: projectStatusEnum("status").default("OPEN").notNull(),
+  problem: text("problem"),
+  userActions: text("user_actions"),
   audience: audienceEnum("audience").default("CLIENTS").notNull(),
   minBudget: numeric("min_budget", { precision: 12, scale: 2 }).notNull(),
   maxBudget: numeric("max_budget", { precision: 12, scale: 2 }).notNull(),
