@@ -20,10 +20,11 @@ type InputComponentProps = {
   value?: string | number
   placeholder?: string
   className?: string
+  dataTestId?: string
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
-export default function Input({ icon, inputType = "text", label, name, value, placeholder, onChange }: InputComponentProps) {
+export default function Input({ icon, inputType = "text", label, name, value, dataTestId, placeholder, onChange }: InputComponentProps) {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isFocused, setFocus] = useState<boolean>(false);
   const isPassword = inputType === "password";
@@ -54,6 +55,7 @@ export default function Input({ icon, inputType = "text", label, name, value, pl
           placeholder={placeholder}
           value={value}
           onChange={onChange}
+          data-testid={dataTestId}
           onFocus={() => setFocus(true)}
           onBlur={() => setFocus(false)}
         />

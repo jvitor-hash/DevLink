@@ -17,7 +17,7 @@ export const project = pgTable("project", {
   title: varchar("title", { length: 200 }).notNull(),
   description: text("description").notNull(),
   category: varchar("category", { length: 200 }).notNull(),
-  sub_category: varchar("sub_category", { length: 200 }).notNull(),
+  subCategory: varchar("sub_category", { length: 200 }).notNull(),
   primaryLanguage: programmingLanguageEnum("primary_language").default("CSHARP").notNull(),
   platforms: platformTypeEnum("platforms").array().notNull(),
   status: projectStatusEnum("status").default("OPEN").notNull(),

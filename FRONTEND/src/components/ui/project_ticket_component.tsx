@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Card3D } from "./3d_card_component";
-import Badge from "./badge_componen";
+import Badge from "./badge_component";
+import Button from "./button_component";
 
 import type { Audience, ProjectStatus } from "@/lib/types/database";
 
@@ -17,9 +18,11 @@ type ProjectPreviewProps = {
   programming_language: string
   minBudget: number
   maxBudget: number
+  saved?: boolean
+  onToggleSaved?: () => void
 }
 
-export default function ProjectPreview({ item, title, category, deadline, problem, audience, platforms, status, actions, programming_language, minBudget, maxBudget }: ProjectPreviewProps) {
+export default function ProjectPreview({ item, title, category, deadline, problem, audience, platforms, status, actions, programming_language, minBudget, maxBudget, saved = false, onToggleSaved }: ProjectPreviewProps) {
   const navigate = useNavigate();
   const openModal = () => {
     navigate(`?modal=project&id=${encodeURIComponent(item)}`);
@@ -29,7 +32,8 @@ export default function ProjectPreview({ item, title, category, deadline, proble
     <Card3D className="w-full max-w-90 shadow-sm hover:shadow-lg" onClick={openModal}>
       <div
         className="overflow-hidden rounded-xl border border-(--border-subtle) bg-(--surface-1)"
-        style={{ boxShadow: "0 0.25rem 0.75rem rgba(0, 0, 0, 0.25)" }}>
+        style={{ boxShadow: "0 0.25rem 0.75rem rgba(0, 0, 0, 0.25)" }}
+      >
         <div className="p-6">
           {/* Header */}
           <div className="mb-3 flex items-center justify-between gap-3">
@@ -74,7 +78,7 @@ export default function ProjectPreview({ item, title, category, deadline, proble
 
             <li className="flex justify-between gap-4 border-b py-2.5 border-b-(--border-subtle)">
               <span className="text-(--text-muted)">Status:</span>
-              <span id="preview-language" className="text-right font-semibold text-(--text-primary)">
+              <span id="preview-status" className="text-right font-semibold text-(--text-primary)">
                 {status}
               </span>
             </li>
@@ -95,6 +99,11 @@ export default function ProjectPreview({ item, title, category, deadline, proble
             <div id="preview-actions text-(--text-secondary)">
               {actions}
             </div>
+          </div>
+
+          {/* Saved toggle */}
+          <div className="mt-4 flex justify-end">
+            <Button label={saved ? "Salvo" : "Salvar"} buttonType="button" colorType={saved ? "secondary" : "primary"} onClick={(e) => { e.stopPropagation(); onToggleSaved?.(); }} dataTestId="save-ticket-btn" />
           </div>
         </div>
       </div>

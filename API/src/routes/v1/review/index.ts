@@ -50,6 +50,41 @@ export const ReviewRouter = new Elysia({ prefix: "/api/v1/reviews" })
     tags: ["Reviews"],
     auth: true,
   })
+  .get("/by-user/:userId", async ({ params, query, set }) => {
+    try {
+      return await ReviewService.findReceivedByUser(params.userId, query.limit, query.offset);
+    } catch (error) {
+      set.status = 500;
+      return { error: "Failed to fetch reviews" };
+    }
+  }, {
+    params: z.object({
+      userId: z.string().uuid(),
+    }),
+    query: z.object({
+      limit: z.coerce.number().min(1).max(100).default(10),
+      offset: z.coerce.number().min(0).default(0),
+    }),
+    response: {
+      200: z.array(
+        z.object({
+          review: ReviewSchema,
+          reviewer: z.object({
+            id: z.string(),
+            name: z.string(),
+            image: z.string().nullable(),
+          }),
+          project: z.object({
+            id: z.string(),
+            title: z.string(),
+          }),
+        })
+      ),
+      500: ErrorSchema,
+    },
+    tags: ["Reviews"],
+    auth: true,
+  })
   .get("/:id", async ({ params, set }) => {
     try {
       const reviewItem = await ReviewService.findOne(eq(schemas.review.id, params.id));

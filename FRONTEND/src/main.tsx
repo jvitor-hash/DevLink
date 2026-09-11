@@ -9,12 +9,12 @@ import ErrorBoundary from "./components/layout/error_boundary.tsx";
 import { ProtectedRoute } from "./components/misc/protected_route.tsx";
 
 import App from "./pages/home.tsx";
-import ProjectCreation from "@/pages/project_creation.tsx";
 import ProjectPage from "@/pages/project";
 import ProfilePage from "@/pages/profile";
 import SettingsPage from "@/pages/settings";
 import NotificationPage from "@/pages/notification";
 import ErrorPage from "@/pages/error";
+import Questionnaire from "@/pages/questionnaire.tsx";
 
 // Layout component that wraps all routes
 const Layout = () => (
@@ -37,7 +37,7 @@ createRoot(document.getElementById("root")!).render(
             {/* Protected routes */}
             <Route element={<ProtectedRoute />}>
               <Route path="/notification" element={<NotificationPage />} />
-              <Route path="/project/create" element={<ProjectCreation />} />
+              <Route path="/questionnaire" element={<Questionnaire />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
             </Route>

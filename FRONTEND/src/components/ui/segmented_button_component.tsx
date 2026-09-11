@@ -3,14 +3,22 @@
 import { useState } from "react";
 
 type SegmentedButtonProps = {
-  title?: string
+  title?: string;
   items: Record<string, string>;
   value?: string;
   defaultValue?: string;
   onChange?: (value: string) => void;
+  name?: string;
 };
 
-export function SegmentedButton({ title, items, value, defaultValue, onChange }: SegmentedButtonProps) {
+export function SegmentedButton({
+  title,
+  items,
+  value,
+  defaultValue,
+  onChange,
+  name,
+}: SegmentedButtonProps) {
   const firstItem = Object.keys(items)[0];
 
   const [internalValue, setInternalValue] = useState(
@@ -36,12 +44,14 @@ export function SegmentedButton({ title, items, value, defaultValue, onChange }:
       )}
       <div role="group" className="inline-flex items-center rounded-md border border-(--border) w-full bg-transparent p-1">
         {Object.entries(items).map(([state, label]) => {
-        const isSelected = state === selectedValue;
+          const isSelected = state === selectedValue;
           return (
             <button
               key={state}
-              type="button"
-              aria-pressed={isSelected}
+              name={name}
+              type="radio"
+              value={state}
+              checked={isSelected}
               onClick={() => handleChange(state)}
               className={[
                 "flex-1 rounded-sm px-4 py-1.5 text-sm font-medium",

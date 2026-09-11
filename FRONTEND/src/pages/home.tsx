@@ -1,13 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Button from "@/components/ui/button_component";
 import WaveEffect from "@/components/ui/wave_shader_component";
 import { ChevronRight } from "react-feather";
 import { Link } from "react-router-dom";
 
 export default function Home() {
-  const [subCategories, setSubCategories] = useState<string[] | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [isHoveringSubmenu, setIsHoveringSubmenu] = useState(false);
 
-  const categories: Record<string, string[] | null> = {
+  const submenuRef = useRef<HTMLDivElement>(null);
+  const [targetHeight, setTargetHeight] = useState<number>(0);
+
+  const categories: Record<string, string[]> = {
     Websites: [
       "WordPress",
       "Shopify",
@@ -41,13 +45,30 @@ export default function Home() {
     ]
   }
 
-  const handleCategories = (category: string) => {
-    setSubCategories(categories[category]);
+  useEffect(() => {
+    if (activeCategory !== null) {
+      // Wait for the DOM to be fully laid out
+      const timer = setTimeout(() => {
+        if (submenuRef.current) {
+          const height = submenuRef.current.scrollHeight;
+          if (height > 0) {
+            setTargetHeight(height);
+          }
+        }
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [activeCategory]);
+
+  const handleCategories = (category: string | null) => {
+    if (category !== null) {
+      setActiveCategory(category);
+    } else {
+      setTargetHeight(0);
+      setActiveCategory(null);
+    }
   };
 
-  useEffect(() => {
-    console.log(subCategories);
-  }, [subCategories]);
 
   return (
     <main>
@@ -68,44 +89,96 @@ export default function Home() {
         <p className="text-lg text-(--text-muted) w-full text-center mb-3">Pesquise por categoria e encontre o projeto que procura.</p>
         <div className="flex">
           <div className="flex flex-col gap-3 *:bg-(--error)/50 *:hover:cursor-pointer *:max-w-xs *:p-10 *:mx-5 *:hover:bg-(--primary) *:transition-colors *:duration-300">
-            <button type="button" onMouseEnter={() => handleCategories("Websites")} onMouseLeave={() => handleCategories(null)}>
+            <button
+              type="button"
+              onMouseEnter={() => handleCategories("Websites")}
+              onMouseLeave={() => {
+                if (!isHoveringSubmenu) {
+                  setActiveCategory(null);
+                }
+              }}
+            >
               <div className="flex justify-between items-baseline">
                 Websites
                 <ChevronRight className="inline" size={18} />
               </div>
             </button>
 
-            <button type="button" onMouseEnter={() => handleCategories("Desenvolvimento de Apps")} onMouseLeave={() => handleCategories(null)}>
+            <button
+              type="button"
+              onMouseEnter={() => handleCategories("Desenvolvimento de Apps")}
+              onMouseLeave={() => {
+                if (!isHoveringSubmenu) {
+                  setActiveCategory(null);
+                }
+              }}
+            >
               <div className="flex justify-between items-baseline">
                 Desenvolvimento de Apps
                 <ChevronRight className="inline" size={18} />
               </div>
             </button>
 
-            <button type="button" onMouseEnter={() => handleCategories("Plataforma Mobile")} onMouseLeave={() => handleCategories(null)}>
+            <button
+              type="button"
+              onMouseEnter={() => handleCategories("Plataforma Mobile")}
+              onMouseLeave={() => {
+                if (!isHoveringSubmenu) {
+                  setActiveCategory(null);
+                }
+              }}
+            >
               <div className="flex justify-between items-baseline">
                 Plataforma Mobile
                 <ChevronRight className="inline" size={18} />
               </div>
             </button>
 
-            <button type="button" onMouseEnter={() => handleCategories("Suporte e Cibersegurança")} onMouseLeave={() => handleCategories(null)}>
+            <button
+              type="button"
+              onMouseEnter={() => handleCategories("Suporte e Cibersegurança")}
+              onMouseLeave={() => {
+                if (!isHoveringSubmenu) {
+                  setActiveCategory(null);
+                }
+              }}
+            >
               <div className="flex justify-between items-baseline">
                 Suporte e Cibersegurança
                 <ChevronRight className="inline" size={18} />
               </div>
             </button>
 
-            <button type="button" onMouseEnter={() => handleCategories("Blockchain & Web3")} onMouseLeave={() => handleCategories(null)}>
+            <button
+              type="button"
+              onMouseEnter={() => handleCategories("Blockchain & Web3")}
+              onMouseLeave={() => {
+                if (!isHoveringSubmenu) {
+                  setActiveCategory(null);
+                }
+              }}
+            >
               <div className="flex justify-between items-baseline">
                 Blockchain & Web3
                 <ChevronRight className="inline" size={18} />
               </div>
             </button>
           </div>
-          {subCategories !== null && (
-            <div className="flex flex-col bg-(--error)/50 text-white p-4 gap-10">
-              {subCategories.map((subCategory) => (
+          {activeCategory !== null && (
+            <div
+              ref={submenuRef}
+              className="flex flex-col bg-(--error)/50 text-white p-4 gap-10 overflow-hidden transition-all duration-300 ease-out"
+              style={{
+                maxHeight: targetHeight > 0 ? targetHeight.toString() : "0px",
+              }}
+
+              onMouseEnter={() => setIsHoveringSubmenu(true)}
+              onMouseLeave={() => {
+                setIsHoveringSubmenu(false);
+                setActiveCategory(null);
+              }}
+            >
+              {categories[activeCategory]!.map((subCategory) => (
                 <Link
                   key={subCategory}
                   to={`/project?category=${encodeURIComponent("test")}&sub_category=${encodeURIComponent(subCategory)}`}

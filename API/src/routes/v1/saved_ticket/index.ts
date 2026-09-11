@@ -50,6 +50,25 @@ export const SavedTicketRouter = new Elysia({ prefix: "/api/v1/saved-tickets" })
     tags: ["Saved Tickets"],
     auth: true,
   })
+  .get("/by-user/:userId", async ({ params, set }) => {
+    try {
+      const ids = await SavedTicketService.findSavedProjectIdsByUser(params.userId);
+      return { savedProjectIds: ids };
+    } catch (error) {
+      set.status = 500;
+      return { error: "Failed to fetch saved tickets" };
+    }
+  }, {
+    params: z.object({
+      userId: z.string().uuid(),
+    }),
+    response: {
+      200: z.object({ savedProjectIds: z.array(z.string().uuid()) }),
+      500: ErrorSchema,
+    },
+    tags: ["Saved Tickets"],
+    auth: true,
+  })
   .get("/:id", async ({ params, set }) => {
     try {
       const ticket = await SavedTicketService.findOne(eq(schemas.savedTicket.id, params.id));

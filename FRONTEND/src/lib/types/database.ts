@@ -33,8 +33,12 @@ export type NotificationType =
   | "SYSTEM";
 
 export type Audience =
-  | "Clientes"
-  | "Ferramenta Interna";
+  | "CLIENTS"
+  | "INTERNAL_TOOL"
+  | "BUSINESSES"
+  | "STUDENTS"
+  | "ADMINISTRATORS"
+  | "RESEARCHER";
 
 export interface PaginationParams {
   limit?: number;

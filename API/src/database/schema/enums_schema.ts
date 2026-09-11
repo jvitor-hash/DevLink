@@ -32,6 +32,10 @@ export const programmingLanguageEnum = pgEnum("programming_language", [
 export const audienceEnum = pgEnum("audience", [
   "CLIENTS",
   "INTERNAL_TOOL",
+  "STUDENTS",
+  "BUSINESSES",
+  "ADMINISTRATORS",
+  "RESEARCHER"
 ]);
 
 export const notificationTypeEnum = pgEnum("notification_type", [

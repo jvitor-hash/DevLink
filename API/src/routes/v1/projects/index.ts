@@ -31,9 +31,21 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
     tags: ["Projects"],
     auth: true,
   })
-  .get("/", async ({ query, set }) => {
+  .get("/", async ({ query, user, set }) => {
     try {
-      return await ProjectService.findAll(query.limit, query.offset);
+      const filters = {
+        audience: (query.audience as string) ?? undefined,
+        platforms: (query.platforms as string | string[] | undefined),
+        primaryLanguage: (query.primaryLanguage as string) ?? undefined,
+        status: (query.status as string) ?? undefined,
+        minBudget: query.minBudget != null ? Number(query.minBudget) : undefined,
+        maxBudget: query.maxBudget != null ? Number(query.maxBudget) : undefined,
+        savedOnly: query.savedOnly === "true",
+      };
+
+      const userId = (user as any)?.id ?? null;
+
+      return await ProjectService.findFiltered(userId, filters, query.limit, query.offset);
     } catch (error) {
       set.status = 500;
       return { error: "Failed to fetch projects" };
@@ -42,6 +54,13 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
     query: z.object({
       limit: z.coerce.number().min(1).max(100).default(10),
       offset: z.coerce.number().min(0).default(0),
+      audience: z.string().optional(),
+      platforms: z.union([z.string(), z.array(z.string())]).optional(),
+      primaryLanguage: z.string().optional(),
+      status: z.string().optional(),
+      minBudget: z.coerce.number().optional(),
+      maxBudget: z.coerce.number().optional(),
+      savedOnly: z.string().optional(),
     }),
     response: {
       200: z.array(ProjectDTOSchema),
