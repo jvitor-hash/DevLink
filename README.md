@@ -1,5 +1,5 @@
 # DevLink
-Versão: v2.2.1
+Versão: v2.4.1
 
 ## Tecnologias utilizadas
 - Bun.js (Runtime)

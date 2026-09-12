@@ -14,7 +14,7 @@ export const ReviewRouter = new Elysia({ prefix: "/api/v1/reviews" })
       const data = body as ReviewCreate;
       const newReview = await ReviewService.create({
         ...data,
-        reviewerId: (user as any).id,
+        reviewerId: schemas.user.id,
       });
       set.status = 201;
       return newReview;
@@ -109,7 +109,7 @@ export const ReviewRouter = new Elysia({ prefix: "/api/v1/reviews" })
     try {
       const data = body as ReviewUpdate;
       const updated = await ReviewService.update(
-        and(eq(schemas.review.id, params.id), eq(schemas.review.reviewerId, (user as any).id)) as SQL<unknown>,
+        and(eq(schemas.review.id, params.id), eq(schemas.review.reviewerId, schemas.user.id)) as SQL<unknown>,
         data
       );
       return updated;
@@ -133,7 +133,7 @@ export const ReviewRouter = new Elysia({ prefix: "/api/v1/reviews" })
   .delete("/:id", async ({ params, user, set }) => {
     try {
       const deleted = await ReviewService.remove(
-        and(eq(schemas.review.id, params.id), eq(schemas.review.reviewerId, (user as any).id)) as SQL<unknown>
+        and(eq(schemas.review.id, params.id), eq(schemas.review.reviewerId, schemas.user.id)) as SQL<unknown>
       );
       return deleted;
     } catch (error) {

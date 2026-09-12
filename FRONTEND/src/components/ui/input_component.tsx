@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { Eye, EyeOff, Search, Lock, Mail } from "react-feather";
 import type { Icon as IconType } from "react-feather";

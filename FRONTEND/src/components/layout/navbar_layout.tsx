@@ -90,7 +90,7 @@ export default function Navbar() {
             <Link to="/settings" className="flex items-center gap-2 text-white hover:text-(--primary) transition-colors">
               <Settings size={18}/>
             </Link>
-            <span className="text-white font-medium">{user.name}</span>
+            <span className="text-white font-medium" data-testid="navbar-username">{user.name}</span>
             <Button label="Log-out" buttonType="button" colorType="primary" onClick={handleSignOut}/>
           </div>
         ) : (

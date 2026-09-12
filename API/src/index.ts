@@ -10,12 +10,14 @@ import { MessageRouter } from "@/routes/v1/message";
 import { ReviewRouter } from "@/routes/v1/review";
 import { UserPreferenceRouter } from "@/routes/v1/user_preferences";
 import { SavedTicketRouter } from "@/routes/v1/saved_ticket";
+import { ClientAuthRouter } from "./routes/v1/client";
+import { ProgrammerAuthRouter } from "./routes/v1/programmer";
 
 const schema = await auth.api.generateOpenAPISchema();
 
 const app = new Elysia()
   .use(cors({
-    origin: [process.env.FRONT_END_URL, "http://127.0.0.1:5173"],
+    origin: [process.env.FRONT_END_URL ?? "http://localhost:5173", "http://127.0.0.1:5173"],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -24,6 +26,8 @@ const app = new Elysia()
     documentation: schema as any,
   }))
   .use(authPlugin)
+  .use(ClientAuthRouter)
+  .use(ProgrammerAuthRouter)
   .mount(auth.handler)
   .use(ProjectsRouter)
   .use(NotificationRouter)

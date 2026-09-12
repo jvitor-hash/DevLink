@@ -14,7 +14,7 @@ export const MessageRouter = new Elysia({ prefix: "/api/v1/messages" })
       const data = body as MessageCreate;
       const newMessage = await MessageService.create({
         ...data,
-        senderId: (user as any).id,
+        senderId: schemas.user.id,
       });
       set.status = 201;
       return newMessage;
@@ -31,9 +31,13 @@ export const MessageRouter = new Elysia({ prefix: "/api/v1/messages" })
     tags: ["Messages"],
     auth: true,
   })
-  .get("/", async ({ query, set }) => {
+  .get("/", async ({ query, user, set }) => {
     try {
-      return await MessageService.findAll(query.limit, query.offset);
+      if (!user) {
+        set.status = 401;
+        return { error: "Unauthorized" };
+      }
+      return await MessageService.findAllByUser(user.id, query.limit, query.offset);
     } catch (error) {
       set.status = 500;
       return { error: "Failed to fetch messages" };
@@ -74,7 +78,7 @@ export const MessageRouter = new Elysia({ prefix: "/api/v1/messages" })
     try {
       const data = body as MessageUpdate;
       const updated = await MessageService.update(
-        and(eq(schemas.message.id, params.id), eq(schemas.message.senderId, (user as any).id)) as SQL<unknown>,
+        and(eq(schemas.message.id, params.id), eq(schemas.message.senderId, schemas.user.id)) as SQL<unknown>,
         data
       );
       return updated;
@@ -98,7 +102,7 @@ export const MessageRouter = new Elysia({ prefix: "/api/v1/messages" })
   .delete("/:id", async ({ params, user, set }) => {
     try {
       const deleted = await MessageService.remove(
-        and(eq(schemas.message.id, params.id), eq(schemas.message.senderId, (user as any).id)) as SQL<unknown>
+        and(eq(schemas.message.id, params.id), eq(schemas.message.senderId, schemas.user.id)) as SQL<unknown>
       );
       return deleted;
     } catch (error) {

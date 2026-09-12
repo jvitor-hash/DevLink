@@ -14,7 +14,7 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
       const data = body as ProjectCreate;
       const newProject = await ProjectService.create({
         ...data,
-        clientId: (user as any).id,
+        clientId: schemas.user.id,
       });
       set.status = 201;
       return newProject;
@@ -31,7 +31,7 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
     tags: ["Projects"],
     auth: true,
   })
-  .get("/", async ({ query, user, set }) => {
+  .get("/", async ({ query, set }) => {
     try {
       const filters = {
         audience: (query.audience as string) ?? undefined,
@@ -43,7 +43,7 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
         savedOnly: query.savedOnly === "true",
       };
 
-      const userId = (user as any)?.id ?? null;
+      const userId = schemas.user?.id ?? null;
 
       return await ProjectService.findFiltered(userId, filters, query.limit, query.offset);
     } catch (error) {
@@ -92,7 +92,7 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
     try {
       const data = body as ProjectUpdate;
       const updated = await ProjectService.update(
-        and(eq(schemas.project.id, params.id), eq(schemas.project.clientId, (user as any).id)) as SQL<unknown>,
+        and(eq(schemas.project.id, params.id), eq(schemas.project.clientId, schemas.user.id)) as SQL<unknown>,
         data
       );
       return updated;
@@ -116,7 +116,7 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
   .delete("/:id", async ({ params, user, set }) => {
     try {
       const deleted = await ProjectService.remove(
-        and(eq(schemas.project.id, params.id), eq(schemas.project.clientId, (user as any).id)) as SQL<unknown>
+        and(eq(schemas.project.id, params.id), eq(schemas.project.clientId, schemas.user.id)) as SQL<unknown>
       );
       return deleted;
     } catch (error) {

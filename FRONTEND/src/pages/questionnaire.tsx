@@ -40,6 +40,10 @@ export default function Questionnaire() {
     ],
   };
 
+  const handleCategories = (category: string) : void => {
+    
+  };
+
   return (
     <>
       <div className="mt-4">
@@ -71,6 +75,7 @@ export default function Questionnaire() {
                   "Blockchain & Web3": "Blockchain & Web3",
                 }}
                 name="category"
+                onChange={(e) => handleCategories(e.currentTarget.value)}
               />
             </div>
 

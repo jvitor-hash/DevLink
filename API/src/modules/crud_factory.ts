@@ -30,7 +30,7 @@ function crud<T extends PgTable>(table: T) {
   async function findWhere(condition: SQL<unknown>): Promise<Select[]> {
     const result = (await db.select().from(genericTable).where(condition)) as Select[];
     if (!result || result.length === 0) {
-      throw new Error("No results found");
+      return [];
     }
     return result;
   }

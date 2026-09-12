@@ -1,8 +1,10 @@
+import type { ReactEventHandler } from "react"
+
 type SelectComponentProps = {
   labels: Record<string, string | number>
   name: string
   defaultValue?: string
-  onChange?: () => void
+  onChange?: ReactEventHandler<HTMLSelectElement>
   className?: string
 }
 

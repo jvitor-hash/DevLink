@@ -75,8 +75,6 @@ export default function ProfilePage() {
   // const isProgrammer = profileUser.role === "PROGRAMMER";
 
   return (
-
-
     <div className="p-8">
       <header className="mb-8">
         <div className="flex items-center gap-4">
@@ -94,8 +92,6 @@ export default function ProfilePage() {
           </div>
         )}
       </header>
-
-
     </div>
   );
 }

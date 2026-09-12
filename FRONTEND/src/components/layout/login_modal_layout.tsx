@@ -5,6 +5,7 @@ import Input from "../ui/input_component";
 import Checkbox from "../ui/checkbox_component";
 import { SegmentedButton } from "@/components/ui/segmented_button_component";
 import { authService } from "@/services/auth_service";
+import type { RegisterRole } from "@/services/auth_service";
 
 type LoginModalProps = { show: boolean; onClose: () => void };
 
@@ -41,6 +42,7 @@ export default function LoginModal({ show, onClose }: LoginModalProps) {
     const formData = new FormData(event.currentTarget);
     const email = formData.get("email");
     const password = formData.get("password");
+    const role = formData.get("role");
 
     try {
       if (typeof email !== "string" || typeof password !== "string") {
@@ -54,7 +56,10 @@ export default function LoginModal({ show, onClose }: LoginModalProps) {
         if (typeof name !== "string" || !name.trim()) {
           throw new Error("Preencha seu nome.");
         }
-        await authService.register({ name, email, password });
+        if (role !== "CLIENT" && role !== "PROGRAMMER") {
+          throw new Error("Selecione o tipo de usuário.");
+        }
+        await authService.register({ name, email, password, registrationRole: role as RegisterRole });
       }
 
       close();
@@ -79,8 +84,8 @@ export default function LoginModal({ show, onClose }: LoginModalProps) {
               <Input icon="lock" dataTestId="password-input" inputType="password" name="password" placeholder="Digite sua senha" label="Senha" />
               <label className="flex items-center"><Checkbox label="Salvar essa sessão?" checked /></label>
               <div className="flex justify-center gap-5 mt-2">
-                <Button buttonType="submit" colorType="success" label={submitting ? "Entrando..." : "Login"} />
-                <Button buttonType="reset" colorType="secondary" label="Limpar" />
+                <Button buttonType="submit" dataTestId="submit-btn" colorType="success" label={submitting ? "Entrando..." : "Login"} />
+                <Button buttonType="reset" dataTestId="reset-btn" colorType="secondary" label="Limpar" />
               </div>
             </form>
           </>
@@ -93,10 +98,17 @@ export default function LoginModal({ show, onClose }: LoginModalProps) {
               <Input inputType="text" dataTestId="name-input" name="name" placeholder="Digite seu nome" label="Nome" />
               <Input icon="mail" dataTestId="email-input" inputType="email" name="email" placeholder="Nome@Exemplo.com" label="E-mail" />
               <Input icon="lock" dataTestId="password-input" inputType="password" name="password" placeholder="Digite sua senha" label="Senha" />
-              <SegmentedButton title="Tipo de usuário" name="role" items={{ client: "Cliente", programmer: "Programador" }} defaultValue="client" />
+              <SegmentedButton
+                title="Tipo de usuário"
+                name="role"
+                items={{
+                  CLIENT: "Cliente",
+                  PROGRAMMER: "Programador",
+                }}
+              />
               <div className="flex justify-center gap-5 mt-2">
-                <Button buttonType="submit" colorType="success" label={submitting ? "Cadastrando..." : "Cadastre-se"} />
-                <Button buttonType="reset" colorType="secondary" label="Limpar" />
+                <Button buttonType="submit" dataTestId="submit-btn" colorType="success" label={submitting ? "Cadastrando..." : "Cadastre-se"} />
+                <Button buttonType="reset" dataTestId="reset-btn" colorType="secondary" label="Limpar" />
               </div>
             </form>
           </>

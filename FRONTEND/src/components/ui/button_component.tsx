@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, type ReactEventHandler } from "react";
 import { Link } from "react-router-dom";
 

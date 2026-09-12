@@ -14,7 +14,7 @@ export const SavedTicketRouter = new Elysia({ prefix: "/api/v1/saved-tickets" })
       const data = body as SavedTicketCreate;
       const newSavedTicket = await SavedTicketService.create({
         ...data,
-        userId: (user as any).id,
+        userId: schemas.user.id,
       });
       set.status = 201;
       return newSavedTicket;
@@ -31,9 +31,13 @@ export const SavedTicketRouter = new Elysia({ prefix: "/api/v1/saved-tickets" })
     tags: ["Saved Tickets"],
     auth: true,
   })
-  .get("/", async ({ query, set }) => {
+  .get("/", async ({ query, user, set }) => {
     try {
-      return await SavedTicketService.findAll(query.limit, query.offset);
+      if (!user) {
+        set.status = 401;
+        return { error: "Unauthorized" };
+      }
+      return await SavedTicketService.findAllByUser(user.id, query.limit, query.offset);
     } catch (error) {
       set.status = 500;
       return { error: "Failed to fetch saved tickets" };
@@ -92,7 +96,7 @@ export const SavedTicketRouter = new Elysia({ prefix: "/api/v1/saved-tickets" })
   .delete("/:id", async ({ params, user, set }) => {
     try {
       const deleted = await SavedTicketService.remove(
-        and(eq(schemas.savedTicket.id, params.id), eq(schemas.savedTicket.userId, (user as any).id)) as SQL<unknown>
+        and(eq(schemas.savedTicket.id, params.id), eq(schemas.savedTicket.userId, schemas.user.id)) as SQL<unknown>
       );
       return deleted;
     } catch (error) {

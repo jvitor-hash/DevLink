@@ -7,10 +7,13 @@ export interface LoginCredentials {
   rememberMe?: boolean;
 }
 
+export type RegisterRole = "CLIENT" | "PROGRAMMER";
+
 export interface RegisterCredentials {
   name: string;
   email: string;
   password: string;
+  registrationRole: RegisterRole;
 }
 
 export interface AuthSessionDTO {
@@ -65,9 +68,17 @@ class AuthService {
   }
 
   async register(credentials: RegisterCredentials): Promise<AuthResponse> {
-    const response = await this.request<AuthResponse>("/api/auth/sign-up/email", {
+    const endpoint = credentials.registrationRole === "CLIENT"
+      ? "/api/auth/sign-up/client"
+      : "/api/auth/sign-up/programmer";
+
+    const response = await this.request<AuthResponse>(endpoint, {
       method: "POST",
-      body: JSON.stringify(credentials),
+      body: JSON.stringify({
+        name: credentials.name,
+        email: credentials.email,
+        password: credentials.password,
+      }),
     });
 
     this.cacheUserData(response);
@@ -100,11 +111,22 @@ class AuthService {
     return cache.has("current_user");
   }
 
-  hasPermission(permission: string): boolean {
+  hasPermission(permission: Record<string, string>): boolean {
     const user = this.getCachedUser();
     if (!user) return false;
     if (this.isAdmin(user.role)) return true;
-    return permission === "read" && user.role !== null;
+    const allowed = this.request("/admin/has-permission", {
+      body: {
+        user: user.id,
+        permissions: {
+          ...permission
+        }
+      }
+    });
+
+    return allowed.success;
+
+    // return permission === "read" && user.role !== null;
   }
 
   async logout(): Promise<void> {

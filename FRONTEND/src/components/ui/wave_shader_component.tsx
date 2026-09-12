@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import ShaderCanvas from "@/components/ui/shader_component";
 import { WATER_DITHER_SHADER } from "../shaders/dither_water";

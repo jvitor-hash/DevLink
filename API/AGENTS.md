@@ -102,7 +102,7 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
       const data = body as ProjectCreate;
       const newProject = await ProjectService.create({
         ...data,
-        clientId: (user as any).id,
+        clientId: schemas.user.id,
       });
       set.status = 201;
       return newProject;

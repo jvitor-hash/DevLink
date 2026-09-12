@@ -1,6 +1,6 @@
 import { schemas } from "@/database/schema";
 import { crud } from "@/modules/crud_factory";
-import { and, eq, or, inArray, like, type SQL } from "drizzle-orm";
+import { and, eq, inArray, type SQL } from "drizzle-orm";
 
 export const ProjectService = {
   ...crud(schemas.project),
@@ -44,11 +44,11 @@ export const ProjectService = {
     }
 
     if (filters.minBudget != null && filters.minBudget >= 0) {
-      conditions.push(schemas.project.minBudget.gte(String(filters.minBudget)));
+      conditions.push(schemas.project.minBudget.gte(filters.minBudget));
     }
 
     if (filters.maxBudget != null && filters.maxBudget >= 0) {
-      conditions.push(schemas.project.maxBudget.lte(String(filters.maxBudget)));
+      conditions.push(schemas.project.maxBudget.lte(filters.maxBudget));
     }
 
     if (filters.savedOnly && userId) {

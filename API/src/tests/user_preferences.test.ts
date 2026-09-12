@@ -9,17 +9,17 @@ import { UserPreferenceRouter } from "../routes/v1/user_preferences";
 describe("UserPreference Schema Validation", () => {
   test("UserPreferenceCreateSchema should validate correctly", () => {
     const validData = {
-      emailNotifications: true,
-      messageNotifications: false,
-      projectNotifications: true,
-      reviewNotifications: true,
+      email_notifications: true,
+      message_notifications: false,
+      project_notifications: true,
+      review_notifications: true,
     };
 
     const result = UserPreferenceCreateSchema.safeParse(validData);
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.emailNotifications).toBe(true);
-      expect(result.data.messageNotifications).toBe(false);
+      expect(result.data.email_notifications).toBe(true);
+      expect(result.data.message_notifications).toBe(false);
     }
   });
 
@@ -29,26 +29,26 @@ describe("UserPreference Schema Validation", () => {
     const result = UserPreferenceCreateSchema.safeParse(emptyData);
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.emailNotifications).toBe(true);
-      expect(result.data.messageNotifications).toBe(true);
-      expect(result.data.projectNotifications).toBe(true);
-      expect(result.data.reviewNotifications).toBe(true);
+      expect(result.data.email_notifications).toBe(true);
+      expect(result.data.message_notifications).toBe(true);
+      expect(result.data.project_notifications).toBe(true);
+      expect(result.data.review_notifications).toBe(true);
     }
   });
 
   test("UserPreferenceUpdateSchema should accept partial updates", () => {
     const updateData = {
-      emailNotifications: false,
+      email_notifications: false,
     };
 
     const result = UserPreferenceUpdateSchema.safeParse(updateData);
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.emailNotifications).toBe(false);
+      expect(result.data.email_notifications).toBe(false);
       // In partial schema, unspecified fields get their default values
-      expect(result.data.messageNotifications).toBe(true);
-      expect(result.data.projectNotifications).toBe(true);
-      expect(result.data.reviewNotifications).toBe(true);
+      expect(result.data.message_notifications).toBe(true);
+      expect(result.data.project_notifications).toBe(true);
+      expect(result.data.review_notifications).toBe(true);
     }
   });
 
@@ -61,19 +61,19 @@ describe("UserPreference Schema Validation", () => {
 
   test("UserPreferenceUpdateSchema should accept full update", () => {
     const fullUpdate = {
-      emailNotifications: false,
-      messageNotifications: false,
-      projectNotifications: false,
-      reviewNotifications: false,
+      email_notifications: false,
+      message_notifications: false,
+      project_notifications: false,
+      review_notifications: false,
     };
 
     const result = UserPreferenceUpdateSchema.safeParse(fullUpdate);
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.emailNotifications).toBe(false);
-      expect(result.data.messageNotifications).toBe(false);
-      expect(result.data.projectNotifications).toBe(false);
-      expect(result.data.reviewNotifications).toBe(false);
+      expect(result.data.email_notifications).toBe(false);
+      expect(result.data.message_notifications).toBe(false);
+      expect(result.data.project_notifications).toBe(false);
+      expect(result.data.review_notifications).toBe(false);
     }
   });
 
@@ -81,10 +81,10 @@ describe("UserPreference Schema Validation", () => {
     const fullPreference = {
       id: "550e8400-e29b-41d4-a716-446655440000",
       userId: "550e8400-e29b-41d4-a716-446655440001",
-      emailNotifications: true,
-      messageNotifications: true,
-      projectNotifications: true,
-      reviewNotifications: false,
+      email_notifications: true,
+      message_notifications: true,
+      project_notifications: true,
+      review_notifications: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };

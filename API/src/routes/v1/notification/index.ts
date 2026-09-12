@@ -14,7 +14,7 @@ export const NotificationRouter = new Elysia({ prefix: "/api/v1/notifications" }
       const data = body as NotificationCreate;
       const newNotification = await NotificationService.create({
         ...data,
-        userId: data.userId ?? (user as any).id,
+        userId: data.userId ?? schemas.user.id,
       });
       set.status = 201;
       return newNotification;
@@ -33,7 +33,11 @@ export const NotificationRouter = new Elysia({ prefix: "/api/v1/notifications" }
   })
   .get("/", async ({ query, user, set }) => {
     try {
-      return await NotificationService.findAll(query.limit, query.offset);
+      if (!user) {
+        set.status = 401;
+        return { error: "Unauthorized" };
+      }
+      return await NotificationService.findAllByUser(user.id, query.limit, query.offset);
     } catch (error) {
       set.status = 500;
       return { error: "Failed to fetch notifications" };
@@ -53,7 +57,7 @@ export const NotificationRouter = new Elysia({ prefix: "/api/v1/notifications" }
   .get("/:id", async ({ params, user, set }) => {
     try {
       const notificationItem = await NotificationService.findOne(
-        and(eq(schemas.notification.id, params.id), eq(schemas.notification.userId, (user as any).id)) as SQL<unknown>
+        and(eq(schemas.notification.id, params.id), eq(schemas.notification.userId, schemas.user.id)) as SQL<unknown>
       );
       return notificationItem;
     } catch (error) {
@@ -76,7 +80,7 @@ export const NotificationRouter = new Elysia({ prefix: "/api/v1/notifications" }
     try {
       const data = body as NotificationUpdate;
       const updated = await NotificationService.update(
-        and(eq(schemas.notification.id, params.id), eq(schemas.notification.userId, (user as any).id)) as SQL<unknown>,
+        and(eq(schemas.notification.id, params.id), eq(schemas.notification.userId, schemas.user.id)) as SQL<unknown>,
         data
       );
       return updated;
@@ -100,7 +104,7 @@ export const NotificationRouter = new Elysia({ prefix: "/api/v1/notifications" }
   .delete("/:id", async ({ params, user, set }) => {
     try {
       const deleted = await NotificationService.remove(
-        and(eq(schemas.notification.id, params.id), eq(schemas.notification.userId, (user as any).id)) as SQL<unknown>
+        and(eq(schemas.notification.id, params.id), eq(schemas.notification.userId, schemas.user.id)) as SQL<unknown>
       );
       return deleted;
     } catch (error) {

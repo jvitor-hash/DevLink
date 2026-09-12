@@ -4,10 +4,10 @@ import { createCrudSchemas, idSchema, timestampsSchema } from "./helper";
 export const UserPreferenceSchema = z.object({
   id: idSchema,
   userId: idSchema,
-  emailNotifications: z.boolean().default(true),
-  messageNotifications: z.boolean().default(true),
-  projectNotifications: z.boolean().default(true),
-  reviewNotifications: z.boolean().default(true),
+  email_notifications: z.boolean().default(true),
+  message_notifications: z.boolean().default(true),
+  project_notifications: z.boolean().default(true),
+  review_notifications: z.boolean().default(true),
 }).merge(timestampsSchema);
 
 const UserPreferenceDTOs = createCrudSchemas(UserPreferenceSchema, [

@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 
 type SegmentedButtonProps = {
@@ -17,7 +15,7 @@ export function SegmentedButton({
   value,
   defaultValue,
   onChange,
-  name,
+  name = "segmented-button",
 }: SegmentedButtonProps) {
   const firstItem = Object.keys(items)[0];
 
@@ -36,38 +34,33 @@ export function SegmentedButton({
   };
 
   return (
-    <>
+    <div>
       {title !== undefined && (
-        <>
-          <p className="mb-2">{title}</p>
-        </>
+        <p className="mb-2">{title}</p>
       )}
-      <div role="group" className="inline-flex items-center rounded-md border border-(--border) w-full bg-transparent p-1">
+
+      <div role="radiogroup" className="inline-flex w-full items-center rounded-md border border-(--border) bg-transparent p-1">
         {Object.entries(items).map(([state, label]) => {
           const isSelected = state === selectedValue;
+
           return (
-            <button
+            <label
               key={state}
-              name={name}
-              type="radio"
-              value={state}
-              checked={isSelected}
-              onClick={() => handleChange(state)}
               className={[
-                "flex-1 rounded-sm px-4 py-1.5 text-sm font-medium",
+                "flex-1 cursor-pointer rounded-sm px-4 py-1.5 text-center text-sm font-medium",
                 "transition-colors duration-150",
-                "focus-visible:outline-none focus-visible:ring-2",
-                "focus-visible:ring(--primary)",
+                "focus-within:ring-(--primary)",
                 isSelected
                   ? "bg-(--primary) text-white"
                   : "bg-transparent text-(--primary) hover:bg-(--primary)/10",
               ].join(" ")}
             >
+              <input type="radio" name={name} value={state} checked={isSelected} onChange={() => handleChange(state)} className="sr-only"/>
               {label}
-            </button>
+            </label>
           );
         })}
       </div>
-    </>
+    </div>
   );
 }

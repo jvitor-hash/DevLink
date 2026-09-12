@@ -16,8 +16,8 @@ export const ProjectDTOSchema = z.object({
   platforms: z.array(PlatformTypeEnum).min(1),
   status: ProjectStatusEnum.default("OPEN"),
   audience: AudienceEnum.default("CLIENTS"),
-  minBudget: z.string().min(1),
-  maxBudget: z.string().min(1),
+  minBudget: z.number().min(1),
+  maxBudget: z.number().min(1),
   completedAt: z.union([z.date(), z.string().datetime(), z.string()]).nullable().optional(),
 }).merge(timestampsSchema);
 

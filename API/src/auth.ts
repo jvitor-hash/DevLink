@@ -1,9 +1,10 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
-import { openAPI, admin } from 'better-auth/plugins';
+import { openAPI, admin as adminPlugin } from 'better-auth/plugins';
 import { db } from "@/client";
 import { env } from "@/env";
 import { schemas } from "./database/schema";
+import { ac, clientRole, programmerRole, adminRole } from '@/permissions';
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -24,13 +25,23 @@ export const auth = betterAuth({
 
     ipAddress: {
       ipAddressHeaders: ['x-forwarded-for', 'x-real-ip'],
-      trustedProxies: ['127.0.0.1', '::1', '0.0.0.0']
+      trustedProxies: ['127.0.0.1', '::1']
     }
   },
 
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.BETTER_AUTH_URL,
   basePath: "/api/auth",
+
+  user: {
+    additionalFields: {
+      role: {
+        type: "string",
+        defaultValue: "CLIENT",
+        input: false,
+      },
+    }
+  },
 
   emailAndPassword: {
     enabled: true,
@@ -70,6 +81,15 @@ export const auth = betterAuth({
 
   plugins: [
     openAPI(),
-    admin(),
+    adminPlugin({
+      ac: ac,
+      roles: {
+        "CLIENT": clientRole,
+        "PROGRAMMER": programmerRole,
+        "ADMIN": adminRole
+      },
+      defaultRole: "CLIENT",
+      adminRoles: ["ADMIN"]
+    }),
   ]
 });
