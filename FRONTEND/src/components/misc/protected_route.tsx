@@ -1,11 +1,11 @@
 // components/ProtectedRoute.tsx
 import { type ReactNode, useEffect, useState } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { authService } from '@/services/auth_service';
+import { authService, type Permissions } from '@/services/auth_service';
 
 interface ProtectedRouteProps {
   children?: ReactNode; // Make children optional
-  requiredPermission?: string;
+  requiredPermission?: Permissions;
   redirectTo?: string;
 }
 
@@ -36,7 +36,7 @@ export const ProtectedRoute = ({
 
         // Check for specific permission if required
         if (requiredPermission) {
-          const hasPermission = authService.hasPermission(requiredPermission);
+          const hasPermission = await authService.hasPermission(requiredPermission);
           if (!hasPermission) {
             navigate(redirectTo, { state: { from: location } });
             return;

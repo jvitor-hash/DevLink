@@ -29,6 +29,19 @@ export interface AuthResponse {
   token?: string;
 }
 
+export const permissionStatement = {
+  projects: ["create", "update", "read", "delete", "list"],
+  message: ["create", "update", "read", "delete", "list"],
+  notification: ["create", "update", "read", "delete", "list"],
+  reviews: ["create", "update", "read", "delete", "list"],
+  saved_tickets: ["create", "update", "read", "delete", "list"],
+  user_preferences: ["create", "update", "read", "delete", "list"],
+} as const;
+
+export type Permissions = Partial<{
+  [K in keyof typeof permissionStatement]: readonly ((typeof permissionStatement)[K][number])[];
+}>;
+
 interface LoginAttempt {
   timestamp: number;
   email: string;
@@ -111,22 +124,18 @@ class AuthService {
     return cache.has("current_user");
   }
 
-  hasPermission(permission: Record<string, string>): boolean {
+  async hasPermission(permissions: Permissions): Promise<boolean> {
     const user = this.getCachedUser();
+
     if (!user) return false;
     if (this.isAdmin(user.role)) return true;
-    const allowed = this.request("/admin/has-permission", {
-      body: {
-        user: user.id,
-        permissions: {
-          ...permission
-        }
-      }
+
+    const allowed = await this.request<{ success: boolean; error: string | null }>("/api/auth/admin/has-permission", {
+      method: "POST",
+      body: JSON.stringify({ permissions: { ...permissions } }),
     });
 
-    return allowed.success;
-
-    // return permission === "read" && user.role !== null;
+    return allowed?.success ?? false;
   }
 
   async logout(): Promise<void> {

@@ -1,3 +1,5 @@
+console.depth = 4
+
 [test]
 # Test configuration for Bun
 preload = []

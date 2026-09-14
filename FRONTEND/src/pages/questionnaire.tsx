@@ -1,127 +1,97 @@
-import Checkbox from "@/components/ui/checkbox_component";
-import Input from "@/components/ui/input_component";
-import Select from "@/components/ui/select_component";
-import TextArea from "@/components/ui/textarea_component";
+import Button from "@/components/ui/button_component";
+import { Steps } from "@/components/ui/steps_component";
+import { authService } from "@/services/auth_service";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function Questionnaire() {
-  // TODO: Validate the user's role and check whether they have the approriate role for this page.
+  const [steps, setStep] = useState<number>(1);
+  const [allowed, setAllowed] = useState<boolean | null>(null);
+  const maxSteps = 4;
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const categories: Record<string, string[] | null> = {
-    Websites: [
-      "WordPress",
-      "Shopify",
-      "Sites personalizados",
-      "Wix & Webflow",
-      "Squarespace & WooCommerce",
-    ],
-    "Desenvolvimento de Apps": [
-      "Aplicação Full-Stack",
-      "Aplicação Desktop & Jogos",
-      "Extensão de navegador",
-      "Desenvolvimento de APIs",
-      "Chatbots AI",
-    ],
-    "Plataforma Mobile": [
-      "Desenvolvimento Mobile",
-      "Aplicativos Multiplataforma",
-      "Aplicativos Android",
-      "Aplicativos iOS",
-    ],
-    "Suporte e Cibersegurança": [
-      "Cloud Computing & DevOps",
-      "Cibersegurança",
-      "Suporte e TI",
-      "Manutenção de Sistemas",
-    ],
-    "Blockchain & Web3": [
-      "Desenvolvimento Blockchains",
-      "Apps Descentralizados",
-      "Criptomoedas e Tokens",
-    ],
+  useEffect(() => {
+    let cancelled = false;
+
+    const checkPermission = async (): Promise<void> => {
+      try {
+        const hasPermission = await authService.hasPermission({ projects: ["create"] });
+        if (cancelled) return;
+
+        if (hasPermission) {
+          setAllowed(true);
+          return;
+        }
+
+        navigate("/", { state: { from: location } });
+      } catch {
+        if (!cancelled) navigate("/", { state: { from: location } });
+      }
+    };
+
+    checkPermission();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleBackStep = (): void => {
+    if (steps > 1)
+      setStep(steps - 1);
   };
 
-  const handleCategories = (category: string) : void => {
-    
+  const handleNextStep = (): void => {
+    if (steps < maxSteps)
+      setStep(steps + 1);
   };
+
+  if (allowed === null) return null;
 
   return (
     <>
-      <div className="mt-4">
-        <h2 className="text-2xl w-full text-center">Criaçao de projetos</h2>
-        <p className="text-base text-(--text-muted) text-center">
-          Descreva suas ideas aqui e publique para possiveis programadores
-        </p>
-      </div>
-
       <div className="mx-4 mt-2 min-w-auto bg-(--surface-1) p-4 rounded-sm border border-(--border)">
-        <div className="flex flex-wrap gap-4">
-          <div className="w-full">
-            <Input label="Titulo" name="" placeholder="Digite o titulo do seu projeto" />
-            <div className="flex *:flex-1 gap-4">
-              <TextArea label="Descriçao do problema a ser resolvido" name="problem" placeholder="Digite a descricao do seu projeto..." />
-              <TextArea label="Requerimentos de interacao do usuario" name="user_actions" placeholder="Descreva as interacoes necessarias do sistema com os usuarios..." />
-            </div>
-          </div>
-
-          <div className="flex gap-4">
-            <div>
-              <p>Categoria:</p>
-              <Select
-                labels={{
-                  Websites: "websites",
-                  "Desenvolvimento de Apps": "Desenvolvimento de Apps",
-                  "Plataforma Mobile": "Plataforma Mobile",
-                  "Suporte e Cibersegurança": "Suporte e Cibersegurança",
-                  "Blockchain & Web3": "Blockchain & Web3",
-                }}
-                name="category"
-                onChange={(e) => handleCategories(e.currentTarget.value)}
-              />
-            </div>
-
-            <div className="hidden">
-              <p>Sub-Categoria:</p>
-              <Select labels={{}} name="sub_category" />
-            </div>
-
-            <div>
-              <p>Linguagem de programaçao:</p>
-              <Select labels={{
-                Python: "PYTHON",
-                "C#": "CSHARP",
-                "Node.js" :"NODE_JS",
-                Java:"JAVA",
-                GO: "GO",
-                Typescript: "TYPESCRIPT",
-                Javascript: "JAVASCRIPT",
-                PHP: "PHP",
-                Rust: "RUST",
-                Kotlin: "KOTLIN",
-                Swift:  "SWIFT"
-              }} name="primary_language" />
-            </div>
-
-            <div>
-              <p>Publico-alvo:</p>
-              <Select labels={{
-                Clientes: "CLIENTS",
-                "Ferramenta Interna": "INTERNAL_TOOL",
-                Empresas: "BUSINESSES",
-                Estudantes: "STUDENTS",
-                Administradores: "ADMINISTRATORS",
-                Pesquisadores: "RESEARCHER"
-              }} name="sub_category" />
-            </div>
-          </div>
+        <div className="mt-4">
+          <h2 className="text-2xl w-full text-center">Ideação de projetos</h2>
+          <p className="text-base text-(--text-muted) text-center">
+            Descreva suas ideas aqui e publique para possiveis programadores
+          </p>
         </div>
 
-        <div>
-          <p>Plataformas:</p>
-          <div className="flex gap-4">
-            <Checkbox label="Web"/>
-            <Checkbox label="Desktop"/>
-            <Checkbox label="Mobile"/>
-          </div>
+        <div className="flex flex-wrap gap-4 mt-4">
+          <Steps currentStep={steps}>
+            <Steps.Item>
+              <Steps.Indicator />
+              <span className="mt-2 text-sm">Defina o problema</span>
+            </Steps.Item>
+
+            <Steps.Item>
+              <Steps.Indicator />
+              <span className="mt-2 text-sm">Definição de publíco-alvo</span>
+            </Steps.Item>
+
+            <Steps.Item>
+              <Steps.Indicator />
+              <span className="mt-2 text-sm">Defina a visão do produto</span>
+            </Steps.Item>
+
+            <Steps.Item>
+              <Steps.Indicator />
+              <span className="mt-2 text-sm">Finalização</span>
+            </Steps.Item>
+          </Steps>
+        </div>
+        
+        {steps === 1 && (
+            <div>
+                <h1>test</h1>
+            </div>
+        )}
+
+        <div className="flex flex-row-reverse gap-4">
+          <Button label="Proximo" buttonType="button" colorType="primary" onClick={handleNextStep} disabled={steps === maxSteps} />
+          <Button label="Voltar" buttonType="button" colorType="secondary" onClick={handleBackStep} disabled={steps === 1} />
         </div>
       </div>
     </>

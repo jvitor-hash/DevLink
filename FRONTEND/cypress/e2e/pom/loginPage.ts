@@ -1,4 +1,3 @@
-// TODO: Make this submit the form and evaluate the username.
 export class LoginPage {
   private loginBtn = '[data-testid="login-btn"]';
   private nameInput = '[data-testid="name-input"]';
@@ -52,13 +51,19 @@ export class LoginPage {
     this.name.type(user);
     this.email.type(email);
     this.password.type(password);
+    this.submit.click();
+
+    this.username.should('have.text', user);
   }
 
-  login(email: string, password: string): void {
+  login(user: string, email: string, password: string): void {
     this.openModal();
 
     this.email.type(email);
     this.password.type(password);
+    this.submit.click();
+
+    this.username.should('have.text', user);
   }
 
   private openModal(): void {
@@ -79,7 +84,15 @@ export class LoginPage {
     return cy.get(this.passwordInput).should('be.visible');
   }
 
+  private get username() {
+    return cy.get('[data-testid="navbar-username"]', { timeout: 15000 }).should('exists');
+  }
+
   private get clear() {
     return cy.get(this.clearBtn).should('be.visible');
+  }
+
+  private get submit() {
+    return cy.get(this.submitBtn).should('be.visible');
   }
 }

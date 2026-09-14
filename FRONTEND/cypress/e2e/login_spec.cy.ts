@@ -18,6 +18,6 @@ describe('Teste de autenticacao de usuarios', () => {
   it('Teste de login de um usuario', () => {
     cy.visit('/');
 
-    loginPage.login("test@example.com", "123456789");
+    loginPage.login("test", "test@example.com", "123456789");
   });
 })

@@ -12,12 +12,16 @@ import { UserPreferenceRouter } from "@/routes/v1/user_preferences";
 import { SavedTicketRouter } from "@/routes/v1/saved_ticket";
 import { ClientAuthRouter } from "./routes/v1/client";
 import { ProgrammerAuthRouter } from "./routes/v1/programmer";
+import { loggerPlugin, Logger, LoggerLevelEnum } from "./modules/logger";
 
 const schema = await auth.api.generateOpenAPISchema();
 
+export const logger = new Logger(env.LOGGER_LEVEL as LoggerLevelEnum);
+
 const app = new Elysia()
+  .use(loggerPlugin(logger))
   .use(cors({
-    origin: [process.env.FRONT_END_URL ?? "http://localhost:5173", "http://127.0.0.1:5173"],
+    origin: [Bun.env.FRONT_END_URL ?? "http://localhost:5173", "http://127.0.0.1:5173"],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -25,6 +29,37 @@ const app = new Elysia()
   .use(openapi({
     documentation: schema as any,
   }))
+  .trace(async ({ onHandle, onRequest, onBeforeHandle, onAfterHandle, onError }) => {
+    onRequest(({ onStop }) => {
+      onStop(({ elapsed }) => {
+        logger.info('request:', elapsed, 'ms')
+      })
+    })
+
+    onBeforeHandle(({ onStop }) => {
+      onStop(({ elapsed }) => {
+        logger.info('beforeHandle:', elapsed, 'ms')
+      })
+    })
+
+    onHandle(({ onStop }) => {
+      onStop(({ elapsed }) => {
+        logger.info('handler:', elapsed, 'ms')
+      })
+    })
+
+    onAfterHandle(({ onStop }) => {
+      onStop(({ elapsed }) => {
+        logger.info('afterHandle:', elapsed, 'ms')
+      })
+    })
+
+    onError(({ onStop }) => {
+      onStop(({ elapsed }) => {
+        logger.error('error:', elapsed, 'ms')
+      })
+    })
+  })
   .use(authPlugin)
   .use(ClientAuthRouter)
   .use(ProgrammerAuthRouter)
