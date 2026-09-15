@@ -78,7 +78,7 @@ export default function Home() {
           <h1 className="text-6xl mb-5">Transforme suas ideias em <br />especificações técnicas.</h1>
           <p className="text-lg mb-5 text-(--text-muted)">Tire suas ideias do papel e transforme-as em planos técnicos objetivos.</p>
           <div className="flex justify-between max-w-sm">
-            <Button label="Questionário" colorType="primary" buttonType="button" />
+            <Button label="Questionário" colorType="primary" buttonType="button" href='/questionnaire' />
             <Button label="Como funciona?" colorType="secondary" buttonType="button" />
           </div>
         </div>

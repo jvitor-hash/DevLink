@@ -106,7 +106,7 @@ export default function Navbar() {
 
       <LoginModal show={openLogin} onClose={() => setOpenLogin(false)} />
       <Drawer open={openDrawer} onClose={() => setOpenDrawer(false)}>
-        <Link to="/questionnaire" className="text-xl w-full hover:text-(--primary) transition-colors"><ChevronRight className='inline'/>Criaçao de projetos</Link>
+        <Link to="/questionnaire" className="text-xl w-full hover:text-(--primary) transition-colors"><ChevronRight className='inline'/>Criação de projetos</Link>
         <Link to="/project" className="text-xl w-full hover:text-(--primary) transition-colors"><ChevronRight className='inline'/>Projetos</Link>
         <Link to="/profile" className="text-xl w-full hover:text-(--primary) transition-colors"><ChevronRight className='inline'/>Perfil</Link>
       </Drawer>

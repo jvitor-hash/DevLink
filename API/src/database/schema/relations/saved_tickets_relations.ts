@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm/_relations";
-import { savedTicket } from "./saved_ticket_schema";
-import { project } from "./project_schema";
-import { user } from "./user_schema";
+import { savedTicket } from "../saved_ticket_schema";
+import { project } from "../project_schema";
+import { user } from "../user_schema";
 
 export const savedTicketsRelations = relations(savedTicket, ({ one }) => ({
   user: one(user, {

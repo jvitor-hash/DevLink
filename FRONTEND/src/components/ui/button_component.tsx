@@ -28,8 +28,8 @@ export default function Button({ label, buttonType = "button", colorType = "prim
   const style = { backgroundColor: hovering ? colors[colorType] : `color-mix(in srgb, ${colors[colorType]} 80%, black)` };
 
   if (href !== undefined) {
-    return <Link className={buttonClassName} style={style} to={href} onFocus={() => setHovering(true)} onBlur={() => setHovering(false)}>{label}</Link>;
+    return <Link className={buttonClassName} style={style} to={href} onMouseEnter={() => setHovering(true)} onMouseLeave={() => setHovering(false)}>{label}</Link>;
   }
 
-  return <button className={buttonClassName} onFocus={() => setHovering(true)} onBlur={() => setHovering(false)} disabled={disabled} style={style} type={buttonType} data-testid={dataTestId} onClick={onClick}>{label}</button>;
+  return <button className={buttonClassName} onMouseEnter={() => setHovering(true)} onMouseLeave={() => setHovering(false)} disabled={disabled} style={style} type={buttonType} data-testid={dataTestId} onClick={onClick}>{label}</button>;
 }
