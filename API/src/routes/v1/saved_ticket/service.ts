@@ -1,6 +1,6 @@
 import { schemas } from "@/database/schema";
 import { crud } from "@/modules/crud_factory";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, inArray, sql } from "drizzle-orm";
 import { db } from "@/client";
 
 export const SavedTicketService = {
@@ -30,5 +30,25 @@ export const SavedTicketService = {
       .offset(offset);
 
     return rows as typeof schemas.savedTicket.$inferSelect[];
+  },
+
+  /**
+   * Count saved tickets per project id.
+   */
+  countByProjects: async (projectIds: string): Promise<Record<string, number>> => {
+    const ids = projectIds.split(",").map((id) => id.trim()).filter((id) => id.length > 0);
+    if (!ids.length) return {};
+
+    const rows = await db
+      .select({ projectId: schemas.savedTicket.projectId, total: sql<number>`count(*)::int` })
+      .from(schemas.savedTicket)
+      .where(inArray(schemas.savedTicket.projectId, ids))
+      .groupBy(schemas.savedTicket.projectId);
+
+    const counts: Record<string, number> = {};
+    for (const row of rows) {
+      counts[row.projectId] = row.total;
+    }
+    return counts;
   },
 };

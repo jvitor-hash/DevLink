@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm/_relations";
-import { review } from "./review_schemas";
-import { project } from "./project_schema";
-import { user } from "./user_schema";
+import { review } from "../review_schemas";
+import { project } from "../project_schema";
+import { user } from "../user_schema";
 
 export const reviewsRelations = relations(review, ({ one }) => ({
   project: one(project, {

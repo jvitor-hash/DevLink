@@ -41,9 +41,20 @@ export const audienceEnum = pgEnum("audience", [
 export const notificationTypeEnum = pgEnum("notification_type", [
   "NEW_MESSAGE",
   "NEW_REVIEW",
+  "NEW_PROJECT",
   "PROJECT_UPDATE",
   "PROJECT_COMPLETED",
   "PROJECT_CANCELLED",
   "TICKET_SAVED",
   "SYSTEM",
+]);
+
+export const languagePreferenceEnum = pgEnum("language_preference", [
+  "ALL",
+  ...programmingLanguageEnum.enumValues,
+]);
+
+export const platformPreferenceEnum = pgEnum("platform_preference", [
+  "ALL",
+  ...platformTypeEnum.enumValues,
 ]);

@@ -24,7 +24,7 @@ describe("Review Schema Validation", () => {
     }
   });
 
-  test("ReviewCreateSchema should reject invalid rating (> 5 or < 1)", () => {
+  test("ReviewCreateSchema should reject invalid rating (> 5 or < 0)", () => {
     const invalidDataHigh = {
       projectId: "550e8400-e29b-41d4-a716-446655440000",
       reviewedUserId: "550e8400-e29b-41d4-a716-446655440001",
@@ -35,7 +35,7 @@ describe("Review Schema Validation", () => {
 
     const invalidDataLow = {
       ...invalidDataHigh,
-      rating: 0,
+      rating: -1,
     };
 
     expect(ReviewCreateSchema.safeParse(invalidDataHigh).success).toBe(false);
@@ -53,6 +53,19 @@ describe("Review Schema Validation", () => {
 
     const result = ReviewCreateSchema.safeParse(invalidData);
     expect(result.success).toBe(false);
+  });
+
+  test("ReviewCreateSchema should accept rating 0", () => {
+    const zeroRating = {
+      projectId: "550e8400-e29b-41d4-a716-446655440000",
+      reviewedUserId: "550e8400-e29b-41d4-a716-446655440001",
+      title: "Review",
+      description: "Not delivered",
+      rating: 0,
+    };
+
+    const result = ReviewCreateSchema.safeParse(zeroRating);
+    expect(result.success).toBe(true);
   });
 
   test("ReviewUpdateSchema should accept partial updates", () => {

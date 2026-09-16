@@ -8,7 +8,7 @@ export const ReviewSchema = z.object({
   reviewedUserId: idSchema,
   title: z.string().min(1).max(150),
   description: z.string().min(1),
-  rating: z.number().int().min(1).max(5),
+  rating: z.number().int().min(0).max(5),
 }).merge(timestampsSchema);
 
 const ReviewDTOs = createCrudSchemas(ReviewSchema, [

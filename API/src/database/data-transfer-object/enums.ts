@@ -47,6 +47,7 @@ export const AudienceEnum = z.enum([
 export const NotificationTypeEnum = z.enum([
     "NEW_MESSAGE",
     "NEW_REVIEW",
+    "NEW_PROJECT",
     "PROJECT_UPDATE",
     "PROJECT_COMPLETED",
     "PROJECT_CANCELLED",

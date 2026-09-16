@@ -7,6 +7,7 @@ type TextAreaComponentProps = {
   dataTestId?: string;
   placeholder?: string;
   disabled?: boolean;
+  onChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
 };
 
 export default function TextArea({
@@ -16,12 +17,13 @@ export default function TextArea({
   dataTestId,
   placeholder,
   disabled,
+  onChange,
 }: TextAreaComponentProps) {
   const [isFocused, setFocused] = useState<boolean>(false);
   return (
     <>
       <div>
-        <label htmlFor={name ?? label.toLowerCase()} className="block w-full">{label}</label>
+        <label htmlFor={name} className="block w-full">{label}</label>
         <textarea
           className={`
             border border-(--border-subtle) placeholder:text-(--text-muted)
@@ -29,8 +31,9 @@ export default function TextArea({
             resize-none p-2 rounded-sm animate-slide-down transition-colors w-full outline-none
           `}
           placeholder={placeholder}
-          name={name ?? label.toLowerCase()}
+          name={name}
           value={value}
+          onChange={onChange}
           disabled={disabled}
           data-testId={dataTestId}
           onFocus={() => setFocused(true)}

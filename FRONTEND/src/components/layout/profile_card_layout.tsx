@@ -6,6 +6,7 @@ type ProfileCardProps = {
   role: string
   bio?: string | null
   connections?: number
+  onClick?: () => void
 };
 
 export default function ProfileCard({
@@ -13,9 +14,13 @@ export default function ProfileCard({
   role,
   bio,
   connections,
+  onClick,
 }: ProfileCardProps) {
   return (
-    <section className="w-full max-w-100 overflow-hidden rounded-md bg-(--surface-1) border border-(--border-subtle)">
+    <section
+      onClick={onClick}
+      className={`w-full max-w-100 overflow-hidden rounded-md bg-(--surface-1) border border-(--border-subtle) ${onClick ? "hover:cursor-pointer hover:border-(--primary) transition-colors" : ""}`}
+    >
       <div className="bg-amber-300 w-full h-full max-h-10">.</div>
 
       {/* Content */}
@@ -43,7 +48,7 @@ export default function ProfileCard({
 
           {connections !== undefined && (
             <p className="mt-2 text-base text-(--primary)">
-              {connections.toLocaleString()} connections
+              {connections.toLocaleString()} projetos publicados
             </p>
           )}
         </div>

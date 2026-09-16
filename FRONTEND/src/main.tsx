@@ -40,6 +40,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/questionnaire" element={<Questionnaire />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/profile/:userId" element={<ProfilePage />} />
             </Route>
 
             {/* 404 catch-all */}

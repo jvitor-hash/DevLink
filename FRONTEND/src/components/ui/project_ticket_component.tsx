@@ -19,10 +19,11 @@ type ProjectPreviewProps = {
   minBudget: number
   maxBudget: number
   saved?: boolean
+  saveCount?: number
   onToggleSaved?: () => void
 }
 
-export default function ProjectPreview({ item, title, category, deadline, problem, audience, platforms, status, actions, programming_language, minBudget, maxBudget, saved = false, onToggleSaved }: ProjectPreviewProps) {
+export default function ProjectPreview({ item, title, category, deadline, problem, audience, platforms, status, actions, programming_language, minBudget, maxBudget, saved = false, saveCount = 0, onToggleSaved }: ProjectPreviewProps) {
   const navigate = useNavigate();
   const openModal = () => {
     navigate(`?modal=project&id=${encodeURIComponent(item)}`);
@@ -101,8 +102,11 @@ export default function ProjectPreview({ item, title, category, deadline, proble
             </div>
           </div>
 
-          {/* Saved toggle */}
-          <div className="mt-4 flex justify-end">
+          {/* Saved toggle with save count */}
+          <div className="mt-4 flex items-center justify-between">
+            <span className="text-sm text-(--text-muted)" data-testid="save-count">
+              {saveCount} {saveCount === 1 ? "salvamento" : "salvamentos"}
+            </span>
             <Button label={saved ? "Salvo" : "Salvar"} buttonType="button" colorType={saved ? "secondary" : "primary"} onClick={(e) => { e.stopPropagation(); onToggleSaved?.(); }} dataTestId="save-ticket-btn" />
           </div>
         </div>

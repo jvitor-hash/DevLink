@@ -6,6 +6,7 @@ import { z } from "zod";
 import { and, eq, type SQL } from "drizzle-orm";
 import { schemas } from "@/database/schema";
 import { authPlugin } from "@/modules/auth_plugin";
+import { logError } from "@/modules/logger";
 
 export const UserPreferenceRouter = new Elysia({ prefix: "/api/v1/user-preferences" })
   .use(authPlugin)
@@ -14,11 +15,12 @@ export const UserPreferenceRouter = new Elysia({ prefix: "/api/v1/user-preferenc
       const data = body as UserPreferenceCreate;
       const newPreference = await UserPreferenceService.create({
         ...data,
-        userId: schemas.user.id,
+        userId: user.id,
       });
       set.status = 201;
       return newPreference;
     } catch (error) {
+      logError("POST /api/v1/user-preferences", error);
       set.status = 500;
       return { error: "Failed to create user preference" };
     }
@@ -39,6 +41,7 @@ export const UserPreferenceRouter = new Elysia({ prefix: "/api/v1/user-preferenc
       }
       return await UserPreferenceService.findAllByUser(user.id, query.limit, query.offset);
     } catch (error) {
+      logError("GET /api/v1/user-preferences", error);
       set.status = 500;
       return { error: "Failed to fetch user preferences" };
     }
@@ -57,10 +60,11 @@ export const UserPreferenceRouter = new Elysia({ prefix: "/api/v1/user-preferenc
   .get("/:id", async ({ params, user, set }) => {
     try {
       const preference = await UserPreferenceService.findOne(
-        and(eq(schemas.userPreference.id, params.id), eq(schemas.userPreference.userId, schemas.user.id)) as SQL<unknown>
+        and(eq(schemas.userPreference.id, params.id), eq(schemas.userPreference.userId, user.id)) as SQL<unknown>
       );
       return preference;
     } catch (error) {
+      logError("GET /api/v1/user-preferences/:id", error);
       set.status = 404;
       return { error: "User preference not found" };
     }
@@ -80,11 +84,12 @@ export const UserPreferenceRouter = new Elysia({ prefix: "/api/v1/user-preferenc
     try {
       const data = body as UserPreferenceUpdate;
       const updated = await UserPreferenceService.update(
-        and(eq(schemas.userPreference.id, params.id), eq(schemas.userPreference.userId, schemas.user.id)) as SQL<unknown>,
+        and(eq(schemas.userPreference.id, params.id), eq(schemas.userPreference.userId, user.id)) as SQL<unknown>,
         data
       );
       return updated;
     } catch (error) {
+      logError("PUT /api/v1/user-preferences/:id", error);
       set.status = 404;
       return { error: "User preference not found or unauthorized" };
     }
@@ -104,10 +109,11 @@ export const UserPreferenceRouter = new Elysia({ prefix: "/api/v1/user-preferenc
   .delete("/:id", async ({ params, user, set }) => {
     try {
       const deleted = await UserPreferenceService.remove(
-        and(eq(schemas.userPreference.id, params.id), eq(schemas.userPreference.userId, schemas.user.id)) as SQL<unknown>
+        and(eq(schemas.userPreference.id, params.id), eq(schemas.userPreference.userId, user.id)) as SQL<unknown>
       );
       return deleted;
     } catch (error) {
+      logError("DELETE /api/v1/user-preferences/:id", error);
       set.status = 404;
       return { error: "User preference not found or unauthorized" };
     }

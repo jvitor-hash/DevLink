@@ -9,7 +9,6 @@ import { ProjectsRouter } from "../routes/v1/projects";
 describe("Projects Schema Validation", () => {
   test("ProjectCreateSchema should validate real project payload", () => {
     const validData = {
-      clientId: "550e8400-e29b-41d4-a716-446655440001",
       title: "DevLink Platform",
       description: "A platform for developers and clients",
       category: "Web Development",
@@ -31,13 +30,11 @@ describe("Projects Schema Validation", () => {
       expect(result.data.title).toBe("DevLink Platform");
       expect(result.data.platforms).toEqual(["WEB", "MOBILE"]);
       expect(result.data.primaryLanguage).toBe("TYPESCRIPT");
-      expect(result.data.clientId).toBe("550e8400-e29b-41d4-a716-446655440001");
     }
   });
 
   test("ProjectCreateSchema should validate with null problem and user_actions", () => {
     const validData = {
-      clientId: "550e8400-e29b-41d4-a716-446655440001",
       title: "MVP Project",
       description: "Quick prototype",
       category: "Design",
@@ -62,7 +59,6 @@ describe("Projects Schema Validation", () => {
 
   test("ProjectCreateSchema should reject invalid data", () => {
     const invalidData = {
-      clientId: "550e8400-e29b-41d4-a716-446655440001",
       title: "",
       description: "Missing platforms",
       category: "Web",
@@ -87,40 +83,68 @@ describe("Projects Schema Validation", () => {
     expect(result.success).toBe(false);
   });
 
-  test("ProjectCreateSchema should reject when clientId is missing", () => {
-    const incompleteData = {
-      title: "Test",
-      description: "Desc",
-      category: "Cat",
-      sub_category: "Sub",
+  test("ProjectCreateSchema should validate questionnaire payload without user_actions", () => {
+    const questionnaireData = {
+      title: "Questionnaire Project",
+      description: "Created from the questionnaire flow",
+      category: "Web Development",
+      sub_category: "Fullstack",
+      primaryLanguage: "TYPESCRIPT" as const,
       platforms: ["WEB" as const],
-      minBudget: "100",
-      maxBudget: "200",
-      problem: "Problem",
-      user_actions: "Actions",
-      // Missing clientId
+      audience: "CLIENTS" as const,
+      minBudget: 1,
+      maxBudget: 1,
+      problem: null,
+      affectedUsers: null,
+      northQuestion: null,
+      hypothesis: null,
+      audiencePainPoints: null,
+      audienceAssumptions: null,
+      notAudience: null,
+      requirements: null,
+      successCriteria: null,
+      valueProposition: null,
+      differentiation: null,
     };
 
-    const result = ProjectCreateSchema.safeParse(incompleteData);
-    expect(result.success).toBe(false);
+    const result = ProjectCreateSchema.safeParse(questionnaireData);
+    expect(result.success).toBe(true);
   });
 
-  test("ProjectCreateSchema should reject invalid clientId", () => {
-    const invalidData = {
-      clientId: "invalid-uuid",
+  test("ProjectCreateSchema should validate payload omitting problem and user_actions", () => {
+    const minimalData = {
+      title: "Minimal Project",
+      description: "No questionnaire fields at all",
+      category: "Web",
+      sub_category: "Backend",
+      platforms: ["WEB" as const],
+      minBudget: 100,
+      maxBudget: 200,
+    };
+
+    const result = ProjectCreateSchema.safeParse(minimalData);
+    expect(result.success).toBe(true);
+  });
+
+  test("ProjectCreateSchema should ignore client-supplied clientId", () => {
+    const dataWithClientId = {
+      clientId: "550e8400-e29b-41d4-a716-446655440001",
       title: "Test",
       description: "Desc",
       category: "Cat",
       sub_category: "Sub",
       platforms: ["WEB" as const],
-      minBudget: "100",
-      maxBudget: "200",
+      minBudget: 100,
+      maxBudget: 200,
       problem: "Problem",
       user_actions: "Actions",
     };
 
-    const result = ProjectCreateSchema.safeParse(invalidData);
-    expect(result.success).toBe(false);
+    const result = ProjectCreateSchema.safeParse(dataWithClientId);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect("clientId" in result.data).toBe(false);
+    }
   });
 
   test("ProjectUpdateSchema should accept partial updates", () => {

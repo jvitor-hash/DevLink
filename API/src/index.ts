@@ -10,13 +10,12 @@ import { MessageRouter } from "@/routes/v1/message";
 import { ReviewRouter } from "@/routes/v1/review";
 import { UserPreferenceRouter } from "@/routes/v1/user_preferences";
 import { SavedTicketRouter } from "@/routes/v1/saved_ticket";
+import { UsersRouter } from "@/routes/v1/users";
 import { ClientAuthRouter } from "./routes/v1/client";
 import { ProgrammerAuthRouter } from "./routes/v1/programmer";
-import { loggerPlugin, Logger, LoggerLevelEnum } from "./modules/logger";
+import { logger, loggerPlugin } from "./modules/logger";
 
 const schema = await auth.api.generateOpenAPISchema();
-
-export const logger = new Logger(env.LOGGER_LEVEL as LoggerLevelEnum);
 
 const app = new Elysia()
   .use(loggerPlugin(logger))
@@ -70,6 +69,7 @@ const app = new Elysia()
   .use(ReviewRouter)
   .use(SavedTicketRouter)
   .use(UserPreferenceRouter)
+  .use(UsersRouter)
   .get("/health", () => ({ OK: true }), {
     detail: {
       summary: "/health",

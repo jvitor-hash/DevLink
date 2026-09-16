@@ -6,6 +6,7 @@ import { z } from "zod";
 import { and, eq, type SQL } from "drizzle-orm";
 import { schemas } from "@/database/schema";
 import { authPlugin } from "@/modules/auth_plugin";
+import { logError } from "@/modules/logger";
 
 export const SavedTicketRouter = new Elysia({ prefix: "/api/v1/saved-tickets" })
   .use(authPlugin)
@@ -14,11 +15,12 @@ export const SavedTicketRouter = new Elysia({ prefix: "/api/v1/saved-tickets" })
       const data = body as SavedTicketCreate;
       const newSavedTicket = await SavedTicketService.create({
         ...data,
-        userId: schemas.user.id,
+        userId: user.id,
       });
       set.status = 201;
       return newSavedTicket;
     } catch (error) {
+      logError("POST /api/v1/saved-tickets", error);
       set.status = 500;
       return { error: "Failed to create saved ticket" };
     }
@@ -39,6 +41,7 @@ export const SavedTicketRouter = new Elysia({ prefix: "/api/v1/saved-tickets" })
       }
       return await SavedTicketService.findAllByUser(user.id, query.limit, query.offset);
     } catch (error) {
+      logError("GET /api/v1/saved-tickets", error);
       set.status = 500;
       return { error: "Failed to fetch saved tickets" };
     }
@@ -59,6 +62,7 @@ export const SavedTicketRouter = new Elysia({ prefix: "/api/v1/saved-tickets" })
       const ids = await SavedTicketService.findSavedProjectIdsByUser(params.userId);
       return { savedProjectIds: ids };
     } catch (error) {
+      logError("GET /api/v1/saved-tickets/by-user/:userId", error);
       set.status = 500;
       return { error: "Failed to fetch saved tickets" };
     }
@@ -73,11 +77,32 @@ export const SavedTicketRouter = new Elysia({ prefix: "/api/v1/saved-tickets" })
     tags: ["Saved Tickets"],
     auth: true,
   })
+  .get("/counts", async ({ query, set }) => {
+    try {
+      const counts = await SavedTicketService.countByProjects(query.projectIds);
+      return { counts };
+    } catch (error) {
+      logError("GET /api/v1/saved-tickets/counts", error);
+      set.status = 500;
+      return { error: "Failed to fetch save counts" };
+    }
+  }, {
+    query: z.object({
+      projectIds: z.string(),
+    }),
+    response: {
+      200: z.object({ counts: z.record(z.string(), z.number()) }),
+      500: ErrorSchema,
+    },
+    tags: ["Saved Tickets"],
+    authOptional: true,
+  })
   .get("/:id", async ({ params, set }) => {
     try {
       const ticket = await SavedTicketService.findOne(eq(schemas.savedTicket.id, params.id));
       return ticket;
     } catch (error) {
+      logError("GET /api/v1/saved-tickets/:id", error);
       set.status = 404;
       return { error: "Saved ticket not found" };
     }
@@ -96,10 +121,11 @@ export const SavedTicketRouter = new Elysia({ prefix: "/api/v1/saved-tickets" })
   .delete("/:id", async ({ params, user, set }) => {
     try {
       const deleted = await SavedTicketService.remove(
-        and(eq(schemas.savedTicket.id, params.id), eq(schemas.savedTicket.userId, schemas.user.id)) as SQL<unknown>
+        and(eq(schemas.savedTicket.id, params.id), eq(schemas.savedTicket.userId, user.id)) as SQL<unknown>
       );
       return deleted;
     } catch (error) {
+      logError("DELETE /api/v1/saved-tickets/:id", error);
       set.status = 404;
       return { error: "Saved ticket not found or unauthorized" };
     }

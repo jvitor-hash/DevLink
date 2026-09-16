@@ -6,6 +6,7 @@ import { and, eq, type SQL } from "drizzle-orm";
 import { schemas } from "@/database/schema";
 import { ErrorSchema } from "@/modules/error_schema";
 import { authPlugin } from "@/modules/auth_plugin";
+import { logError } from "@/modules/logger";
 
 export const NotificationRouter = new Elysia({ prefix: "/api/v1/notifications" })
   .use(authPlugin)
@@ -14,11 +15,12 @@ export const NotificationRouter = new Elysia({ prefix: "/api/v1/notifications" }
       const data = body as NotificationCreate;
       const newNotification = await NotificationService.create({
         ...data,
-        userId: data.userId ?? schemas.user.id,
+        userId: data.userId ?? user.id,
       });
       set.status = 201;
       return newNotification;
     } catch (error) {
+      logError("POST /api/v1/notifications", error);
       set.status = 500;
       return { error: "Failed to create a notification" };
     }
@@ -39,6 +41,7 @@ export const NotificationRouter = new Elysia({ prefix: "/api/v1/notifications" }
       }
       return await NotificationService.findAllByUser(user.id, query.limit, query.offset);
     } catch (error) {
+      logError("GET /api/v1/notifications", error);
       set.status = 500;
       return { error: "Failed to fetch notifications" };
     }
@@ -57,10 +60,11 @@ export const NotificationRouter = new Elysia({ prefix: "/api/v1/notifications" }
   .get("/:id", async ({ params, user, set }) => {
     try {
       const notificationItem = await NotificationService.findOne(
-        and(eq(schemas.notification.id, params.id), eq(schemas.notification.userId, schemas.user.id)) as SQL<unknown>
+        and(eq(schemas.notification.id, params.id), eq(schemas.notification.userId, user.id)) as SQL<unknown>
       );
       return notificationItem;
     } catch (error) {
+      logError("GET /api/v1/notifications/:id", error);
       set.status = 404;
       return { error: "Notification not found" };
     }
@@ -80,11 +84,12 @@ export const NotificationRouter = new Elysia({ prefix: "/api/v1/notifications" }
     try {
       const data = body as NotificationUpdate;
       const updated = await NotificationService.update(
-        and(eq(schemas.notification.id, params.id), eq(schemas.notification.userId, schemas.user.id)) as SQL<unknown>,
+        and(eq(schemas.notification.id, params.id), eq(schemas.notification.userId, user.id)) as SQL<unknown>,
         data
       );
       return updated;
     } catch (error) {
+      logError("PUT /api/v1/notifications/:id", error);
       set.status = 404;
       return { error: "Notification not found or unauthorized" };
     }
@@ -104,10 +109,11 @@ export const NotificationRouter = new Elysia({ prefix: "/api/v1/notifications" }
   .delete("/:id", async ({ params, user, set }) => {
     try {
       const deleted = await NotificationService.remove(
-        and(eq(schemas.notification.id, params.id), eq(schemas.notification.userId, schemas.user.id)) as SQL<unknown>
+        and(eq(schemas.notification.id, params.id), eq(schemas.notification.userId, user.id)) as SQL<unknown>
       );
       return deleted;
     } catch (error) {
+      logError("DELETE /api/v1/notifications/:id", error);
       set.status = 404;
       return { error: "Notification not found or unauthorized" };
     }

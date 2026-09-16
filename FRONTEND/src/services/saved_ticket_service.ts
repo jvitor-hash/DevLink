@@ -14,19 +14,23 @@ export const savedTicketService = {
   getSavedProjectIdsByUser: (userId: string) =>
     apiClient.get<{ savedProjectIds: string[] }>(`${endpoint}/by-user/${userId}`),
 
-  /** Toggle saved state for the current user; returns the resulting SavedTicket row. */
-  toggle: async (projectId: string): Promise<SavedTicketDTO> => {
-    const existing = await savedTicketService.list({ limit: 100 });
-    const alreadySaved = existing.some((item) => item.projectId === projectId);
+  /** Saved counts per project id. */
+  countByProjects: (projectIds: string[]) =>
+    apiClient.get<{ counts: Record<string, number> }>(`${endpoint}/counts`, {
+      projectIds: projectIds.join(","),
+    }),
 
-    if (alreadySaved) {
-      const item = existing.find((i) => i.projectId === projectId);
-      if (!item) throw new Error("Saved ticket not found");
-      await savedTicketService.remove(item.id);
-      return item;
+  /** Toggle saved state for the current user; returns whether the project is now saved. */
+  toggle: async (projectId: string): Promise<boolean> => {
+    const existing = await savedTicketService.list({ limit: 100 });
+    const current = existing.find((item) => item.projectId === projectId);
+
+    if (current) {
+      await savedTicketService.remove(current.id);
+      return false;
     }
 
-    const created = await savedTicketService.create({ userId: "", projectId });
-    return created;
+    await savedTicketService.create({ projectId, userId: "" });
+    return true;
   },
 };

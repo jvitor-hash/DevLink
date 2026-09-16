@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ChevronRight, Menu, User, Settings, LogOut } from 'react-feather';
+import { ChevronRight, Menu, Settings } from 'react-feather';
 import LoginModal from "./login_modal_layout";
 import Button from '../ui/button_component';
 import Drawer from './drawer_layout';

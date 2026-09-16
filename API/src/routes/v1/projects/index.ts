@@ -6,6 +6,8 @@ import { z } from "zod";
 import { schemas } from "@/database/schema";
 import { and, eq, type SQL } from "drizzle-orm";
 import { authPlugin } from "@/modules/auth_plugin";
+import { logError } from "@/modules/logger";
+import { notifyNewProject } from "@/modules/notification_fanout";
 
 export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
   .use(authPlugin)
@@ -14,11 +16,27 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
       const data = body as ProjectCreate;
       const newProject = await ProjectService.create({
         ...data,
-        clientId: schemas.user.id,
+        clientId: user.id,
       });
+
+      try {
+        await notifyNewProject({
+          id: newProject.id,
+          title: newProject.title,
+          minBudget: newProject.minBudget,
+          maxBudget: newProject.maxBudget,
+          deadline: newProject.deadline ? new Date(newProject.deadline) : null,
+          primaryLanguage: newProject.primaryLanguage,
+          platforms: newProject.platforms,
+        });
+      } catch {
+        // Notification fan-out must never block project creation.
+      }
+
       set.status = 201;
       return newProject;
     } catch (error) {
+      logError("POST /api/v1/projects", error);
       set.status = 500;
       return { error: "Failed to create project" };
     }
@@ -31,22 +49,27 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
     tags: ["Projects"],
     auth: true,
   })
-  .get("/", async ({ query, set }) => {
+  .get("/", async ({ query, user, set }) => {
     try {
+      const platforms = Array.isArray(query.platforms)
+        ? query.platforms
+        : query.platforms ? [query.platforms] : undefined;
+
       const filters = {
-        audience: (query.audience as string) ?? undefined,
-        platforms: (query.platforms as string | string[] | undefined),
-        primaryLanguage: (query.primaryLanguage as string) ?? undefined,
-        status: (query.status as string) ?? undefined,
-        minBudget: query.minBudget != null ? Number(query.minBudget) : undefined,
-        maxBudget: query.maxBudget != null ? Number(query.maxBudget) : undefined,
+        audience: query.audience,
+        platforms,
+        primaryLanguage: query.primaryLanguage,
+        status: query.status,
+        minBudget: query.minBudget,
+        maxBudget: query.maxBudget,
+        q: query.q,
+        clientId: query.clientId,
         savedOnly: query.savedOnly === "true",
       };
 
-      const userId = schemas.user?.id ?? null;
-
-      return await ProjectService.findFiltered(userId, filters, query.limit, query.offset);
+      return await ProjectService.findFiltered(user?.id ?? null, filters, query.limit, query.offset);
     } catch (error) {
+      logError("GET /api/v1/projects", error);
       set.status = 500;
       return { error: "Failed to fetch projects" };
     }
@@ -60,6 +83,8 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
       status: z.string().optional(),
       minBudget: z.coerce.number().optional(),
       maxBudget: z.coerce.number().optional(),
+      q: z.string().optional(),
+      clientId: z.string().uuid().optional(),
       savedOnly: z.string().optional(),
     }),
     response: {
@@ -67,12 +92,34 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
       500: ErrorSchema,
     },
     tags: ["Projects"],
+    authOptional: true,
+  })
+  .get("/counts/by-client", async ({ query, set }) => {
+    try {
+      const counts = await ProjectService.countProjectsByClients(query.clientIds);
+      return { counts };
+    } catch (error) {
+      logError("GET /api/v1/projects/counts/by-client", error);
+      set.status = 500;
+      return { error: "Failed to fetch project counts" };
+    }
+  }, {
+    query: z.object({
+      clientIds: z.string(),
+    }),
+    response: {
+      200: z.object({ counts: z.record(z.string(), z.number()) }),
+      500: ErrorSchema,
+    },
+    tags: ["Projects"],
+    authOptional: true,
   })
   .get("/:id", async ({ params, set }) => {
     try {
       const project = await ProjectService.findOne(eq(schemas.project.id, params.id));
       return project;
     } catch (error) {
+      logError("GET /api/v1/projects/:id", error);
       set.status = 404;
       return { error: "Project not found" };
     }
@@ -92,11 +139,12 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
     try {
       const data = body as ProjectUpdate;
       const updated = await ProjectService.update(
-        and(eq(schemas.project.id, params.id), eq(schemas.project.clientId, schemas.user.id)) as SQL<unknown>,
+        and(eq(schemas.project.id, params.id), eq(schemas.project.clientId, user.id)) as SQL<unknown>,
         data
       );
       return updated;
     } catch (error) {
+      logError("PUT /api/v1/projects/:id", error);
       set.status = 404;
       return { error: "Project not found or unauthorized" };
     }
@@ -116,10 +164,11 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
   .delete("/:id", async ({ params, user, set }) => {
     try {
       const deleted = await ProjectService.remove(
-        and(eq(schemas.project.id, params.id), eq(schemas.project.clientId, schemas.user.id)) as SQL<unknown>
+        and(eq(schemas.project.id, params.id), eq(schemas.project.clientId, user.id)) as SQL<unknown>
       );
       return deleted;
     } catch (error) {
+      logError("DELETE /api/v1/projects/:id", error);
       set.status = 404;
       return { error: "Project not found or unauthorized" };
     }

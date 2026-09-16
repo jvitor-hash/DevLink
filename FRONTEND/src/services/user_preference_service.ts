@@ -1,7 +1,7 @@
 import type { PaginationParams, UserPreferenceCreate, UserPreferenceDTO, UserPreferenceUpdate } from "@/lib/types/database";
 import { apiClient } from "./api_client";
 
-const endpoint = "/api/v1/user_preferences";
+const endpoint = "/api/v1/user-preferences";
 
 export const userPreferenceService = {
   create: (data: UserPreferenceCreate) => apiClient.post<UserPreferenceDTO>(endpoint, data),

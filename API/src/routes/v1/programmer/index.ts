@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { db } from "@/client";
 import { schemas } from "@/database/schema";
 import { ErrorSchema } from "@/modules/error_schema";
+import { logError } from "@/modules/logger";
 import { eq } from "drizzle-orm";
 import Elysia from "elysia";
 import z from "zod";
@@ -34,6 +35,7 @@ export const ProgrammerAuthRouter = new Elysia({ prefix: "/api/auth/sign-up/prog
         token: created.response.token,
       };
     } catch (error) {
+      logError("POST /api/auth/sign-up/programmer", error);
       set.status = 500;
       return { error: "Failed to register a programmer" };
     }
@@ -51,7 +53,7 @@ export const ProgrammerAuthRouter = new Elysia({ prefix: "/api/auth/sign-up/prog
           name: z.string(),
           email: z.email(),
           emailVerified: z.boolean(),
-          role: z.string(),
+          role: z.string().nullable(),
           image: z.any(),
           updatedAt: z.date(),
           createdAt: z.date(),

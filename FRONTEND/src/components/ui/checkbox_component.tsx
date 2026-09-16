@@ -3,10 +3,13 @@ import { useState } from 'react';
 type checkboxComponentProps = {
   label: string
   checked?: boolean
+  onToggle?: (checked: boolean) => void
 }
 
-export default function Checkbox({ label, checked = false }: checkboxComponentProps) {
-  const [isChecked, setChecked] = useState<boolean>(checked);
+export default function Checkbox({ label, checked, onToggle }: checkboxComponentProps) {
+  const [internalChecked, setChecked] = useState<boolean>(checked ?? false);
+  const isControlled = onToggle !== undefined;
+  const isChecked = isControlled ? (checked ?? false) : internalChecked;
 
   return (
     <>
@@ -20,7 +23,10 @@ export default function Checkbox({ label, checked = false }: checkboxComponentPr
           before:scale-0 checked:before:scale-100 checked:transition-all
         "
         checked={isChecked}
-        onChange={(e) => setChecked(e.target.checked)}
+        onChange={(e) => {
+          if (!isControlled) setChecked(e.target.checked);
+          onToggle?.(e.target.checked);
+        }}
       />
       <span> {label}</span>
     </>

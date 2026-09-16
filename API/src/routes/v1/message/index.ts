@@ -6,6 +6,7 @@ import { z } from "zod";
 import { and, eq, type SQL } from "drizzle-orm";
 import { schemas } from "@/database/schema";
 import { authPlugin } from "@/modules/auth_plugin";
+import { logError } from "@/modules/logger";
 
 export const MessageRouter = new Elysia({ prefix: "/api/v1/messages" })
   .use(authPlugin)
@@ -14,11 +15,12 @@ export const MessageRouter = new Elysia({ prefix: "/api/v1/messages" })
       const data = body as MessageCreate;
       const newMessage = await MessageService.create({
         ...data,
-        senderId: schemas.user.id,
+        senderId: user.id,
       });
       set.status = 201;
       return newMessage;
     } catch (error) {
+      logError("POST /api/v1/messages", error);
       set.status = 500;
       return { error: "Failed to create message" };
     }
@@ -39,6 +41,7 @@ export const MessageRouter = new Elysia({ prefix: "/api/v1/messages" })
       }
       return await MessageService.findAllByUser(user.id, query.limit, query.offset);
     } catch (error) {
+      logError("GET /api/v1/messages", error);
       set.status = 500;
       return { error: "Failed to fetch messages" };
     }
@@ -59,6 +62,7 @@ export const MessageRouter = new Elysia({ prefix: "/api/v1/messages" })
       const messageItem = await MessageService.findOne(eq(schemas.message.id, params.id));
       return messageItem;
     } catch (error) {
+      logError("GET /api/v1/messages/:id", error);
       set.status = 404;
       return { error: "Failed to fetch message" };
     }
@@ -78,11 +82,12 @@ export const MessageRouter = new Elysia({ prefix: "/api/v1/messages" })
     try {
       const data = body as MessageUpdate;
       const updated = await MessageService.update(
-        and(eq(schemas.message.id, params.id), eq(schemas.message.senderId, schemas.user.id)) as SQL<unknown>,
+        and(eq(schemas.message.id, params.id), eq(schemas.message.senderId, user.id)) as SQL<unknown>,
         data
       );
       return updated;
     } catch (error) {
+      logError("PUT /api/v1/messages/:id", error);
       set.status = 404;
       return { error: "Message not found or unauthorized" };
     }
@@ -102,10 +107,11 @@ export const MessageRouter = new Elysia({ prefix: "/api/v1/messages" })
   .delete("/:id", async ({ params, user, set }) => {
     try {
       const deleted = await MessageService.remove(
-        and(eq(schemas.message.id, params.id), eq(schemas.message.senderId, schemas.user.id)) as SQL<unknown>
+        and(eq(schemas.message.id, params.id), eq(schemas.message.senderId, user.id)) as SQL<unknown>
       );
       return deleted;
     } catch (error) {
+      logError("DELETE /api/v1/messages/:id", error);
       set.status = 404;
       return { error: "Message not found or unauthorized" };
     }

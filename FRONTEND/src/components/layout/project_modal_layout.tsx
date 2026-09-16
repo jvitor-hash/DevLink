@@ -2,9 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Button from "@/components/ui/button_component";
 import Badge from "@/components/ui/badge_component";
+import TextArea from "@/components/ui/textarea_component";
+import StarRating from "@/components/ui/star_rating_component";
 import { projectService } from "@/services/project_service";
 import { reviewService } from "@/services/review_service";
 import { messageService } from "@/services/message_service";
+import { authService } from "@/services/auth_service";
 import type { ProjectDTO, ReviewDTO, MessageDTO } from "@/lib/types/database";
 
 export function ProjectModal() {
@@ -20,6 +23,11 @@ export function ProjectModal() {
   const [messages, setMessages] = useState<MessageDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showReviewForm, setShowReviewForm] = useState<boolean>(false);
+  const [reviewRating, setReviewRating] = useState<number>(0);
+  const [reviewDescription, setReviewDescription] = useState<string>("");
+  const [reviewStatus, setReviewStatus] = useState<string | null>(null);
+  const [isConcluding, setIsConcluding] = useState<boolean>(false);
 
   useEffect(() => {
     const loadProject = async () => {
@@ -39,7 +47,7 @@ export function ProjectModal() {
         const projectData = await projectService.getById(projectId);
         setProject(projectData);
 
-        const projectReviews = await reviewService.list({ limit: 20 });
+        const projectReviews = await reviewService.list({ limit: 100 });
         const filteredReviews = Array.isArray(projectReviews)
           ? projectReviews.filter((r) => r.projectId === projectId).slice(0, 5)
           : [];
@@ -73,6 +81,74 @@ export function ProjectModal() {
     const query = params.toString();
     navigate(query ? `${pathname}?${query}` : pathname);
   }
+
+  const currentUserId = authService.getCachedUser()?.id;
+  const isOwner = currentUserId === project?.clientId;
+  const canConclude = isOwner && project?.status === "IN_DEVELOPMENT" && project?.programmerId;
+  const canReview = Boolean(
+    isOwner
+    && project?.status === "COMPLETED"
+    && project?.programmerId
+    && !reviews.some((review) => review.reviewerId === currentUserId)
+  );
+  const showReview = showReviewForm || canReview;
+
+  const refreshReviews = async (): Promise<void> => {
+    if (!projectId) return;
+
+    try {
+      const projectReviews = await reviewService.list({ limit: 100 });
+      const filteredReviews = Array.isArray(projectReviews)
+        ? projectReviews.filter((r) => r.projectId === projectId).slice(0, 5)
+        : [];
+      setReviews(filteredReviews);
+    } catch {
+      // Keep the current list on failure.
+    }
+  };
+
+  const concludeProject = async (): Promise<void> => {
+    if (!project) return;
+
+    setIsConcluding(true);
+    try {
+      const updated = await projectService.update(project.id, { status: "COMPLETED" });
+      setProject(updated);
+      setShowReviewForm(true);
+    } catch (concludeError) {
+      setError(concludeError instanceof Error ? concludeError.message : "Nao foi possivel concluir o projeto.");
+    } finally {
+      setIsConcluding(false);
+    }
+  };
+
+  const submitReview = async (): Promise<void> => {
+    if (!project?.programmerId || !project.id) return;
+    if (reviewRating < 1) {
+      setReviewStatus("Selecione uma nota de 1 a 5 estrelas.");
+      return;
+    }
+    if (!reviewDescription.trim()) {
+      setReviewStatus("Escreva uma breve descricao.");
+      return;
+    }
+
+    try {
+      await reviewService.create({
+        projectId: project.id,
+        reviewerId: authService.getCachedUser()?.id ?? "",
+        reviewedUserId: project.programmerId,
+        title: `Avaliacao: ${project.title}`.slice(0, 150),
+        description: reviewDescription.trim(),
+        rating: reviewRating,
+      });
+      setReviewStatus("Avaliacao enviada. Obrigado!");
+      setShowReviewForm(false);
+      await refreshReviews();
+    } catch (reviewError) {
+      setReviewStatus(reviewError instanceof Error ? reviewError.message : "Nao foi possivel enviar a avaliacao.");
+    }
+  };
 
   if (!projectId) {
     return (
@@ -133,7 +209,7 @@ export function ProjectModal() {
                 <div className="border border-(--border-subtle) rounded-lg p-4 bg-(--surface-2)">
                   <p className="text-sm text-(--text-muted)">Prazo</p>
                   <p className="text-white font-semibold">
-                    {project.completedAt ?? "Não definido"}
+                    {project.deadline ? String(project.deadline).slice(0, 10) : "Não definido"}
                   </p>
                 </div>
                 <div className="border border-(--border-subtle) rounded-lg p-4 bg-(--surface-2)">
@@ -147,7 +223,39 @@ export function ProjectModal() {
               <div className="mt-6 border-t border-(--border-subtle) pt-4">
                 <p className="font-semibold text-white mb-2">Status do projeto</p>
                 <Badge label={project.status} badgeType={project.status === "OPEN" ? "success" : "info"} />
+
+                {canConclude && !showReviewForm && (
+                  <div className="mt-3">
+                    <Button
+                      label={isConcluding ? "Concluindo..." : "Marcar como concluido"}
+                      buttonType="button"
+                      colorType="success"
+                      onClick={concludeProject}
+                      disabled={isConcluding}
+                    />
+                  </div>
+                )}
               </div>
+
+              {showReview && (
+                <div className="mt-6 border-t border-(--border-subtle) pt-4">
+                  <p className="font-semibold text-white mb-2">Avalie o programador</p>
+                  <StarRating value={reviewRating} onChange={setReviewRating} />
+                  <div className="mt-3">
+                    <TextArea
+                      name="reviewDescription"
+                      label="Descreva brevemente sua experiencia"
+                      value={reviewDescription}
+                      onChange={(e) => setReviewDescription(e.target.value)}
+                      placeholder="Ex: entrega no prazo, boa comunicacao..."
+                    />
+                  </div>
+                  {reviewStatus && <p className="mt-2 text-sm text-(--info)">{reviewStatus}</p>}
+                  <div className="mt-3">
+                    <Button label="Enviar avaliacao" buttonType="button" colorType="primary" onClick={submitReview} />
+                  </div>
+                </div>
+              )}
 
               <div className="mt-6 border-t border-(--border-subtle) pt-4">
                 <p className="font-semibold text-white mb-2">Ações requeridas</p>

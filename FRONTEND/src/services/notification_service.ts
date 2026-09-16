@@ -1,7 +1,7 @@
 import type { NotificationCreate, NotificationDTO, NotificationUpdate, PaginationParams } from "@/lib/types/database";
 import { apiClient } from "./api_client";
 
-const endpoint = "/api/v1/notification";
+const endpoint = "/api/v1/notifications";
 
 export const notificationService = {
   create: (data: NotificationCreate) => apiClient.post<NotificationDTO>(endpoint, data),

@@ -2,6 +2,8 @@ import { z } from "zod";
 import { createCrudSchemas, idSchema, timestampsSchema } from "./helper";
 import { PlatformTypeEnum, ProgrammingLanguageEnum, ProjectStatusEnum, AudienceEnum } from "./enums";
 
+const questionnaireField = z.string().min(1).nullable().optional();
+
 export const ProjectDTOSchema = z.object({
   id: idSchema,
   clientId: idSchema,
@@ -10,14 +12,25 @@ export const ProjectDTOSchema = z.object({
   description: z.string().min(1),
   category: z.string().min(1).max(200),
   sub_category: z.string().min(1).max(200),
-  problem: z.string().nullable(),
-  user_actions: z.string().nullable(),
+  problem: questionnaireField,
+  user_actions: questionnaireField,
+  affectedUsers: questionnaireField,
+  northQuestion: questionnaireField,
+  hypothesis: questionnaireField,
+  audiencePainPoints: questionnaireField,
+  audienceAssumptions: questionnaireField,
+  notAudience: questionnaireField,
+  requirements: questionnaireField,
+  successCriteria: questionnaireField,
+  valueProposition: questionnaireField,
+  differentiation: questionnaireField,
   primaryLanguage: ProgrammingLanguageEnum.default("CSHARP"),
   platforms: z.array(PlatformTypeEnum).min(1),
   status: ProjectStatusEnum.default("OPEN"),
   audience: AudienceEnum.default("CLIENTS"),
   minBudget: z.number().min(1),
   maxBudget: z.number().min(1),
+  deadline: z.union([z.date(), z.string().datetime(), z.string()]).nullable().optional(),
   completedAt: z.union([z.date(), z.string().datetime(), z.string()]).nullable().optional(),
 }).merge(timestampsSchema);
 
@@ -25,14 +38,27 @@ export const ProjectSchema = ProjectDTOSchema;
 
 const ProjectDTOs = createCrudSchemas(ProjectDTOSchema, [
   "id",
+  "clientId",
   "programmerId",
   "completedAt",
   "createdAt",
   "updatedAt",
 ]);
 
-export const ProjectCreateSchema = ProjectDTOs.create;
-export const ProjectUpdateSchema = ProjectDTOs.update;
+const budgetRangeRefinement = (data: { minBudget?: number; maxBudget?: number }): boolean =>
+  data.minBudget === undefined || data.maxBudget === undefined || data.maxBudget >= data.minBudget;
+
+const budgetRangeMessage = "Orcamento maximo deve ser maior ou igual ao minimo";
+
+export const ProjectCreateSchema = ProjectDTOs.create.refine(budgetRangeRefinement, {
+  message: budgetRangeMessage,
+  path: ["maxBudget"],
+});
+
+export const ProjectUpdateSchema = ProjectDTOs.update.refine(budgetRangeRefinement, {
+  message: budgetRangeMessage,
+  path: ["maxBudget"],
+});
 
 export type ProjectDTO = z.infer<typeof ProjectDTOSchema>;
 export type ProjectCreate = z.infer<typeof ProjectCreateSchema>;

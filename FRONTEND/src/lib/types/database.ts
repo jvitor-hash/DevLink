@@ -26,6 +26,7 @@ export type ProjectStatus =
 export type NotificationType =
   | "NEW_MESSAGE"
   | "NEW_REVIEW"
+  | "NEW_PROJECT"
   | "PROJECT_UPDATE"
   | "PROJECT_COMPLETED"
   | "PROJECT_CANCELLED"
@@ -45,6 +46,16 @@ export interface PaginationParams {
   offset?: number;
   [key: string]: string | number | boolean | null | undefined;
 }
+
+export type ListParams = PaginationParams & {
+  audience?: string;
+  platforms?: string | string[];
+  primaryLanguage?: string;
+  status?: string;
+  minBudget?: number;
+  maxBudget?: number;
+  savedOnly?: string;
+};
 
 export interface ApiError {
   status: number;
@@ -80,19 +91,30 @@ export interface ProjectDTO {
   sub_category: string;
   primaryLanguage: ProgrammingLanguage;
   platforms: PlatformType[];
-  problem?: string | null
-  user_actions?: string | null
+  problem?: string | null;
+  user_actions?: string | null;
+  affectedUsers?: string | null;
+  northQuestion?: string | null;
+  hypothesis?: string | null;
+  audiencePainPoints?: string | null;
+  audienceAssumptions?: string | null;
+  notAudience?: string | null;
+  requirements?: string | null;
+  successCriteria?: string | null;
+  valueProposition?: string | null;
+  differentiation?: string | null;
   status: ProjectStatus;
   audience: Audience;
   minBudget: number;
   maxBudget: number;
+  deadline?: string | Date | null;
   completedAt?: string | null;
   createdAt?: string | Date | null;
   updatedAt?: string | Date | null;
 }
 
 export interface ProjectCreate {
-  clientId: string;
+  clientId?: string;
   title: string;
   description: string;
   category: string;
@@ -103,7 +125,20 @@ export interface ProjectCreate {
   audience?: Audience;
   minBudget?: number;
   maxBudget?: number;
+  deadline?: string | null;
   programmerId?: string | null;
+  problem?: string | null;
+  user_actions?: string | null;
+  affectedUsers?: string | null;
+  northQuestion?: string | null;
+  hypothesis?: string | null;
+  audiencePainPoints?: string | null;
+  audienceAssumptions?: string | null;
+  notAudience?: string | null;
+  requirements?: string | null;
+  successCriteria?: string | null;
+  valueProposition?: string | null;
+  differentiation?: string | null;
 }
 
 export interface ProjectUpdate {
@@ -119,7 +154,20 @@ export interface ProjectUpdate {
   audience?: Audience;
   minBudget?: number;
   maxBudget?: number;
+  deadline?: string | null;
   completedAt?: string | null;
+  problem?: string | null;
+  user_actions?: string | null;
+  affectedUsers?: string | null;
+  northQuestion?: string | null;
+  hypothesis?: string | null;
+  audiencePainPoints?: string | null;
+  audienceAssumptions?: string | null;
+  notAudience?: string | null;
+  requirements?: string | null;
+  successCriteria?: string | null;
+  valueProposition?: string | null;
+  differentiation?: string | null;
 }
 
 // Notification Models
@@ -192,7 +240,7 @@ export interface ReviewDTO {
 
 export interface ReviewCreate {
   projectId: string;
-  reviewerId: string;
+  reviewerId?: string;
   reviewedUserId: string;
   title: string;
   description: string;
@@ -230,28 +278,54 @@ export interface SavedTicketUpdate {
 export interface UserPreferenceDTO {
   id: string;
   userId: string;
-  emailNotifications: boolean;
-  messageNotifications: boolean;
-  projectNotifications: boolean;
-  reviewNotifications: boolean;
+  email_notifications: boolean;
+  message_notifications: boolean;
+  project_notifications: boolean;
+  review_notifications: boolean;
+  language: "ALL" | ProgrammingLanguage;
+  platform: "ALL" | PlatformType;
+  maxDeadlineDays: string;
+  minBudget: number;
+  maxBudget: number;
   createdAt?: string | Date | null;
   updatedAt?: string | Date | null;
 }
 
 export interface UserPreferenceCreate {
-  userId: string;
-  emailNotifications?: boolean;
-  messageNotifications?: boolean;
-  projectNotifications?: boolean;
-  reviewNotifications?: boolean;
+  email_notifications?: boolean;
+  message_notifications?: boolean;
+  project_notifications?: boolean;
+  review_notifications?: boolean;
+  language?: "ALL" | ProgrammingLanguage;
+  platform?: "ALL" | PlatformType;
+  maxDeadlineDays?: string;
+  minBudget?: number;
+  maxBudget?: number;
 }
 
 export interface UserPreferenceUpdate {
-  userId?: string;
-  emailNotifications?: boolean;
-  messageNotifications?: boolean;
-  projectNotifications?: boolean;
-  reviewNotifications?: boolean;
+  email_notifications?: boolean;
+  message_notifications?: boolean;
+  project_notifications?: boolean;
+  review_notifications?: boolean;
+  language?: "ALL" | ProgrammingLanguage;
+  platform?: "ALL" | PlatformType;
+  maxDeadlineDays?: string;
+  minBudget?: number;
+  maxBudget?: number;
+}
+
+// Public User Models
+export interface PublicUserDTO {
+  id: string;
+  name: string;
+  bio?: string | null;
+  image?: string | null;
+  role?: string | null;
+}
+
+export interface ProminentClientDTO extends PublicUserDTO {
+  projectCount: number;
 }
 
 export const BASE_URL = import.meta.env.API_URL || "http://localhost:3333";

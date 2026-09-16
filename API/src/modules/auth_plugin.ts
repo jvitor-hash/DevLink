@@ -19,4 +19,16 @@ export const authPlugin = new Elysia({ name: "auth-plugin" })
         };
       },
     },
+    authOptional: {
+      async resolve({ request: { headers } }) {
+        const session = await auth.api.getSession({
+          headers,
+        }).catch(() => null);
+
+        return {
+          user: session?.user ?? null,
+          session: session?.session ?? null,
+        };
+      },
+    },
   });

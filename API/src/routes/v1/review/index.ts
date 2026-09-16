@@ -6,6 +6,7 @@ import { ErrorSchema } from "@/modules/error_schema";
 import { and, eq, type SQL } from "drizzle-orm";
 import { schemas } from "@/database/schema";
 import { authPlugin } from "@/modules/auth_plugin";
+import { logError } from "@/modules/logger";
 
 export const ReviewRouter = new Elysia({ prefix: "/api/v1/reviews" })
   .use(authPlugin)
@@ -14,11 +15,12 @@ export const ReviewRouter = new Elysia({ prefix: "/api/v1/reviews" })
       const data = body as ReviewCreate;
       const newReview = await ReviewService.create({
         ...data,
-        reviewerId: schemas.user.id,
+        reviewerId: user.id,
       });
       set.status = 201;
       return newReview;
     } catch (error) {
+      logError("POST /api/v1/reviews", error);
       set.status = 500;
       return { error: "Failed to create review" };
     }
@@ -35,6 +37,7 @@ export const ReviewRouter = new Elysia({ prefix: "/api/v1/reviews" })
     try {
       return await ReviewService.findAll(query.limit, query.offset);
     } catch (error) {
+      logError("GET /api/v1/reviews", error);
       set.status = 500;
       return { error: "Failed to fetch reviews" };
     }
@@ -54,6 +57,7 @@ export const ReviewRouter = new Elysia({ prefix: "/api/v1/reviews" })
     try {
       return await ReviewService.findReceivedByUser(params.userId, query.limit, query.offset);
     } catch (error) {
+      logError("GET /api/v1/reviews/by-user/:userId", error);
       set.status = 500;
       return { error: "Failed to fetch reviews" };
     }
@@ -90,6 +94,7 @@ export const ReviewRouter = new Elysia({ prefix: "/api/v1/reviews" })
       const reviewItem = await ReviewService.findOne(eq(schemas.review.id, params.id));
       return reviewItem;
     } catch (error) {
+      logError("GET /api/v1/reviews/:id", error);
       set.status = 404;
       return { error: "Review not found" };
     }
@@ -109,11 +114,12 @@ export const ReviewRouter = new Elysia({ prefix: "/api/v1/reviews" })
     try {
       const data = body as ReviewUpdate;
       const updated = await ReviewService.update(
-        and(eq(schemas.review.id, params.id), eq(schemas.review.reviewerId, schemas.user.id)) as SQL<unknown>,
+        and(eq(schemas.review.id, params.id), eq(schemas.review.reviewerId, user.id)) as SQL<unknown>,
         data
       );
       return updated;
     } catch (error) {
+      logError("PUT /api/v1/reviews/:id", error);
       set.status = 404;
       return { error: "Review not found or unauthorized" };
     }
@@ -133,10 +139,11 @@ export const ReviewRouter = new Elysia({ prefix: "/api/v1/reviews" })
   .delete("/:id", async ({ params, user, set }) => {
     try {
       const deleted = await ReviewService.remove(
-        and(eq(schemas.review.id, params.id), eq(schemas.review.reviewerId, schemas.user.id)) as SQL<unknown>
+        and(eq(schemas.review.id, params.id), eq(schemas.review.reviewerId, user.id)) as SQL<unknown>
       );
       return deleted;
     } catch (error) {
+      logError("DELETE /api/v1/reviews/:id", error);
       set.status = 404;
       return { error: "Review not found or unauthorized" };
     }

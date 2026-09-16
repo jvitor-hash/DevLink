@@ -4,6 +4,12 @@ export enum LoggerLevelEnum {
   ERROR = "ERROR",
 }
 
+const LEVEL_WEIGHT: Record<LoggerLevelEnum, number> = {
+  [LoggerLevelEnum.INFO]: 0,
+  [LoggerLevelEnum.WARN]: 1,
+  [LoggerLevelEnum.ERROR]: 2,
+};
+
 export class Logger {
   private level: LoggerLevelEnum;
   private usFormatter = new Intl.DateTimeFormat("en-US", {
@@ -16,20 +22,20 @@ export class Logger {
   }
 
   info(...args: unknown[]) {
-    if (this.level === LoggerLevelEnum.INFO) {
-      console.log("[INFO]", this.timestamp(), ...args);
-    }
+    this.log(LoggerLevelEnum.INFO, console.log, ...args);
   }
 
   warn(...args: unknown[]) {
-    if (this.level === LoggerLevelEnum.WARN) {
-      console.warn("[WARN]", this.timestamp(), ...args);
-    }
+    this.log(LoggerLevelEnum.WARN, console.warn, ...args);
   }
 
   error(...args: unknown[]) {
-    if (this.level === LoggerLevelEnum.ERROR) {
-      console.error("[ERROR]", this.timestamp(), ...args);
+    this.log(LoggerLevelEnum.ERROR, console.error, ...args);
+  }
+
+  private log(level: LoggerLevelEnum, write: (...args: unknown[]) => void, ...args: unknown[]) {
+    if (LEVEL_WEIGHT[level] >= LEVEL_WEIGHT[this.level]) {
+      write(`[${level}]`, this.timestamp(), ...args);
     }
   }
 
@@ -47,4 +53,14 @@ export const loggerPlugin = (logger: Logger) => {
     app.decorate("logger", logger);
     return app;
   };
+};
+
+// Shared instance so route modules can log without threading the plugin through every router.
+export const logger = new Logger((process.env.LOGGER_LEVEL as LoggerLevelEnum) ?? LoggerLevelEnum.ERROR);
+
+// Unwraps Drizzle's failed-query wrapper so the real database error is surfaced.
+export const logError = (route: string, error: unknown): void => {
+  const cause = error instanceof Error ? error.cause : undefined;
+
+  logger.error(`[${route}]`, error, cause ? `| cause: ${String(cause)}` : "");
 };
