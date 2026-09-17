@@ -13,7 +13,7 @@ export const SavedTicketRouter = new Elysia({ prefix: "/api/v1/saved-tickets" })
   .post("/", async ({ body, user, set }) => {
     try {
       const data = body as SavedTicketCreate;
-      const newSavedTicket = await SavedTicketService.create({
+      const newSavedTicket = await SavedTicketService.createForUser({
         ...data,
         userId: user.id,
       });
@@ -120,9 +120,7 @@ export const SavedTicketRouter = new Elysia({ prefix: "/api/v1/saved-tickets" })
   })
   .delete("/:id", async ({ params, user, set }) => {
     try {
-      const deleted = await SavedTicketService.remove(
-        and(eq(schemas.savedTicket.id, params.id), eq(schemas.savedTicket.userId, user.id)) as SQL<unknown>
-      );
+      const deleted = await SavedTicketService.removeForUser(params.id, user.id);
       return deleted;
     } catch (error) {
       logError("DELETE /api/v1/saved-tickets/:id", error);

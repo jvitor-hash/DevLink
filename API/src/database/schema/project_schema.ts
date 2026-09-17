@@ -1,4 +1,4 @@
-import { varchar, timestamp, uuid, text, index, doublePrecision } from "drizzle-orm/pg-core";
+import { varchar, timestamp, uuid, text, index, doublePrecision, integer } from "drizzle-orm/pg-core";
 import { pgTable } from "drizzle-orm/pg-core/table";
 import { platformTypeEnum, programmingLanguageEnum, projectStatusEnum, audienceEnum } from "@/database/schema/enums_schema";
 import { user } from "./user_schema";
@@ -36,6 +36,7 @@ export const project = pgTable("project", {
   audience: audienceEnum("audience").default("CLIENTS").notNull(),
   minBudget: doublePrecision("min_budget").notNull(),
   maxBudget: doublePrecision("max_budget").notNull(),
+  saveTotalCount: integer("save_total_count").default(0).notNull(),
   deadline: timestamp("deadline"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

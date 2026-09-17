@@ -35,7 +35,7 @@ export default function TextArea({
           value={value}
           onChange={onChange}
           disabled={disabled}
-          data-testId={dataTestId}
+          data-testid={dataTestId}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
         ></textarea>

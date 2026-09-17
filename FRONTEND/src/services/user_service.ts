@@ -1,5 +1,5 @@
 import type { PublicUserDTO, ProminentClientDTO } from "@/lib/types/database";
-import { apiClient } from "./api_client";
+import { apiClient } from "@/lib/api_client";
 
 const endpoint = "/api/v1/users";
 

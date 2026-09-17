@@ -3,10 +3,10 @@ import { useState } from "react";
 type MoneyInputProps = {
   label: string;
   name: string;
-  value: string;
+  value?: string;
   placeholder?: string;
   dataTestId?: string;
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
 };
 
 const formatCurrency = (value: string): string => {
@@ -22,13 +22,19 @@ const formatCurrency = (value: string): string => {
  */
 export default function MoneyInput({ label, name, value, placeholder, dataTestId, onChange }: MoneyInputProps) {
   const [isFocused, setFocused] = useState<boolean>(false);
+  const [internalValue, setInternalValue] = useState<string>(value ?? "");
+
+  const isControlled = value !== undefined;
+  const currentValue = isControlled ? value : internalValue;
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const digits = event.target.value.replace(/\D/g, "");
-    onChange(digits);
+
+    if (!isControlled) setInternalValue(digits);
+    onChange?.(digits);
   };
 
-  const displayValue = isFocused ? value : formatCurrency(value);
+  const displayValue = isFocused ? currentValue : formatCurrency(currentValue);
 
   return (
     <div className="flex flex-col gap-2">

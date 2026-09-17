@@ -1,5 +1,5 @@
 import type { PaginationParams, SavedTicketCreate, SavedTicketDTO, SavedTicketUpdate } from "@/lib/types/database";
-import { apiClient } from "./api_client";
+import { apiClient } from "@/lib/api_client";
 
 const endpoint = "/api/v1/saved-tickets";
 
@@ -30,7 +30,7 @@ export const savedTicketService = {
       return false;
     }
 
-    await savedTicketService.create({ projectId, userId: "" });
+    await savedTicketService.create({ projectId });
     return true;
   },
 };

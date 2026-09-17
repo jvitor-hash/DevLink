@@ -25,6 +25,7 @@ type ProjectPreviewProps = {
 
 export default function ProjectPreview({ item, title, category, deadline, problem, audience, platforms, status, actions, programming_language, minBudget, maxBudget, saved = false, saveCount = 0, onToggleSaved }: ProjectPreviewProps) {
   const navigate = useNavigate();
+
   const openModal = () => {
     navigate(`?modal=project&id=${encodeURIComponent(item)}`);
   };
@@ -64,9 +65,7 @@ export default function ProjectPreview({ item, title, category, deadline, proble
             <li className="flex justify-between gap-4 border-b py-2.5 border-b-(--border-subtle)">
               <span className="text-(--text-muted)">Plataformas:</span>
               <span id="preview-platforms" className="text-right font-semibold text-(--text-primary)">
-                {platforms.map((platform, index) => (
-                  index !== platforms.length - 1 ? `${platform}, ` : ` ${platform}`
-                ))}
+                {platforms.join(", ")}
               </span>
             </li>
 
@@ -97,6 +96,7 @@ export default function ProjectPreview({ item, title, category, deadline, proble
             <div className="mb-1 font-bold text-(--text-primary)">
               Ações requeridas do usuário:
             </div>
+
             <div id="preview-actions text-(--text-secondary)">
               {actions}
             </div>
@@ -107,6 +107,7 @@ export default function ProjectPreview({ item, title, category, deadline, proble
             <span className="text-sm text-(--text-muted)" data-testid="save-count">
               {saveCount} {saveCount === 1 ? "salvamento" : "salvamentos"}
             </span>
+
             <Button label={saved ? "Salvo" : "Salvar"} buttonType="button" colorType={saved ? "secondary" : "primary"} onClick={(e) => { e.stopPropagation(); onToggleSaved?.(); }} dataTestId="save-ticket-btn" />
           </div>
         </div>

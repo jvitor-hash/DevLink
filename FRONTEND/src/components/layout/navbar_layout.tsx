@@ -1,20 +1,37 @@
-import { useEffect, useState } from 'react';
-import { ChevronRight, Menu, Settings } from 'react-feather';
-import LoginModal from "./login_modal_layout";
-import Button from '../ui/button_component';
-import Drawer from './drawer_layout';
-import { Link } from 'react-router-dom';
-import { authService } from '@/services/auth_service';
-import type { UserDTO } from '@/lib/types/database';
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { ChevronRight, Menu, Settings } from "react-feather";
 
-export default function Navbar() {
+import Button from "@/components/ui/button_component";
+import Drawer from "@/components/layout/drawer_layout";
+import LoginModal from "@/components/layout/login_modal_layout";
+import { authService } from "@/services/auth_service";
+import type { UserDTO } from "@/lib/types/database";
+
+const MENU_LINKS: ReadonlyArray<{ to: string; label: string }> = [
+  { to: "/questionnaire", label: "Criação de projetos" },
+  { to: "/project", label: "Projetos" },
+  { to: "/profile", label: "Perfil" },
+];
+
+export function NavbarLayout() : React.ReactElement {
   const [openLogin, setOpenLogin] = useState<boolean>(false);
   const [openDrawer, setOpenDrawer] = useState<boolean>(false);
   const [user, setUser] = useState<UserDTO | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const checkUser = async () => {
+  const navigate = useNavigate();
+
+  // Track the latest user value for the interval callback without re-subscribing.
+  const userRef = useRef<UserDTO | null>(null);
+
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
+
+  const refreshUser = useCallback(async () : Promise<void> => {
     const cachedUser = authService.getCachedUser();
+
     if (cachedUser) {
       setUser(cachedUser);
       setIsLoading(false);
@@ -29,29 +46,44 @@ export default function Navbar() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  useEffect(() => {
-    checkUser();
   }, []);
 
-  // Watch for login/register events by checking cache periodically
+  // Login/register write to the shared cache; subscribe to session changes via
+  // storage events and a light poll instead of holding a second copy of auth state.
   useEffect(() => {
-    const interval = setInterval(() => {
+    const timer = window.setTimeout(() => {
+      void refreshUser();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [refreshUser]);
+
+  useEffect(() => {
+    const poll = setInterval(() => {
       const cachedUser = authService.getCachedUser();
-      if (cachedUser && !user) {
+
+      if (cachedUser && cachedUser.id !== userRef.current?.id) {
         setUser(cachedUser);
         setIsLoading(false);
       }
     }, 1000);
 
-    return () => clearInterval(interval);
-  }, [user]);
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== null) void refreshUser();
+    };
 
-  const handleSignOut = async () => {
+    window.addEventListener("storage", onStorage);
+
+    return () => {
+      clearInterval(poll);
+      window.removeEventListener("storage", onStorage);
+    };
+  }, [refreshUser]);
+
+  const handleSignOut = async () : Promise<void> => {
     await authService.logout();
     setUser(null);
-    window.location.href = '/';
+    navigate("/", { replace: true });
   };
 
   if (isLoading) {
@@ -62,9 +94,11 @@ export default function Navbar() {
             <Menu size={18}/>
           </button>
         </div>
+
         <div>
           <Link to="/" className="text-xl">DevLink</Link>
         </div>
+
         <div>
           <Button label="Carregando..." buttonType="button" colorType="primary" disabled />
         </div>
@@ -90,7 +124,9 @@ export default function Navbar() {
             <Link to="/settings" className="flex items-center gap-2 text-white hover:text-(--primary) transition-colors">
               <Settings size={18}/>
             </Link>
+
             <span className="text-white font-medium" data-testid="navbar-username">{user.name}</span>
+
             <Button label="Log-out" buttonType="button" colorType="primary" onClick={handleSignOut}/>
           </div>
         ) : (
@@ -105,10 +141,14 @@ export default function Navbar() {
       </div>
 
       <LoginModal show={openLogin} onClose={() => setOpenLogin(false)} />
+
       <Drawer open={openDrawer} onClose={() => setOpenDrawer(false)}>
-        <Link to="/questionnaire" className="text-xl w-full hover:text-(--primary) transition-colors"><ChevronRight className='inline'/>Criação de projetos</Link>
-        <Link to="/project" className="text-xl w-full hover:text-(--primary) transition-colors"><ChevronRight className='inline'/>Projetos</Link>
-        <Link to="/profile" className="text-xl w-full hover:text-(--primary) transition-colors"><ChevronRight className='inline'/>Perfil</Link>
+        {MENU_LINKS.map((link) => (
+          <Link key={link.to} to={link.to} className="text-xl w-full hover:text-(--primary) transition-colors">
+            <ChevronRight className='inline'/>
+            {link.label}
+          </Link>
+        ))}
       </Drawer>
     </header>
   );

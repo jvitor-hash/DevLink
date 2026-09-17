@@ -94,9 +94,8 @@ export default function SettingsPage() {
   const patchPreference = (patch: Partial<UserPreferenceDTO>): void => {
     if (!preference) return;
 
-    const next = { ...preference, ...patch };
-    setPreference(next);
-    persist(next);
+    // Update local state only; persisting happens on the explicit Save action.
+    setPreference({ ...preference, ...patch });
   };
 
   if (isLoading) {

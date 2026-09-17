@@ -194,6 +194,48 @@ describe("Projects Schema Validation", () => {
     expect(result.success).toBe(true);
   });
 
+  test("ProjectDTOSchema should default saveTotalCount to zero", () => {
+    const projectWithoutSaveCount = {
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      clientId: "550e8400-e29b-41d4-a716-446655440001",
+      title: "No Save Count",
+      description: "Detailed description",
+      category: "Software",
+      sub_category: "API",
+      primaryLanguage: "GO",
+      platforms: ["DESKTOP"],
+      status: "OPEN",
+      audience: "INTERNAL_TOOL",
+      minBudget: 2000.00,
+      maxBudget: 6000.00,
+    };
+
+    const result = ProjectDTOSchema.safeParse(projectWithoutSaveCount);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.saveTotalCount).toBe(0);
+    }
+  });
+
+  test("ProjectCreateSchema should ignore client-supplied saveTotalCount", () => {
+    const dataWithSaveCount = {
+      title: "Test",
+      description: "Desc",
+      category: "Cat",
+      sub_category: "Sub",
+      platforms: ["WEB" as const],
+      minBudget: 100,
+      maxBudget: 200,
+      saveTotalCount: 999,
+    };
+
+    const result = ProjectCreateSchema.safeParse(dataWithSaveCount);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect("saveTotalCount" in result.data).toBe(false);
+    }
+  });
+
   test("ProjectDTOSchema should validate entity with nullable programmerId", () => {
     const projectWithNullableProgrammer = {
       id: "550e8400-e29b-41d4-a716-446655440000",

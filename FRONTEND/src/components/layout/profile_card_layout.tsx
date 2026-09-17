@@ -21,8 +21,6 @@ export default function ProfileCard({
       onClick={onClick}
       className={`w-full max-w-100 overflow-hidden rounded-md bg-(--surface-1) border border-(--border-subtle) ${onClick ? "hover:cursor-pointer hover:border-(--primary) transition-colors" : ""}`}
     >
-      <div className="bg-amber-300 w-full h-full max-h-10">.</div>
-
       {/* Content */}
       <div className="relative px-6 pb-6 pt-6">
         {/* Avatar */}

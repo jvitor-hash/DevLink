@@ -2,7 +2,6 @@ import Button from "@/components/ui/button_component";
 import Checkbox from "@/components/ui/checkbox_component";
 import Input from "@/components/ui/input_component";
 import MoneyInput from "@/components/ui/money_input_component";
-import SegmentedProgressBar from "@/components/ui/segmented_progress_bar_component";
 import Select from "@/components/ui/select_component";
 import TextArea from "@/components/ui/textarea_component";
 import { projectService } from "@/services/project_service";
@@ -10,6 +9,7 @@ import type { PlatformType, ProgrammingLanguage, Audience, ProjectCreate } from 
 import { authService } from "@/services/auth_service";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { Steps } from "@/components/ui/steps_component";
 
 type QuestionnaireForm = {
   problem: string;
@@ -93,7 +93,7 @@ export default function Questionnaire() {
     return () => {
       cancelled = true;
     };
-  });
+  }, [navigate, location]);
 
   const setField = <K extends keyof QuestionnaireForm>(key: K, value: QuestionnaireForm[K]): void => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -184,7 +184,20 @@ export default function Questionnaire() {
           </div>
 
           <div className="flex flex-wrap gap-4 mt-4">
-            <SegmentedProgressBar progress={steps} maxValue={maxSteps} segments={maxSteps} />
+            <Steps currentStep={steps}>
+              <Steps.Item step={1}>
+                <Steps.Indicator/>
+              </Steps.Item>
+              <Steps.Item step={2}>
+                <Steps.Indicator/>
+              </Steps.Item>
+              <Steps.Item step={3}>
+                <Steps.Indicator/>
+              </Steps.Item>
+              <Steps.Item step={4}>
+                <Steps.Indicator/>
+              </Steps.Item>
+            </Steps>
           </div>
 
           {/* Page - 1 */}

@@ -87,108 +87,13 @@ export default function Home() {
       <section className="w-full min-h-screen">
         <p className="text-3xl text-center w-full mb-2">Categorias</p>
         <p className="text-lg text-(--text-muted) w-full text-center mb-3">Pesquise por categoria e encontre o projeto que procura.</p>
-        <div className="flex">
-          <div className="flex flex-col gap-3 *:bg-(--error)/50 *:hover:cursor-pointer *:max-w-xs *:p-10 *:mx-5 *:hover:bg-(--primary) *:transition-colors *:duration-300">
-            <button
-              type="button"
-              onMouseEnter={() => handleCategories("Websites")}
-              onMouseLeave={() => {
-                if (!isHoveringSubmenu) {
-                  setActiveCategory(null);
-                }
-              }}
-            >
-              <div className="flex justify-between items-baseline">
-                Websites
-                <ChevronRight className="inline" size={18} />
-              </div>
-            </button>
+        {/*TODO: Make cards for each category and sub-category when the clicks on the sub-category
+          or category it would redirect them to the projects page and apply the filter*/}
+      </section>
 
-            <button
-              type="button"
-              onMouseEnter={() => handleCategories("Desenvolvimento de Apps")}
-              onMouseLeave={() => {
-                if (!isHoveringSubmenu) {
-                  setActiveCategory(null);
-                }
-              }}
-            >
-              <div className="flex justify-between items-baseline">
-                Desenvolvimento de Apps
-                <ChevronRight className="inline" size={18} />
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onMouseEnter={() => handleCategories("Plataforma Mobile")}
-              onMouseLeave={() => {
-                if (!isHoveringSubmenu) {
-                  setActiveCategory(null);
-                }
-              }}
-            >
-              <div className="flex justify-between items-baseline">
-                Plataforma Mobile
-                <ChevronRight className="inline" size={18} />
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onMouseEnter={() => handleCategories("Suporte e Cibersegurança")}
-              onMouseLeave={() => {
-                if (!isHoveringSubmenu) {
-                  setActiveCategory(null);
-                }
-              }}
-            >
-              <div className="flex justify-between items-baseline">
-                Suporte e Cibersegurança
-                <ChevronRight className="inline" size={18} />
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onMouseEnter={() => handleCategories("Blockchain & Web3")}
-              onMouseLeave={() => {
-                if (!isHoveringSubmenu) {
-                  setActiveCategory(null);
-                }
-              }}
-            >
-              <div className="flex justify-between items-baseline">
-                Blockchain & Web3
-                <ChevronRight className="inline" size={18} />
-              </div>
-            </button>
-          </div>
-          {activeCategory !== null && (
-            <div
-              ref={submenuRef}
-              className="flex flex-col bg-(--error)/50 text-white p-4 gap-10 overflow-hidden transition-all duration-300 ease-out"
-              style={{
-                maxHeight: targetHeight > 0 ? targetHeight.toString() : "0px",
-              }}
-
-              onMouseEnter={() => setIsHoveringSubmenu(true)}
-              onMouseLeave={() => {
-                setIsHoveringSubmenu(false);
-                setActiveCategory(null);
-              }}
-            >
-              {categories[activeCategory]!.map((subCategory) => (
-                <Link
-                  key={subCategory}
-                  to={`/project?category=${encodeURIComponent("test")}&sub_category=${encodeURIComponent(subCategory)}`}
-                >
-                  {subCategory}
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
+      <section className="w-full min-h-screen">
+        <p className="text-3xl text-center w-full mb-2">Quem nos somos</p>
+        <p className="text-lg text-(--text-muted) w-full text-center mb-3">Esta e a nossa equipe de desenvolvedores que ajudaram nesse projeto</p>
       </section>
     </main>
   );

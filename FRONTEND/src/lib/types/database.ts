@@ -44,17 +44,20 @@ export type Audience =
 export interface PaginationParams {
   limit?: number;
   offset?: number;
-  [key: string]: string | number | boolean | null | undefined;
+  [key: string]: string | number | boolean | null | string[] | undefined;
 }
 
 export type ListParams = PaginationParams & {
+  q?: string;
+  category?: string;
+  sub_category?: string;
+  clientId?: string;
   audience?: string;
-  platforms?: string | string[];
+  platforms?: string[];
   primaryLanguage?: string;
   status?: string;
   minBudget?: number;
   maxBudget?: number;
-  savedOnly?: string;
 };
 
 export interface ApiError {
@@ -107,6 +110,7 @@ export interface ProjectDTO {
   audience: Audience;
   minBudget: number;
   maxBudget: number;
+  saveTotalCount: number;
   deadline?: string | Date | null;
   completedAt?: string | null;
   createdAt?: string | Date | null;
@@ -265,7 +269,8 @@ export interface SavedTicketDTO {
 }
 
 export interface SavedTicketCreate {
-  userId: string;
+  // The API derives userId from the authenticated session.
+  userId?: string;
   projectId: string;
 }
 

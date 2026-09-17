@@ -1,16 +1,48 @@
 import { schemas } from "@/database/schema";
 import { crud } from "@/modules/crud_factory";
-import { eq, and, desc, inArray, sql } from "drizzle-orm";
+import { eq, and, desc, inArray, sql, type SQL } from "drizzle-orm";
 import { db } from "@/client";
 
+const base = crud(schemas.savedTicket);
+
 export const SavedTicketService = {
-  ...crud(schemas.savedTicket),
+  ...base,
+
+  /**
+   * Create a saved ticket and bump the project save counter.
+   */
+  createForUser: async (data: { userId: string; projectId: string }) => {
+    const ticket = await base.create(data);
+
+    await db
+      .update(schemas.project)
+      .set({ saveTotalCount: sql`${schemas.project.saveTotalCount} + 1` })
+      .where(eq(schemas.project.id, data.projectId));
+
+    return ticket;
+  },
+
+  /**
+   * Remove a saved ticket owned by the user and decrease the project save counter.
+   */
+  removeForUser: async (ticketId: string, userId: string) => {
+    const deleted = await base.remove(
+      and(eq(schemas.savedTicket.id, ticketId), eq(schemas.savedTicket.userId, userId)) as SQL<unknown>
+    );
+
+    await db
+      .update(schemas.project)
+      .set({ saveTotalCount: sql`GREATEST(${schemas.project.saveTotalCount} - 1, 0)` })
+      .where(eq(schemas.project.id, deleted.projectId));
+
+    return deleted;
+  },
 
   /**
    * List saved project ids for a given user.
    */
   findSavedProjectIdsByUser: async (userId: string) => {
-    const rows = await crud(schemas.savedTicket).findWhere(eq(schemas.savedTicket.userId, userId));
+    const rows = await base.findWhere(eq(schemas.savedTicket.userId, userId));
     return rows.map((row) => row.projectId);
   },
 

@@ -12,11 +12,9 @@ export default function Select({ labels, name, defaultValue, onChange, className
   return (
     <select onChange={onChange} name={name} defaultValue={defaultValue} className={`border border-(--border-subtle) py-2 px-4 rounded-sm ${className}`}>
       {Object.entries(labels).map(([k, v]) => (
-        <>
-          <option key={k} value={v}>
-            {k}
-          </option>
-        </>
+        <option key={k} value={v}>
+          {k}
+        </option>
       ))}
     </select>
   )
