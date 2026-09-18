@@ -10,6 +10,8 @@ import { MessageRouter } from "@/routes/v1/message";
 import { ReviewRouter } from "@/routes/v1/review";
 import { UserPreferenceRouter } from "@/routes/v1/user_preferences";
 import { SavedTicketRouter } from "@/routes/v1/saved_ticket";
+import { TodoRouter } from "@/routes/v1/todo";
+import { TicketRouter } from "@/routes/v1/ticket";
 import { UsersRouter } from "@/routes/v1/users";
 import { ClientAuthRouter } from "./routes/v1/client";
 import { ProgrammerAuthRouter } from "./routes/v1/programmer";
@@ -68,6 +70,8 @@ const app = new Elysia()
   .use(MessageRouter)
   .use(ReviewRouter)
   .use(SavedTicketRouter)
+  .use(TodoRouter)
+  .use(TicketRouter)
   .use(UserPreferenceRouter)
   .use(UsersRouter)
   .get("/health", () => ({ OK: true }), {

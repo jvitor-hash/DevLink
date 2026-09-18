@@ -24,7 +24,7 @@ cd '.\Projeto sem nome\'
 
 2. Instalação das dependências do projeto:
 ```
-npm install
+bun install
 ```
 
 3. Configuração das variáveis de ambiente: (BACK-END)

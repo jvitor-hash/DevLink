@@ -9,7 +9,6 @@ import { NotificationRouter } from "../routes/v1/notification";
 describe("Notification Schema Validation", () => {
   test("NotificationCreateSchema should validate correctly with real types", () => {
     const validData = {
-      userId: "550e8400-e29b-41d4-a716-446655440001",
       type: "PROJECT_UPDATE" as const,
       title: "Project Milestone Reached",
       message: "Milestone 1 has been approved by the client.",
@@ -22,13 +21,26 @@ describe("Notification Schema Validation", () => {
     if (result.success) {
       expect(result.data.type).toBe("PROJECT_UPDATE");
       expect(result.data.isRead).toBe(false);
-      expect(result.data.userId).toBe("550e8400-e29b-41d4-a716-446655440001");
+    }
+  });
+
+  test("NotificationCreateSchema should ignore client-supplied userId", () => {
+    const dataWithUserId = {
+      userId: "550e8400-e29b-41d4-a716-446655440001",
+      type: "PROJECT_UPDATE" as const,
+      title: "Project Milestone Reached",
+      message: "Milestone 1 has been approved by the client.",
+    };
+
+    const result = NotificationCreateSchema.safeParse(dataWithUserId);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect("userId" in result.data).toBe(false);
     }
   });
 
   test("NotificationCreateSchema should validate without projectId", () => {
     const validData = {
-      userId: "550e8400-e29b-41d4-a716-446655440001",
       type: "SYSTEM" as const,
       title: "System Notice",
       message: "System maintenance tonight.",
@@ -40,7 +52,6 @@ describe("Notification Schema Validation", () => {
 
   test("NotificationCreateSchema should reject empty title", () => {
     const invalidData = {
-      userId: "550e8400-e29b-41d4-a716-446655440001",
       type: "SYSTEM" as const,
       title: "",
       message: "System maintenance tonight.",
@@ -52,20 +63,7 @@ describe("Notification Schema Validation", () => {
 
   test("NotificationCreateSchema should reject invalid notification type", () => {
     const invalidData = {
-      userId: "550e8400-e29b-41d4-a716-446655440001",
       type: "UNKNOWN_TYPE" as any,
-      title: "Notice",
-      message: "Message body",
-    };
-
-    const result = NotificationCreateSchema.safeParse(invalidData);
-    expect(result.success).toBe(false);
-  });
-
-  test("NotificationCreateSchema should reject invalid userId", () => {
-    const invalidData = {
-      userId: "invalid-uuid",
-      type: "SYSTEM" as const,
       title: "Notice",
       message: "Message body",
     };

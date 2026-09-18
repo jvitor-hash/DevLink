@@ -1,4 +1,5 @@
-import { boolean, index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, index, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { offerStatusEnum } from "./enums_schema";
 import { user } from "./user_schema";
 import { project } from "./project_schema";
 
@@ -16,6 +17,8 @@ export const message = pgTable("message", {
     }),
   content: text("content").notNull(),
   isRead: boolean("is_read").default(false).notNull(),
+  offerDeadline: timestamp("offer_deadline"),
+  offerStatus: offerStatusEnum("offer_status"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 },

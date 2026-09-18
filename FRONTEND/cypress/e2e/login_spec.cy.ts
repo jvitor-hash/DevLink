@@ -1,4 +1,4 @@
-import { LoginPage } from './pom/loginPage';
+import { LoginPage } from '../pom/loginPage';
 
 describe('Teste de autenticacao de usuarios', () => {
   const loginPage = new LoginPage();

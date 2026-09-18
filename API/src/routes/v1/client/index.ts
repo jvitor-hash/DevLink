@@ -35,7 +35,6 @@ export const ClientAuthRouter = new Elysia({
 
       return {
         user,
-        token: created.response.token,
       };
     } catch (error) {
       logError("POST /api/auth/sign-up/client", error);
@@ -61,7 +60,6 @@ export const ClientAuthRouter = new Elysia({
           updatedAt: z.date(),
           createdAt: z.date(),
         }),
-        token: z.string().nullable(),
       }),
       500: ErrorSchema,
     },

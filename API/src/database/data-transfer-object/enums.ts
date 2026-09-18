@@ -44,6 +44,19 @@ export const AudienceEnum = z.enum([
     "RESEARCHER"
 ]);
 
+export const TicketStatusEnum = z.enum([
+    "BACKLOG",
+    "IN_PROGRESS",
+    "REVIEW",
+    "DONE"
+]);
+
+export const OfferStatusEnum = z.enum([
+    "PENDING",
+    "ACCEPTED",
+    "REJECTED"
+]);
+
 export const NotificationTypeEnum = z.enum([
     "NEW_MESSAGE",
     "NEW_REVIEW",

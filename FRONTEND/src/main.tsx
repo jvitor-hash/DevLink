@@ -9,10 +9,11 @@ import "@/global.css";
 
 import HomePage from "@/pages/home";
 import ProjectPage from "@/pages/project";
+import ProjectOpenPage from "@/pages/project_open/project_open";
 import ProfilePage from "@/pages/profile";
 import SettingsPage from "@/pages/settings";
 import NotificationPage from "@/pages/notification";
-import QuestionnairePage from "@/pages/questionnaire";
+import QuestionnairePage from "@/pages/questionnaire/questionnaire";
 import ErrorPage from "@/pages/error";
 
 createRoot(document.getElementById("root")!).render(
@@ -23,6 +24,7 @@ createRoot(document.getElementById("root")!).render(
           <Route element={<AppLayout />} errorElement={<ErrorPage />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/project" element={<ProjectPage />} />
+            <Route path="/project/open/:projectId" element={<ProjectOpenPage />} />
 
             {/* Protected routes */}
             <Route element={<ProtectedRoute />}>

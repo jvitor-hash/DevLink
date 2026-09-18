@@ -19,10 +19,11 @@ type InputComponentProps = {
   placeholder?: string
   className?: string
   dataTestId?: string
+  error?: boolean
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
-export default function Input({ icon, inputType = "text", label, name, value, dataTestId, placeholder, onChange }: InputComponentProps) {
+export default function Input({ icon, inputType = "text", label, name, value, dataTestId, placeholder, error, onChange }: InputComponentProps) {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isFocused, setFocus] = useState<boolean>(false);
   const isPassword = inputType === "password";
@@ -46,13 +47,15 @@ export default function Input({ icon, inputType = "text", label, name, value, da
 
         <input
           id={name ?? label.toLowerCase()}
-          className={`outline-none w-full rounded-md border border-(--border-subtle) invalid:border-(--primary) text-white p-3 ${isFocused === false ? "hover:border-gray-400" : ""} transition-colors
-          ${ IconComponent ? "pl-10" : "pl-3" } ${isPassword ? "pr-10" : "pr-3"} ${isFocused ? "border-gray-400" : "border-(--border-subtle)"} placeholder:text-(--text-muted)`}
+          className={`outline-none w-full rounded-md border text-white p-3 invalid:border-(--primary) transition-colors
+          ${error ? "border-(--error)" : isFocused ? "border-gray-400" : "border-(--border-subtle)"} ${isFocused === false && !error ? "hover:border-gray-400" : ""}
+          ${ IconComponent ? "pl-10" : "pl-3" } ${isPassword ? "pr-10" : "pr-3"} placeholder:text-(--text-muted)`}
           name={name ?? label.toLowerCase()}
           type={isPassword && showPassword ? "text" : inputType}
           placeholder={placeholder}
           value={value}
           onChange={onChange}
+          aria-invalid={error || undefined}
           data-testid={dataTestId}
           onFocus={() => setFocus(true)}
           onBlur={() => setFocus(false)}

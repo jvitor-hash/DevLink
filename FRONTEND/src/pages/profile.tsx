@@ -8,7 +8,11 @@ import { authService } from "@/services/auth_service";
 import { userService } from "@/services/user_service";
 import { projectService } from "@/services/project_service";
 import { savedTicketService } from "@/services/saved_ticket_service";
-import type { ProjectDTO, PublicUserDTO, ReviewDTO } from "@/lib/types/database";
+import type {
+  ProjectDTO,
+  PublicUserDTO,
+  ReviewDTO,
+} from "@/lib/types/database";
 import { reviewService } from "@/services/review_service";
 import { useSavedTickets } from "@/lib/hooks/use_saved_tickets";
 
@@ -38,43 +42,50 @@ export default function ProfilePage() {
 
   const { saveCounts, isSaved, toggleSaved, setSaveCounts } = useSavedTickets();
 
-  const loadProfileData = useCallback(async (targetId: string): Promise<void> => {
-    try {
-      const [ownProjects, reviews] = await Promise.all([
-        projectService.list({ clientId: targetId, limit: 10 }),
-        targetId
-          ? reviewService.listReceivedByUser(targetId, { limit: 10 }).catch(() => [])
-          : Promise.resolve([]),
-      ]);
+  const loadProfileData = useCallback(
+    async (targetId: string): Promise<void> => {
+      try {
+        const [ownProjects, reviews] = await Promise.all([
+          projectService.list({ clientId: targetId, limit: 10 }),
+          targetId
+            ? reviewService
+                .listReceivedByUser(targetId, { limit: 10 })
+                .catch(() => [])
+            : Promise.resolve([]),
+        ]);
 
-      const posts: FeedPost[] = [];
+        const posts: FeedPost[] = [];
 
-      for (const project of ownProjects) {
-        posts.push({
-          id: `project-${project.id}`,
-          kind: "PROJECT",
-          title: project.title,
-          body: project.description,
-          meta: `Projeto - ${project.category} - R$ ${project.minBudget} a R$ ${project.maxBudget}`,
-        });
+        for (const project of ownProjects) {
+          posts.push({
+            id: `project-${project.id}`,
+            kind: "PROJECT",
+            title: project.title,
+            body: project.description,
+            meta: `Projeto - ${project.category} - R$ ${project.minBudget} a R$ ${project.maxBudget}`,
+          });
+        }
+
+        for (const entry of reviews) {
+          posts.push({
+            id: `review-${entry.review.id}`,
+            kind: "REVIEW",
+            title: entry.project?.title
+              ? `Avaliacao em ${entry.project.title}`
+              : "Avaliacao recebida",
+            body: formatReviewBody(entry.review),
+            meta: `Por ${entry.reviewer?.name ?? "usuario"}`,
+          });
+        }
+
+        posts.sort((a, b) => a.id.localeCompare(b.id));
+        setFeed(posts);
+      } catch {
+        setFeed([]);
       }
-
-      for (const entry of reviews) {
-        posts.push({
-          id: `review-${entry.review.id}`,
-          kind: "REVIEW",
-          title: entry.project?.title ? `Avaliacao em ${entry.project.title}` : "Avaliacao recebida",
-          body: formatReviewBody(entry.review),
-          meta: `Por ${entry.reviewer?.name ?? "usuario"}`,
-        });
-      }
-
-      posts.sort((a, b) => a.id.localeCompare(b.id));
-      setFeed(posts);
-    } catch {
-      setFeed([]);
-    }
-  }, []);
+    },
+    [],
+  );
 
   useEffect(() => {
     const loadProfile = async (): Promise<void> => {
@@ -90,7 +101,10 @@ export default function ProfilePage() {
           return;
         }
 
-        const user = targetId === cached?.id && cached ? cached : await userService.getById(targetId);
+        const user =
+          targetId === cached?.id && cached
+            ? cached
+            : await userService.getById(targetId);
 
         if (!user || user.id !== targetId) {
           setError("Perfil nao encontrado.");
@@ -100,7 +114,11 @@ export default function ProfilePage() {
         setProfileUser(user);
         await loadProfileData(targetId);
       } catch (loadError) {
-        setError(loadError instanceof Error ? loadError.message : "Nao foi possivel carregar o perfil.");
+        setError(
+          loadError instanceof Error
+            ? loadError.message
+            : "Nao foi possivel carregar o perfil.",
+        );
       } finally {
         setIsLoading(false);
       }
@@ -125,7 +143,9 @@ export default function ProfilePage() {
     }
 
     try {
-      const { counts } = await savedTicketService.countByProjects(projectsResult.map((project) => project.id));
+      const { counts } = await savedTicketService.countByProjects(
+        projectsResult.map((project) => project.id),
+      );
       setSaveCounts(counts);
     } catch {
       setSaveCounts({});
@@ -142,7 +162,11 @@ export default function ProfilePage() {
 
   const searchOpenProjects = async (): Promise<void> => {
     try {
-      const results = await projectService.list({ status: "OPEN", q: search || undefined, limit: 10 });
+      const results = await projectService.list({
+        status: "OPEN",
+        q: search || undefined,
+        limit: 10,
+      });
       setOpenProjects(results);
 
       if (!results.length) {
@@ -150,7 +174,9 @@ export default function ProfilePage() {
         return;
       }
 
-      const { counts } = await savedTicketService.countByProjects(results.map((project) => project.id));
+      const { counts } = await savedTicketService.countByProjects(
+        results.map((project) => project.id),
+      );
       setSaveCounts(counts);
     } catch {
       setOpenProjects([]);
@@ -167,7 +193,7 @@ export default function ProfilePage() {
 
   if (!profileUser) return null;
 
-  const isOwnProfile = authService.getCachedUser()?.id === profileUser.id;
+  // const isOwnProfile = authService.getCachedUser()?.id === profileUser.id;
 
   return (
     <div className="p-8 grid grid-cols-[1fr_320px] gap-6 items-start">
@@ -179,25 +205,59 @@ export default function ProfilePage() {
           role={profileUser.role ?? "CLIENT"}
         />
 
-        {!isOwnProfile && (
-          <Button label="Ver projetos" colorType="primary" buttonType="button" href={`/project?clientId=${profileUser.id}`} />
-        )}
-
         {/* Feed */}
         <section className="rounded-md border border-(--border-subtle) bg-(--surface-1) p-4 w-full">
           <h2 className="text-lg mb-3">Atividades</h2>
 
           {feed.length === 0 ? (
-            <p className="text-(--text-muted) py-6 text-center">Nenhuma atividade recente.</p>
+            <p className="text-(--text-muted) py-6 text-center">
+              Nenhuma atividade recente.
+            </p>
           ) : (
             <ul className="flex flex-col gap-3">
               {feed.map((post) => (
-                <li key={post.id} className="rounded border border-(--border-subtle) bg-(--surface-2) p-4">
+                <li
+                  key={post.id}
+                  className="rounded border border-(--border-subtle) bg-(--surface-2) p-4"
+                >
                   <p className="text-xs text-(--text-muted)">{post.meta}</p>
                   <p className="font-semibold mt-1">{post.title}</p>
-                  <p className="text-sm text-(--text-secondary) mt-1">{post.body}</p>
+                  <p className="text-sm text-(--text-secondary) mt-1">
+                    {post.body}
+                  </p>
                 </li>
               ))}
+
+              {openProjects.length === 0 ? (
+                <li className="text-sm text-(--text-muted)">
+                  Nenhum projeto aberto encontrado.
+                </li>
+              ) : (
+                openProjects.map((project) => (
+                  <ProjectPreview
+                    key={project.id}
+                    item={project.id}
+                    title={project.title}
+                    category={project.category}
+                    deadline={
+                      project.deadline
+                        ? String(project.deadline).slice(0, 10)
+                        : ""
+                    }
+                    problem={project.problem ?? ""}
+                    actions={project.user_actions ?? ""}
+                    audience={project.audience}
+                    programming_language={project.primaryLanguage}
+                    platforms={project.platforms}
+                    status={project.status}
+                    maxBudget={project.maxBudget}
+                    minBudget={project.minBudget}
+                    saved={isSaved(project.id)}
+                    saveCount={saveCounts[project.id] ?? 0}
+                    onToggleSaved={() => toggleSaved(project.id)}
+                  />
+                ))
+              )}
             </ul>
           )}
         </section>
@@ -218,35 +278,13 @@ export default function ProfilePage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-            <Button label="Buscar" buttonType="button" colorType="secondary" onClick={searchOpenProjects} />
+            <Button
+              label="Buscar"
+              buttonType="button"
+              colorType="secondary"
+              onClick={searchOpenProjects}
+            />
           </div>
-
-          <ul className="mt-3 flex flex-col gap-2">
-            {openProjects.length === 0 ? (
-              <li className="text-sm text-(--text-muted)">Nenhum projeto aberto encontrado.</li>
-            ) : (
-              openProjects.map((project) => (
-                <ProjectPreview
-                  key={project.id}
-                  item={project.id}
-                  title={project.title}
-                  category={project.category}
-                  deadline={project.deadline ? String(project.deadline).slice(0, 10) : ""}
-                  problem={project.problem ?? ""}
-                  actions={project.user_actions ?? ""}
-                  audience={project.audience}
-                  programming_language={project.primaryLanguage}
-                  platforms={project.platforms}
-                  status={project.status}
-                  maxBudget={project.maxBudget}
-                  minBudget={project.minBudget}
-                  saved={isSaved(project.id)}
-                  saveCount={saveCounts[project.id] ?? 0}
-                  onToggleSaved={() => toggleSaved(project.id)}
-                />
-              ))
-            )}
-          </ul>
         </section>
 
         {/* People list */}
@@ -255,13 +293,20 @@ export default function ProfilePage() {
 
           <ul className="flex flex-col gap-3">
             {people.length === 0 ? (
-              <li className="text-sm text-(--text-muted)">Ninguem encontrado.</li>
+              <li className="text-sm text-(--text-muted)">
+                Ninguem encontrado.
+              </li>
             ) : (
               people.map((person) => (
-                <li key={person.id} className="flex items-center justify-between gap-2">
+                <li
+                  key={person.id}
+                  className="flex items-center justify-between gap-2"
+                >
                   <div className="min-w-0">
                     <p className="truncate font-medium">{person.name}</p>
-                    <p className="text-xs text-(--text-muted) truncate">{person.bio ?? person.role ?? ""}</p>
+                    <p className="text-xs text-(--text-muted) truncate">
+                      {person.bio ?? person.role ?? ""}
+                    </p>
                   </div>
                   <button
                     type="button"

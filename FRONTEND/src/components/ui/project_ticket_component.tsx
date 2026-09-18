@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card3D } from "./3d_card_component";
 import Badge from "./badge_component";
 import Button from "./button_component";
+import { authService } from "@/services/auth_service";
 
 import type { Audience, ProjectStatus } from "@/lib/types/database";
 
@@ -26,12 +27,15 @@ type ProjectPreviewProps = {
 export default function ProjectPreview({ item, title, category, deadline, problem, audience, platforms, status, actions, programming_language, minBudget, maxBudget, saved = false, saveCount = 0, onToggleSaved }: ProjectPreviewProps) {
   const navigate = useNavigate();
 
-  const openModal = () => {
-    navigate(`?modal=project&id=${encodeURIComponent(item)}`);
+  // Only programmers can save projects.
+  const canSave = authService.getCachedUser()?.role === "PROGRAMMER";
+
+  const openProject = () => {
+    navigate(`/project/open/${encodeURIComponent(item)}`);
   };
 
   return (
-    <Card3D className="w-full max-w-90 shadow-sm hover:shadow-lg" onClick={openModal}>
+    <Card3D className="w-full max-w-90 shadow-sm hover:shadow-lg" onClick={openProject}>
       <div
         className="overflow-hidden rounded-xl border border-(--border-subtle) bg-(--surface-1)"
         style={{ boxShadow: "0 0.25rem 0.75rem rgba(0, 0, 0, 0.25)" }}
@@ -102,13 +106,15 @@ export default function ProjectPreview({ item, title, category, deadline, proble
             </div>
           </div>
 
-          {/* Saved toggle with save count */}
+          {/* Saved toggle with save count (programmers only) */}
           <div className="mt-4 flex items-center justify-between">
             <span className="text-sm text-(--text-muted)" data-testid="save-count">
               {saveCount} {saveCount === 1 ? "salvamento" : "salvamentos"}
             </span>
 
-            <Button label={saved ? "Salvo" : "Salvar"} buttonType="button" colorType={saved ? "secondary" : "primary"} onClick={(e) => { e.stopPropagation(); onToggleSaved?.(); }} dataTestId="save-ticket-btn" />
+            {canSave && (
+              <Button label={saved ? "Salvo" : "Salvar"} buttonType="button" colorType={saved ? "secondary" : "primary"} onClick={(e) => { e.stopPropagation(); onToggleSaved?.(); }} dataTestId="save-ticket-btn" />
+            )}
           </div>
         </div>
       </div>

@@ -23,6 +23,10 @@ export type ProjectStatus =
   | "COMPLETED"
   | "CANCELLED";
 
+export type TicketStatus = "BACKLOG" | "IN_PROGRESS" | "REVIEW" | "DONE";
+
+export type OfferStatus = "PENDING" | "ACCEPTED" | "REJECTED";
+
 export type NotificationType =
   | "NEW_MESSAGE"
   | "NEW_REVIEW"
@@ -56,6 +60,7 @@ export type ListParams = PaginationParams & {
   platforms?: string[];
   primaryLanguage?: string;
   status?: string;
+  excludeStatuses?: string[];
   minBudget?: number;
   maxBudget?: number;
 };
@@ -211,6 +216,8 @@ export interface MessageDTO {
   senderId: string;
   content: string;
   isRead: boolean;
+  offerDeadline?: string | Date | null;
+  offerStatus?: OfferStatus | null;
   createdAt?: string | Date | null;
   updatedAt?: string | Date | null;
 }
@@ -220,6 +227,7 @@ export interface MessageCreate {
   senderId: string;
   content: string;
   isRead?: boolean;
+  offerDeadline?: string | null;
 }
 
 export interface MessageUpdate {
@@ -227,6 +235,61 @@ export interface MessageUpdate {
   senderId?: string;
   content?: string;
   isRead?: boolean;
+  offerStatus?: OfferStatus | null;
+}
+
+// Todo Models
+export interface TodoDTO {
+  id: string;
+  projectId: string;
+  creatorId: string;
+  title: string;
+  description?: string | null;
+  isDone: boolean;
+  createdAt?: string | Date | null;
+  updatedAt?: string | Date | null;
+}
+
+export interface TodoCreate {
+  projectId: string;
+  title: string;
+  description?: string | null;
+}
+
+export interface TodoUpdate {
+  title?: string;
+  description?: string | null;
+  isDone?: boolean;
+}
+
+// Kanban Ticket Models
+export interface TicketDTO {
+  id: string;
+  projectId: string;
+  creatorId: string;
+  assigneeId?: string | null;
+  title: string;
+  description?: string | null;
+  status: TicketStatus;
+  position: number;
+  createdAt?: string | Date | null;
+  updatedAt?: string | Date | null;
+}
+
+export interface TicketCreate {
+  projectId: string;
+  title: string;
+  description?: string | null;
+  status?: TicketStatus;
+  assigneeId?: string | null;
+}
+
+export interface TicketUpdate {
+  title?: string;
+  description?: string | null;
+  status?: TicketStatus;
+  position?: number;
+  assigneeId?: string | null;
 }
 
 // Review Models

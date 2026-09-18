@@ -45,6 +45,9 @@ export function useSavedTickets(loadProjectsOnMount: boolean = true) : UseSavedT
   );
 
   const toggleSaved = useCallback(async (projectId: string) : Promise<void> => {
+    // Only programmers can save projects; the API enforces this as well.
+    if (authService.getCachedUser()?.role !== "PROGRAMMER") return;
+
     try {
       const isNowSaved = await savedTicketService.toggle(projectId);
 

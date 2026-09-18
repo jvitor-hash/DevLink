@@ -201,7 +201,7 @@ export default function NotificationPage() {
                 <button
                   type="button"
                   className="rounded-full px-4 py-1.5 bg-(--primary) text-white hover:cursor-pointer"
-                  onClick={() => navigate(`/project?modal=project&id=${encodeURIComponent(selectedProjectId)}`)}
+                  onClick={() => navigate(`/project/open/${encodeURIComponent(selectedProjectId)}`)}
                 >
                   Ver projeto
                 </button>

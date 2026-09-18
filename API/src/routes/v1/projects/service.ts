@@ -1,6 +1,6 @@
 import { schemas } from "@/database/schema";
 import { crud } from "@/modules/crud_factory";
-import { and, eq, gte, lte, inArray, sql, type SQL } from "drizzle-orm";
+import { and, eq, gte, lte, inArray, notInArray, sql, type SQL } from "drizzle-orm";
 
 export const ProjectService = {
   ...crud(schemas.project),
@@ -12,9 +12,12 @@ export const ProjectService = {
       platforms?: string[];
       primaryLanguage?: string;
       status?: string;
+      excludeStatuses?: string[];
       minBudget?: number;
       maxBudget?: number;
       q?: string;
+      category?: string;
+      sub_category?: string;
       clientId?: string;
       savedOnly?: boolean;
     },
@@ -44,11 +47,24 @@ export const ProjectService = {
       conditions.push(sql`${schemas.project.status}::text = ${filters.status}`);
     }
 
+    if (filters.excludeStatuses?.length) {
+      conditions.push(notInArray(schemas.project.status, filters.excludeStatuses as (typeof schemas.project.status.enumValues)[number][]));
+    }
+
     if (filters.q) {
       const term = `%${filters.q}%`;
       conditions.push(
         sql`(${schemas.project.title} ILIKE ${term} OR ${schemas.project.description} ILIKE ${term} OR ${schemas.project.category} ILIKE ${term})`,
       );
+    }
+
+    // Case-insensitive exact match so category cards can filter reliably.
+    if (filters.category) {
+      conditions.push(sql`${schemas.project.category} ILIKE ${filters.category}`);
+    }
+
+    if (filters.sub_category) {
+      conditions.push(sql`${schemas.project.sub_category} ILIKE ${filters.sub_category}`);
     }
 
     if (filters.clientId) {

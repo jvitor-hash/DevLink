@@ -32,7 +32,6 @@ export const ProgrammerAuthRouter = new Elysia({ prefix: "/api/auth/sign-up/prog
 
       return {
         user,
-        token: created.response.token,
       };
     } catch (error) {
       logError("POST /api/auth/sign-up/programmer", error);
@@ -58,7 +57,6 @@ export const ProgrammerAuthRouter = new Elysia({ prefix: "/api/auth/sign-up/prog
           updatedAt: z.date(),
           createdAt: z.date(),
         }),
-        token: z.string().nullable(),
       }),
       500: ErrorSchema,
     },

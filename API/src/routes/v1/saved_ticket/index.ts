@@ -11,6 +11,11 @@ import { logError } from "@/modules/logger";
 export const SavedTicketRouter = new Elysia({ prefix: "/api/v1/saved-tickets" })
   .use(authPlugin)
   .post("/", async ({ body, user, set }) => {
+    if (user.role !== "PROGRAMMER") {
+      set.status = 403;
+      return { error: "Only programmers can save projects" };
+    }
+
     try {
       const data = body as SavedTicketCreate;
       const newSavedTicket = await SavedTicketService.createForUser({
@@ -119,6 +124,11 @@ export const SavedTicketRouter = new Elysia({ prefix: "/api/v1/saved-tickets" })
     auth: true,
   })
   .delete("/:id", async ({ params, user, set }) => {
+    if (user.role !== "PROGRAMMER") {
+      set.status = 403;
+      return { error: "Only programmers can save projects" };
+    }
+
     try {
       const deleted = await SavedTicketService.removeForUser(params.id, user.id);
       return deleted;

@@ -1,22 +1,34 @@
-import { ProjectModal } from "@/components/layout/project_modal_layout";
 import ProfileCard from "@/components/layout/profile_card_layout";
 import SearchFiltersLayout from "@/components/layout/search_filters_layout";
-import { EMPTY_FILTERS, type ProjectFilters } from "@/lib/types/project_filters";
+import { EMPTY_FILTERS, HIDDEN_PROJECT_STATUSES, type ProjectFilters } from "@/lib/types/project_filters";
 import Button from "@/components/ui/button_component";
 import Input from "@/components/ui/input_component";
 import ProjectPreview from "@/components/ui/project_ticket_component";
-import { Suspense, useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { ChevronRight } from "react-feather";
 import { type ProjectDTO, type ListParams, type PublicUserDTO } from "@/lib/types/database";
 import { projectService } from "@/services/project_service";
 import { userService } from "@/services/user_service";
 import { useSavedTickets } from "@/lib/hooks/use_saved_tickets";
+import { ActiveFiltersBanner } from "./active_filters_banner";
 
 const PAGE_SIZE = 10;
 
-const buildListParams = (filters: ProjectFilters) : ListParams => {
-  const params: ListParams = {};
+const filtersFromUrl = (searchParams: URLSearchParams): ProjectFilters => ({
+  ...EMPTY_FILTERS,
+  category: searchParams.get("category") ?? "ALL",
+  sub_category: searchParams.get("sub_category") ?? "ALL",
+});
 
+const buildListParams = (filters: ProjectFilters) : ListParams => {
+  const params: ListParams = {
+    // Server-side exclusion keeps pagination accurate; these projects never list.
+    excludeStatuses: HIDDEN_PROJECT_STATUSES,
+  };
+
+  if (filters.category !== "ALL") params.category = filters.category;
+  if (filters.sub_category !== "ALL") params.sub_category = filters.sub_category;
   if (filters.audience !== "ALL") params.audience = filters.audience;
   if (filters.platforms !== "ALL") params.platforms = [filters.platforms];
   if (filters.primaryLanguage !== "ALL") params.primaryLanguage = filters.primaryLanguage;
@@ -43,6 +55,17 @@ export default function ProjectPage() {
   const [projects, setProjects] = useState<ProjectDTO[] | null>(null);
   const [prominentClients, setProminentClients] = useState<PublicUserDTO[] | null>(null);
   const [filters, setFilters] = useState<ProjectFilters>(EMPTY_FILTERS);
+  const [searchParams] = useSearchParams();
+
+  // URL is the source of truth for category/sub_category deep links; the
+  // rest of the filters stay user-managed state.
+  const urlFilters = useMemo(
+    () => filtersFromUrl(searchParams),
+    [searchParams],
+  );
+
+  // Snapshot of the filters behind the currently displayed results.
+  const [appliedFilters, setAppliedFilters] = useState<ProjectFilters>(urlFilters);
 
   const { saveCounts, isSaved, toggleSaved, setSaveCountsFromProjects } = useSavedTickets();
 
@@ -62,20 +85,34 @@ export default function ProjectPage() {
     }
   };
 
-  // Initial load; state updates happen in async callbacks to keep the effect clean.
+  // Prominent clients load once; state updates happen in async callbacks to keep the effect clean.
   useEffect(() => {
     let cancelled = false;
 
-    Promise.all([
-      projectService.list({ limit: PAGE_SIZE }),
-      userService.getProminentClients().catch(() : PublicUserDTO[] => []),
-    ])
-      .then(([projectList, clients]) => {
+    userService.getProminentClients()
+      .catch(() : PublicUserDTO[] => [])
+      .then((clients) => {
+        if (!cancelled) setProminentClients(clients);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Projects reload whenever the URL filter params change (deep links from home cards).
+  // All state updates happen in async callbacks to keep the effect clean;
+  // the previous list stays visible until fresh data arrives.
+  useEffect(() => {
+    let cancelled = false;
+
+    projectService.list({ limit: PAGE_SIZE, ...buildListParams(urlFilters) })
+      .then((projectList) => {
         if (cancelled) return;
 
         setProjects(projectList);
         setSaveCountsFromProjects(projectList);
-        setProminentClients(clients);
+        setError(null);
       })
       .catch((loadError: unknown) => {
         if (cancelled) return;
@@ -89,32 +126,55 @@ export default function ProjectPage() {
     return () => {
       cancelled = true;
     };
-  }, [setSaveCountsFromProjects]);
+  }, [urlFilters, setSaveCountsFromProjects]);
+
+  // URL deep links re-apply immediately; keep the applied snapshot in sync when they change.
+  useEffect(() => {
+    setAppliedFilters(urlFilters);
+  }, [urlFilters]);
+
+  const currentFilters : ProjectFilters = { ...filters, ...urlFilters };
+
+  // Only pending when the standby filters would query something different.
+  const hasPendingFilters : boolean =
+    JSON.stringify(buildListParams(currentFilters)) !== JSON.stringify(buildListParams(appliedFilters));
 
   const handleSearch = () : void => {
-    void loadProjects(buildListParams(filters));
+    setAppliedFilters(currentFilters);
+    void loadProjects(buildListParams(currentFilters));
   };
 
+  // Filter edits stay on standby in local state; only Pesquisar applies them.
   const handleFilterChange = (next: ProjectFilters) : void => {
-    setFilters(next);
-
-    void loadProjects(buildListParams(next));
+    setFilters({ ...next, ...urlFilters });
   };
 
   return (
     <>
       <section>
-        <form className="relative mx-25 max-h-fit" onSubmit={(e) => e.preventDefault()}>
+        <form className="relative mx-25 max-h-fit" onSubmit={(e) => { e.preventDefault(); handleSearch(); }}>
           <Input icon="search" label="" name="searchQuery" inputType="text" placeholder="Busque por novos projetos ou usuarios..." />
           <div className="absolute right-2 top-8 -translate-y-1/2 flex gap-2">
+            {hasPendingFilters && (
+              <button
+                type="button"
+                data-testid="pending-filters-indicator"
+                className="self-center rounded-full bg-(--warning) px-3 py-1 text-xs text-white hover:cursor-pointer"
+                onClick={handleSearch}
+              >
+                Filtros não aplicados
+              </button>
+            )}
             <Button label="Pesquisar" buttonType="button" onClick={handleSearch} />
           </div>
 
-          <SearchFiltersLayout value={filters} onChange={handleFilterChange} />
+          <SearchFiltersLayout value={currentFilters} onChange={handleFilterChange} />
         </form>
       </section>
 
       <section className="mx-25">
+        <ActiveFiltersBanner category={urlFilters.category} subCategory={urlFilters.sub_category} />
+
         <div className="mb-5 mt-5">
           <div className="flex justify-between">
             <h1 className="text-2xl text-(--text-primary) mb-3"><span className="text-white text-3xl">*</span>Highlights desta semana:</h1>
@@ -179,11 +239,6 @@ export default function ProjectPage() {
             ))
           )}
         </div>
-      </section>
-
-      <Suspense fallback={null}>
-        <ProjectModal />
-      </Suspense>
-    </>
+      </section>      </>
   );
 }

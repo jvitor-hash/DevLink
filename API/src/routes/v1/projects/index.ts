@@ -55,14 +55,21 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
         ? query.platforms
         : query.platforms ? [query.platforms] : undefined;
 
+      const excludeStatuses = Array.isArray(query.excludeStatuses)
+        ? query.excludeStatuses
+        : query.excludeStatuses ? [query.excludeStatuses] : undefined;
+
       const filters = {
         audience: query.audience,
         platforms,
         primaryLanguage: query.primaryLanguage,
         status: query.status,
+        excludeStatuses,
         minBudget: query.minBudget,
         maxBudget: query.maxBudget,
         q: query.q,
+        category: query.category,
+        sub_category: query.sub_category,
         clientId: query.clientId,
         savedOnly: query.savedOnly === "true",
       };
@@ -81,9 +88,12 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
       platforms: z.union([z.string(), z.array(z.string())]).optional(),
       primaryLanguage: z.string().optional(),
       status: z.string().optional(),
+      excludeStatuses: z.union([z.string(), z.array(z.string())]).optional(),
       minBudget: z.coerce.number().optional(),
       maxBudget: z.coerce.number().optional(),
       q: z.string().optional(),
+      category: z.string().optional(),
+      sub_category: z.string().optional(),
       clientId: z.string().uuid().optional(),
       savedOnly: z.string().optional(),
     }),

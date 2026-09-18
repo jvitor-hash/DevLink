@@ -44,7 +44,7 @@ export default function SearchFiltersLayout({ value, onChange }: SearchFiltersLa
                 <div className="flex flex-col">
                     <p>Status:</p>
                     <Select
-            labels={{ "Todas": "ALL", "Em-aberto": "OPEN", Negociação: "NEGOTIATING", "Em desenvolvimento": "IN_DEVELOPMENT", "Concluído": "COMPLETED", Cancelado: "CANCELLED" }}
+            labels={{ "Todas": "ALL", "Em-aberto": "OPEN", Negociação: "NEGOTIATING" }}
             name="status"
             defaultValue={value.status}
             onChange={(e) => onChange({ ...value, status: e.currentTarget.value })}

@@ -17,17 +17,13 @@ export interface RegisterCredentials {
   registrationRole: RegisterRole;
 }
 
-export interface AuthSessionDTO {
-  id: string;
-  userId: string;
-  expiresAt: string | Date;
-  token?: string;
-}
-
 export interface AuthResponse {
   user: UserDTO;
-  session?: AuthSessionDTO | null;
-  token?: string;
+  session?: {
+    id: string;
+    userId: string;
+    expiresAt: string | Date;
+  } | null;
 }
 
 export const permissionStatement = {
@@ -115,10 +111,6 @@ class AuthService {
     return cache.get<UserDTO>(CACHE_KEYS.CURRENT_USER) ?? null;
   }
 
-  getAuthToken() : string | null {
-    return cache.get<string>(CACHE_KEYS.AUTH_TOKEN) ?? null;
-  }
-
   isAuthenticated() : boolean {
     return cache.has(CACHE_KEYS.CURRENT_USER);
   }
@@ -142,6 +134,7 @@ class AuthService {
       await apiClient.post<void>("/api/auth/sign-out", {});
     } finally {
       cache.delete(CACHE_KEYS.CURRENT_USER);
+      // Scrub legacy token keys from before tokens stopped being persisted.
       cache.delete(CACHE_KEYS.AUTH_TOKEN);
       cache.delete(CACHE_KEYS.TOKEN_EXPIRY);
     }
@@ -153,8 +146,6 @@ class AuthService {
 
   private cacheUserData(response: AuthResponse) : void {
     cache.set(CACHE_KEYS.CURRENT_USER, response.user);
-
-    if (response.token) cache.set(CACHE_KEYS.AUTH_TOKEN, response.token);
   }
 
   private getRecentAttempts(email: string) : LoginAttempt[] {

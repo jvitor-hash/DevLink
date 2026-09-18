@@ -5,6 +5,8 @@ import { ChevronRight, Menu, Settings } from "react-feather";
 import Button from "@/components/ui/button_component";
 import Drawer from "@/components/layout/drawer_layout";
 import LoginModal from "@/components/layout/login_modal_layout";
+import NotificationBell from "@/components/layout/notification_bell_layout";
+import SavedTicketsMenu from "@/components/layout/saved_tickets_menu_layout";
 import { authService } from "@/services/auth_service";
 import type { UserDTO } from "@/lib/types/database";
 
@@ -88,7 +90,7 @@ export function NavbarLayout() : React.ReactElement {
 
   if (isLoading) {
     return (
-      <header className="flex justify-between p-4">
+      <header className="grid grid-cols-[1fr_auto_1fr] items-center p-4">
         <div>
           <button className="hover:cursor-pointer" onClick={() => setOpenDrawer(true)}>
             <Menu size={18}/>
@@ -99,7 +101,7 @@ export function NavbarLayout() : React.ReactElement {
           <Link to="/" className="text-xl">DevLink</Link>
         </div>
 
-        <div>
+        <div className="justify-self-end">
           <Button label="Carregando..." buttonType="button" colorType="primary" disabled />
         </div>
       </header>
@@ -107,7 +109,7 @@ export function NavbarLayout() : React.ReactElement {
   }
 
   return (
-    <header className="flex justify-between p-4 items-center">
+    <header className="grid grid-cols-[1fr_auto_1fr] items-center p-4">
       <div>
         <button className="hover:cursor-pointer" onClick={() => setOpenDrawer(true)}>
           <Menu size={18}/>
@@ -118,9 +120,13 @@ export function NavbarLayout() : React.ReactElement {
         <Link to="/" className="text-xl">DevLink</Link>
       </div>
 
-      <div>
+      <div className="justify-self-end">
         {user ? (
           <div className="flex items-center gap-3">
+            <NotificationBell />
+
+            <SavedTicketsMenu />
+
             <Link to="/settings" className="flex items-center gap-2 text-white hover:text-(--primary) transition-colors">
               <Settings size={18}/>
             </Link>

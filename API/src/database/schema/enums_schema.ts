@@ -38,6 +38,19 @@ export const audienceEnum = pgEnum("audience", [
   "RESEARCHER"
 ]);
 
+export const ticketStatusEnum = pgEnum("ticket_status", [
+  "BACKLOG",
+  "IN_PROGRESS",
+  "REVIEW",
+  "DONE",
+]);
+
+export const offerStatusEnum = pgEnum("offer_status", [
+  "PENDING",
+  "ACCEPTED",
+  "REJECTED",
+]);
+
 export const notificationTypeEnum = pgEnum("notification_type", [
   "NEW_MESSAGE",
   "NEW_REVIEW",

@@ -14,6 +14,7 @@ export const NotificationSchema = z.object({
 
 const NotificationDTOs = createCrudSchemas(NotificationSchema, [
   "id",
+  "userId",
   "createdAt",
   "updatedAt",
 ]);

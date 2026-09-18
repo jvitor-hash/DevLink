@@ -75,9 +75,9 @@ Steps.Item = function StepsItem({
       className={cn(
         "relative flex flex-1 items-start",
         !isLast &&
-          "after:absolute after:left-1/2 after:right-0 after:top-5 after:h-0.5",
-        completed || current
-          ? "after:bg-(--surface-3)"
+          "after:absolute after:left-1/2 after:right-[-50%] after:top-5 after:h-0.5",
+        completed
+          ? "after:bg-(--error)"
           : "after:bg-(--surface-2)",
         className
       )}
@@ -113,7 +113,7 @@ Steps.Indicator = function StepsIndicator({
   return (
     <div
       className={cn(
-        "flex h-10 w-10 items-center justify-center rounded border-2",
+        "flex h-10 w-10 items-center justify-center rounded",
         "text-sm transition-colors",
         completed &&
           "border-(--primary) bg-(--primary) text-white",
@@ -122,7 +122,7 @@ Steps.Indicator = function StepsIndicator({
           "border-(--surface-2) bg-white text-(--primary)",
         !completed &&
           !current &&
-          "border-gray-300 bg-white text-gray-500",
+          "bg-white text-gray-500",
         className
       )}
     >

@@ -15,7 +15,7 @@ export const NotificationRouter = new Elysia({ prefix: "/api/v1/notifications" }
       const data = body as NotificationCreate;
       const newNotification = await NotificationService.create({
         ...data,
-        userId: data.userId ?? user.id,
+        userId: user.id,
       });
       set.status = 201;
       return newNotification;

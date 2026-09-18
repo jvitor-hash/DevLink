@@ -1,7 +1,14 @@
+import { unlinkSync } from "node:fs";
 import { defineConfig } from "cypress";
-import { registerCodeCoverageTasks } from "@cypress/code-coverage/support";
+import codeCoverage from "@cypress/code-coverage/plugins";
 
 export default defineConfig({
+  component: {
+    devServer: {
+      framework: 'react',
+      bundler: 'vite'
+    }
+  },
   e2e: {
     baseUrl: "http://localhost:5173",
     specPattern: "cypress/e2e/**/*.cy.ts",
@@ -17,7 +24,9 @@ export default defineConfig({
     defaultCommandTimeout: 5000,
 
     setupNodeEvents(on, config) {
-      registerCodeCoverageTasks(on, config);
+      // @cypress/code-coverage v4: register tasks via the plugins export.
+      const withCoverage = codeCoverage(on, config);
+
       on("after:spec", (spec, results) => {
         if (results && results.video) {
           // Do we have failures for any retry attempts?
@@ -26,11 +35,12 @@ export default defineConfig({
           );
           if (!failures) {
             // delete the video if the spec passed and no tests retried
-            Bun.file.unlinkSync(results.video);
+            unlinkSync(results.video);
           }
         }
       });
-      return config;
+
+      return withCoverage;
     },
   },
 });

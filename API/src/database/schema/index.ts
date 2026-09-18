@@ -5,6 +5,8 @@ import { project } from "./project_schema";
 import { review } from "./review_schemas";
 import { savedTicket } from "./saved_ticket_schema";
 import { session } from "./session_schema";
+import { ticket } from "./ticket_schema";
+import { todo } from "./todo_schema";
 import { userPreference } from "./user_preferences_schema";
 import { user } from "./user_schema";
 import { verification } from "./verification_schema";
@@ -20,4 +22,6 @@ export const schemas = {
   userPreference,
   message,
   savedTicket,
+  todo,
+  ticket,
 };
