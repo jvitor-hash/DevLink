@@ -8,6 +8,7 @@ import { todoService } from "@/services/todo_service";
 import { ticketService } from "@/services/ticket_service";
 import { authService } from "@/services/auth_service";
 import type { TicketDTO, TicketStatus, TodoDTO } from "@/lib/types/database";
+import ProgressBar from "@/components/ui/segmented_progress_bar_component";
 
 const POLL_INTERVAL_MS = 5_000;
 
@@ -85,7 +86,6 @@ export default function ProjectWorkPanel({ projectId }: ProjectWorkPanelProps) {
   }, [projectId, refreshKey]);
 
   const doneTodos = todos.filter((todo) => todo.isDone).length;
-  const activeTickets = tickets.filter((ticket) => ticket.status === "IN_PROGRESS" || ticket.status === "REVIEW").length;
   const totalItems = todos.length + tickets.length;
   const completedItems = doneTodos + tickets.filter((ticket) => ticket.status === "DONE").length;
   const progressPercent = totalItems === 0 ? 0 : Math.round((completedItems / totalItems) * 100);
@@ -180,26 +180,12 @@ export default function ProjectWorkPanel({ projectId }: ProjectWorkPanelProps) {
   return (
     <div className="space-y-4">
       {/* Progress derived from todos + tickets */}
-      <div className="rounded-lg border border-(--border-subtle) bg-(--surface-2) p-4">
-        <div className="mb-2 flex items-center justify-between text-sm">
-          <span className="font-semibold text-(--text-primary)">Progresso do projeto</span>
-          <span className="text-(--text-muted)" data-testid="work-progress-label">
-            {completedItems}/{totalItems} itens ({progressPercent}%)
-          </span>
-        </div>
+      <div className="flex items-center gap-3">
+        <span className="shrink-0 text-sm text-(--text-muted)">Progresso</span>
 
-        <div className="h-2 w-full overflow-hidden rounded-full bg-(--surface-3)">
-          <div
-            className="h-full rounded-full bg-(--success) transition-all"
-            style={{ width: `${progressPercent}%` }}
-            data-testid="work-progress-bar"
-          />
-        </div>
+        <ProgressBar progress={totalItems === 0 ? 0 : completedItems / totalItems} segments={40} />
 
-        <div className="mt-2 flex gap-4 text-xs text-(--text-muted)">
-          <span>{todos.length - doneTodos} TODOs abertos</span>
-          <span>{activeTickets} tickets em desenvolvimento</span>
-        </div>
+        <span className="shrink-0 text-sm font-semibold text-(--text-primary)">{progressPercent}%</span>
       </div>
 
       {error && <p className="text-sm text-(--error)">{error}</p>}
@@ -208,12 +194,12 @@ export default function ProjectWorkPanel({ projectId }: ProjectWorkPanelProps) {
       <section className="rounded-lg border border-(--border-subtle) bg-(--surface-1) p-4">
         <h3 className="mb-3 flex items-center gap-2 font-semibold text-(--text-primary)">
           <CheckCircle size={16} aria-hidden="true" />
-          TODOs
+          Checklist
         </h3>
 
         <ul className="mb-3 space-y-2">
           {todos.length === 0 ? (
-            <li className="text-sm text-(--text-muted)">Nenhum TODO ainda.</li>
+            <li className="text-sm text-(--text-muted)">Nenhum ... ainda.</li>
           ) : (
             todos.map((todo) => (
               <li key={todo.id} className="flex items-start gap-2 rounded border border-(--border-subtle) p-2">

@@ -60,6 +60,34 @@ export const UsersRouter = new Elysia({ prefix: "/api/v1/users" })
     tags: ["Users"],
     authOptional: true,
   })
+  .put("/me", async ({ body, user, set }) => {
+    try {
+      const updated = await UserService.updateOwnProfile(user.id, body);
+      if (!updated) {
+        set.status = 404;
+        return { error: "User not found" };
+      }
+      return updated;
+    } catch (error) {
+      logError("PUT /api/v1/users/me", error);
+      set.status = error instanceof Error && error.message.startsWith("Name must") ? 422 : 500;
+      return { error: error instanceof Error ? error.message : "Failed to update user" };
+    }
+  }, {
+    body: z.object({
+      name: z.string().trim().min(1).max(120).optional(),
+      bio: z.string().trim().max(500).nullable().optional(),
+      image: z.string().trim().max(2048).nullable().optional(),
+    }),
+    response: {
+      200: PublicUserSchema,
+      404: ErrorSchema,
+      422: ErrorSchema,
+      500: ErrorSchema,
+    },
+    tags: ["Users"],
+    auth: true,
+  })
   .get("/:id", async ({ params, set }) => {
     try {
       const user = await UserService.findById(params.id);

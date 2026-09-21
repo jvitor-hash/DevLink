@@ -13,4 +13,10 @@ export const projectService = {
     apiClient.get<{ counts: Record<string, number> }>(`${endpoint}/counts/by-client`, {
       clientIds: clientIds.join(","),
     }),
+
+  /** Open project counts grouped by category. */
+  countByCategory: (excludeStatuses?: string[]) =>
+    apiClient.get<{ counts: Record<string, number> }>(`${endpoint}/counts/by-category`, {
+      excludeStatuses,
+    }),
 };

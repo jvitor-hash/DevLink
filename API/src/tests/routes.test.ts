@@ -8,6 +8,7 @@ import { SavedTicketRouter } from "../routes/v1/saved_ticket";
 import { ReviewRouter } from "../routes/v1/review";
 import { TodoRouter } from "../routes/v1/todo";
 import { TicketRouter } from "../routes/v1/ticket";
+import { UsersRouter } from "../routes/v1/users";
 import { authPlugin } from "../modules/auth_plugin";
 
 describe("API Routes Integration Tests", () => {
@@ -25,6 +26,7 @@ describe("API Routes Integration Tests", () => {
       .use(ReviewRouter)
       .use(TodoRouter)
       .use(TicketRouter)
+      .use(UsersRouter)
       .get("/health", () => ({ OK: true }))
       .listen(0);
 
@@ -100,6 +102,15 @@ describe("API Routes Integration Tests", () => {
       const response = await fetch(`http://localhost:${serverPort}/api/v1/tickets/`);
       expect(response.status).toBe(401);
     });
+
+    test("PUT /api/v1/users/me requires authentication (401)", async () => {
+      const response = await fetch(`http://localhost:${serverPort}/api/v1/users/me`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: "Test" }),
+      });
+      expect(response.status).toBe(401);
+    });
   });
 
   describe("Route Structure Verification", () => {
@@ -113,6 +124,8 @@ describe("API Routes Integration Tests", () => {
         "/api/v1/reviews",
         "/api/v1/todos",
         "/api/v1/tickets",
+        "/api/v1/users",
+        "/api/v1/projects/counts/by-category",
       ];
 
       for (const endpoint of endpoints) {

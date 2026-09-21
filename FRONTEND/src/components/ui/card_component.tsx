@@ -12,7 +12,7 @@ export default function Card({ children, onClick, className = "", style }: CardP
 
   return (
     <div
-      className={`rounded-xl border border-(--border-subtle) bg-(--surface-1) p-5 transition-shadow hover:shadow-lg ${clickable ? "hover:cursor-pointer" : ""} ${className}`}
+      className={`rounded-xl border border-(--border-subtle) bg-(--surface-1) p-5 transition-all hover:shadow-lg ${clickable ? "hover:cursor-pointer hover:-translate-y-1" : ""} ${className}`}
       style={style}
       onClick={onClick}
     >

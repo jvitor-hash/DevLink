@@ -67,6 +67,14 @@ export default function ProjectPage() {
   // Snapshot of the filters behind the currently displayed results.
   const [appliedFilters, setAppliedFilters] = useState<ProjectFilters>(urlFilters);
 
+  // URL deep links re-apply immediately; adjust during render instead of in an effect.
+  const [lastUrlFilters, setLastUrlFilters] = useState(urlFilters);
+
+  if (urlFilters !== lastUrlFilters) {
+    setLastUrlFilters(urlFilters);
+    setAppliedFilters(urlFilters);
+  }
+
   const { saveCounts, isSaved, toggleSaved, setSaveCountsFromProjects } = useSavedTickets();
 
   const loadProjects = async (params: ListParams = {}) : Promise<void> => {
@@ -127,11 +135,6 @@ export default function ProjectPage() {
       cancelled = true;
     };
   }, [urlFilters, setSaveCountsFromProjects]);
-
-  // URL deep links re-apply immediately; keep the applied snapshot in sync when they change.
-  useEffect(() => {
-    setAppliedFilters(urlFilters);
-  }, [urlFilters]);
 
   const currentFilters : ProjectFilters = { ...filters, ...urlFilters };
 

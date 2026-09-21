@@ -124,6 +124,30 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
     tags: ["Projects"],
     authOptional: true,
   })
+  .get("/counts/by-category", async ({ query, set }) => {
+    try {
+      const excludeStatuses = Array.isArray(query.excludeStatuses)
+        ? query.excludeStatuses
+        : query.excludeStatuses ? [query.excludeStatuses] : undefined;
+
+      const counts = await ProjectService.countByCategory(excludeStatuses);
+      return { counts };
+    } catch (error) {
+      logError("GET /api/v1/projects/counts/by-category", error);
+      set.status = 500;
+      return { error: "Failed to fetch project category counts" };
+    }
+  }, {
+    query: z.object({
+      excludeStatuses: z.union([z.string(), z.array(z.string())]).optional(),
+    }),
+    response: {
+      200: z.object({ counts: z.record(z.string(), z.number()) }),
+      500: ErrorSchema,
+    },
+    tags: ["Projects"],
+    authOptional: true,
+  })
   .get("/:id", async ({ params, set }) => {
     try {
       const project = await ProjectService.findOne(eq(schemas.project.id, params.id));

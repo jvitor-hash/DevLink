@@ -20,17 +20,17 @@ export function CategoryCards() {
   };
 
   return (
-    <div className="flex flex-wrap justify-center gap-4 mt-6">
+    <div className="grid grid-cols-1 gap-4 mt-6 sm:grid-cols-2 lg:grid-cols-3">
       {Object.entries(homeCategories).map(([category, subCategories]) => (
         <Card
           key={category}
-          className="w-full max-w-xs"
+          className="w-full justify-self-center"
           onClick={() => goToProjects({ category })}
         >
-          <div className="h-full">
-            <h3 className="text-lg font-bold text-(--text-primary) mb-3">{category}</h3>
+          <div>
+            <h3 className="text-lg font-bold text-(--text-primary)">{category}</h3>
 
-            <ul className="flex flex-wrap gap-2">
+            <ul className="flex flex-col gap-2 mt-2">
               {subCategories.map((subCategory) => (
                 <li key={subCategory}>
                   <button

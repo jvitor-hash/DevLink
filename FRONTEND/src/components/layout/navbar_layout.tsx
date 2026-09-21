@@ -16,6 +16,8 @@ const MENU_LINKS: ReadonlyArray<{ to: string; label: string }> = [
   { to: "/profile", label: "Perfil" },
 ];
 
+const HEADER_CLASS = "sticky top-0 z-40 grid grid-cols-[1fr_auto_1fr] items-center p-4 bg-(--background)/80 backdrop-blur-md";
+
 export function NavbarLayout() : React.ReactElement {
   const [openLogin, setOpenLogin] = useState<boolean>(false);
   const [openDrawer, setOpenDrawer] = useState<boolean>(false);
@@ -90,7 +92,7 @@ export function NavbarLayout() : React.ReactElement {
 
   if (isLoading) {
     return (
-      <header className="grid grid-cols-[1fr_auto_1fr] items-center p-4">
+      <header className={HEADER_CLASS}>
         <div>
           <button className="hover:cursor-pointer" onClick={() => setOpenDrawer(true)}>
             <Menu size={18}/>
@@ -109,18 +111,19 @@ export function NavbarLayout() : React.ReactElement {
   }
 
   return (
-    <header className="grid grid-cols-[1fr_auto_1fr] items-center p-4">
-      <div>
-        <button className="hover:cursor-pointer" onClick={() => setOpenDrawer(true)}>
-          <Menu size={18}/>
-        </button>
-      </div>
+    <>
+      <header className={HEADER_CLASS}>
+        <div>
+          <button className="hover:cursor-pointer" onClick={() => setOpenDrawer(true)}>
+            <Menu size={18}/>
+          </button>
+        </div>
 
-      <div>
-        <Link to="/" className="text-xl">DevLink</Link>
-      </div>
+        <div>
+          <Link to="/" className="text-xl">DevLink</Link>
+        </div>
 
-      <div className="justify-self-end">
+        <div className="justify-self-end">
         {user ? (
           <div className="flex items-center gap-3">
             <NotificationBell />
@@ -146,6 +149,8 @@ export function NavbarLayout() : React.ReactElement {
         )}
       </div>
 
+      </header>
+
       <LoginModal show={openLogin} onClose={() => setOpenLogin(false)} />
 
       <Drawer open={openDrawer} onClose={() => setOpenDrawer(false)}>
@@ -156,6 +161,6 @@ export function NavbarLayout() : React.ReactElement {
           </Link>
         ))}
       </Drawer>
-    </header>
+    </>
   );
 }

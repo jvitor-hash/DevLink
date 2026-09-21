@@ -17,13 +17,15 @@ type BannerComponentProps = {
   variantDurations?: VariantDurations;
   /** Called after the fade-out finishes; use it to clear upstream state. */
   onDismiss?: () => void;
+  /** Positioning and sizing classes; defaults to a full-width overlay pinned to the top. */
+  className?: string;
 };
 
 const variantStyles: Record<BannerVariant, string> = {
-  success: "border-(--success) text-(--success)",
-  error: "border-(--error) text-(--error)",
-  info: "border-(--info) text-(--info)",
-  warning: "border-(--warning) text-(--warning)",
+  success: "border-(--success) bg-(--success)/50 text-(--success)",
+  error: "border-(--error) bg-(--error)/50 text-(--error)",
+  info: "border-(--info) bg-(--info)/50 text-(--info)",
+  warning: "border-(--warning) bg-(--warning)/50 text-(--warning)",
 };
 
 /**
@@ -41,6 +43,7 @@ export default function Banner({
   defaultDuration = 5000,
   variantDurations = {},
   onDismiss,
+  className = "absolute inset-x-0 top-0",
 }: BannerComponentProps) {
   const resolvedDuration = duration ?? variantDurations[variant] ?? defaultDuration;
 
@@ -72,14 +75,17 @@ export default function Banner({
     setTimeout(() => onDismissRef.current?.(), 300);
   };
 
+  // Animation without fill-mode so the fade-out opacity transition still applies.
   return (
     <div
       role="status"
       data-testid={`banner-${variant}`}
       className={`
-        absolute inset-x-0 top-0 z-50 flex items-center gap-2 rounded-sm border px-4 py-3 text-sm shadow-md transition-opacity duration-300
+        z-50 flex items-center gap-2 rounded-sm border px-4 py-3 text-sm shadow-md transition-opacity duration-300
+        animate-[slideDown_0.3s_ease-out]
         ${visible ? "opacity-100" : "opacity-0"}
         ${variantStyles[variant]}
+        ${className}
       `}
     >
       <span className="flex-1">{message}</span>

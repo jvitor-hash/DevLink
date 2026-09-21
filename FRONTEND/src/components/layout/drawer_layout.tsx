@@ -28,7 +28,7 @@ export default function Drawer({ open, onClose, children }: DrawerProps) {
       {/* Backdrop */}
       <div
         onClick={onClose}
-        className={`fixed inset-0 z-40 bg-transparent transition-opacity
+        className={`fixed inset-0 z-50 bg-transparent transition-opacity
           ${open ?
             "pointer-events-auto opacity-100" :
             "pointer-events-none opacity-0"}`}
@@ -36,7 +36,7 @@ export default function Drawer({ open, onClose, children }: DrawerProps) {
 
       {/* Drawer */}
       <aside
-        className={`fixed inset-0 z-40 bg-(--surface-1)/25 backdrop-blur-md transition-transform max-w-md
+        className={`fixed inset-0 z-50 bg-(--surface-1)/25 backdrop-blur-md transition-transform max-w-md
           ${open ? "translate-x-0" :
                    "-translate-x-full"}`}>
         {/* Header */}

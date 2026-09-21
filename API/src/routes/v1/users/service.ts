@@ -55,6 +55,47 @@ export const UserService = {
     return rows[0];
   },
 
+  updateOwnProfile: async (
+    userId: string,
+    data: { name?: string; bio?: string | null; image?: string | null },
+  ) => {
+    const patch: Record<string, unknown> = {};
+
+    if (data.name !== undefined) {
+      const name = data.name.trim();
+      if (name.length < 1 || name.length > 120) throw new Error("Name must be between 1 and 120 characters");
+      patch.name = name;
+    }
+
+    if (data.bio !== undefined) {
+      const bio = data.bio?.trim() ?? null;
+      if (bio && bio.length > 500) throw new Error("Bio must be at most 500 characters");
+      patch.bio = bio;
+    }
+
+    if (data.image !== undefined) {
+      const image = data.image?.trim() ?? null;
+      if (image && image.length > 2048) throw new Error("Image must be at most 2048 characters");
+      patch.image = image;
+    }
+
+    if (Object.keys(patch).length === 0) throw new Error("No fields to update");
+
+    const rows = await db
+      .update(schemas.user)
+      .set(patch)
+      .where(eq(schemas.user.id, userId))
+      .returning({
+        id: schemas.user.id,
+        name: schemas.user.name,
+        bio: schemas.user.bio,
+        image: schemas.user.image,
+        role: schemas.user.role,
+      });
+
+    return rows[0];
+  },
+
   /**
    * Clients ranked by published project count.
    */

@@ -93,6 +93,25 @@ export const ProjectService = {
     return rows as typeof schemas.project.$inferSelect[];
   },
 
+  /** Open project counts grouped by category, keyed by the stored category value. */
+  countByCategory: async (excludeStatuses?: string[]): Promise<Record<string, number>> => {
+    const where = excludeStatuses?.length
+      ? notInArray(schemas.project.status, excludeStatuses as (typeof schemas.project.status.enumValues)[number][])
+      : undefined;
+
+    const rows = await db
+      .select({ category: schemas.project.category, total: sql<number>`count(*)::int` })
+      .from(schemas.project)
+      .where(where)
+      .groupBy(schemas.project.category);
+
+    const counts: Record<string, number> = {};
+    for (const row of rows) {
+      if (row.category) counts[row.category] = row.total;
+    }
+    return counts;
+  },
+
   countProjectsByClients: async (clientIds: string): Promise<Record<string, number>> => {
     const ids = clientIds.split(",").map((id) => id.trim()).filter((id) => id.length > 0);
     if (!ids.length) return {};

@@ -9,9 +9,8 @@ import { projectService } from "@/services/project_service";
 import type { ProjectDTO } from "@/lib/types/database";
 
 /**
- * Single-project page: an organized project information panel with a
- * collaborative work area (TODOs/Kanban/progress), plus a chat dock that
- * floats over the page independently of this layout.
+ * Single-project page: project info panel beside the chat dock on top, with
+ * the collaborative work area (TODOs/Kanban/progress) below.
  */
 export default function ProjectOpenPage() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -20,9 +19,10 @@ export default function ProjectOpenPage() {
   const [project, setProject] = useState<ProjectDTO | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
+  const [isChatOpen, setIsChatOpen] = useState<boolean>(true);
 
-  const { saveCounts, isSaved, toggleSaved, setSaveCountsFromProjects } = useSavedTickets();
+  const { saveCounts, isSaved, toggleSaved, setSaveCountsFromProjects } =
+    useSavedTickets();
 
   useEffect(() => {
     let cancelled = false;
@@ -44,7 +44,11 @@ export default function ProjectOpenPage() {
       } catch (loadError: unknown) {
         if (cancelled) return;
 
-        setError(loadError instanceof Error ? loadError.message : "Não foi possível carregar o projeto.");
+        setError(
+          loadError instanceof Error
+            ? loadError.message
+            : "Não foi possível carregar o projeto.",
+        );
       } finally {
         if (!cancelled) setIsLoading(false);
       }
@@ -76,38 +80,41 @@ export default function ProjectOpenPage() {
     return (
       <section className="p-6">
         <h1 className="text-2xl font-bold text-(--text-primary)">Erro</h1>
-        <p className="mt-2 text-(--error)">{error ?? "Projeto não encontrado."}</p>
+        <p className="mt-2 text-(--error)">
+          {error ?? "Projeto não encontrado."}
+        </p>
         <div className="mt-4">
-          <Button label="Voltar" buttonType="button" colorType="secondary" onClick={() => navigate("/project")} />
+          <Button
+            label="Voltar"
+            buttonType="button"
+            colorType="secondary"
+            onClick={() => navigate("/project")}
+          />
         </div>
       </section>
     );
   }
 
   return (
-    <>
-      <section className="mx-4 my-4 rounded-md border border-(--border-subtle) bg-(--surface-1)">
-        <div className="flex h-full flex-col lg:flex-row">
-          {/* Info panel: primary content */}
-          <div className="min-w-0 flex-1">
-            <ProjectInfoPanel
-              project={project}
-              isSaved={isSaved(project.id)}
-              saveCount={saveCounts[project.id] ?? project.saveTotalCount ?? 0}
-              onToggleSaved={() => toggleSaved(project.id)}
-              onProjectUpdated={handleProjectUpdated}
-            />
-          </div>
+    <section className="flex flex-col gap-3 p-4">
+      <div className="flex items-stretch gap-3">
+        <div className="min-w-0 flex-1">
+          <ProjectInfoPanel
+            project={project}
+            isSaved={isSaved(project.id)}
+            saveCount={saveCounts[project.id] ?? project.saveTotalCount ?? 0}
+            onToggleSaved={() => toggleSaved(project.id)}
+            onProjectUpdated={handleProjectUpdated}
+          />
         </div>
-      </section>
 
-      {/* Collaborative work area: TODOs, Kanban and progress */}
-      <section className="mx-4 mb-4 rounded-md border border-(--border-subtle) bg-(--surface-1)">
-        <ProjectWorkPanel projectId={project.id} />
-      </section>
+        <ProjectChatPanel
+          open={isChatOpen}
+          onToggle={() => setIsChatOpen((prev) => !prev)}
+        />
+      </div>
 
-      {/* Chat dock: floats to the right, separate from the project layout */}
-      <ProjectChatPanel open={isChatOpen} onToggle={() => setIsChatOpen((prev) => !prev)} />
-    </>
+      <ProjectWorkPanel projectId={project.id} />
+    </section>
   );
 }

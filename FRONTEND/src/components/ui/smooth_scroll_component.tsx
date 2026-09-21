@@ -1,34 +1,39 @@
 import { useEffect } from "react";
 
+import { adoptExternalPosition, nextScrollPosition, adjustScrollTarget } from "@/lib/utils/scroll_bus";
+
 export default function SmoothScroll() {
   useEffect(() => {
-    let current = window.scrollY;
-    let target = window.scrollY;
+    // Position the loop itself last wrote; a mismatch vs window.scrollY means
+    // something else scrolled the page and the bus must adopt that position.
+    let lastWritten = window.scrollY;
     let frameId: number;
 
     // 1. Capture user wheel input to update target scroll position
     const onWheel = (e: WheelEvent) => {
       e.preventDefault(); // Stop native immediate scroll
-      target += e.deltaY;
-
-      // Clamp target within page bounds
-      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-      target = Math.max(0, Math.min(target, maxScroll));
+      adjustScrollTarget(e.deltaY);
     };
 
     // 2. Animation loop using lerp (linear interpolation)
     const update = () => {
-      // Smoothly approach target
-      current += (target - current) * 0.08;
+      const actual = window.scrollY;
 
-      // Perform smooth scroll call
-      window.scrollTo(0, current);
+      // External scroll (scrollbar drag, keyboard, script) wins over our target.
+      if (Math.abs(actual - lastWritten) > 1) {
+        adoptExternalPosition(actual);
+        lastWritten = actual;
+      } else {
+        window.scrollTo(0, nextScrollPosition(0.08));
+        lastWritten = window.scrollY;
+      }
 
-      // Save the latest frame ID so cleanup works properly
       frameId = requestAnimationFrame(update);
     };
 
-    // Prevent touch/scroll interference and listen to wheel events
+    // Seed the bus with the restored position so the first frame doesn't jump to top.
+    adoptExternalPosition(window.scrollY);
+
     window.addEventListener("wheel", onWheel, { passive: false });
     frameId = requestAnimationFrame(update);
 

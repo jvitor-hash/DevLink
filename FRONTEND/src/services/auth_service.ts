@@ -111,6 +111,18 @@ class AuthService {
     return cache.get<UserDTO>(CACHE_KEYS.CURRENT_USER) ?? null;
   }
 
+  /** Merge fields into the cached user after profile updates. */
+  updateCachedUser(patch: Partial<UserDTO>) : UserDTO | null {
+    const current = this.getCachedUser();
+
+    if (!current) return null;
+
+    const next = { ...current, ...patch };
+    cache.set(CACHE_KEYS.CURRENT_USER, next);
+
+    return next;
+  }
+
   isAuthenticated() : boolean {
     return cache.has(CACHE_KEYS.CURRENT_USER);
   }

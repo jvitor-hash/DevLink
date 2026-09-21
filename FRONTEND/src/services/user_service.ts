@@ -9,4 +9,8 @@ export const userService = {
   getProminentClients: (limit = 5) =>
     apiClient.get<ProminentClientDTO[]>(`${endpoint}/prominent-clients`, { limit }),
   getById: (id: string) => apiClient.get<PublicUserDTO>(`${endpoint}/${id}`),
+
+  /** Update the authenticated user's own profile (name, bio, image). */
+  updateMe: (data: { name?: string; bio?: string | null; image?: string | null }) =>
+    apiClient.put<PublicUserDTO>(`${endpoint}/me`, data),
 };

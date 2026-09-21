@@ -101,23 +101,24 @@ export default function Questionnaire() {
   if (allowed === null) return null;
 
   return (
-    <section>
-      <div className="relative mx-4 mt-2 min-w-auto bg-(--surface-1) p-4 rounded-sm border border-(--border)">
-        {feedback && (
-          <Banner
-            key={feedback.key}
-            variant={feedback.variant}
-            message={feedback.message}
-            variantDurations={{ success: SUCCESS_REDIRECT_DELAY }}
-            duration={ERROR_BANNER_DURATION}
-            onDismiss={
-              feedback.variant === "success"
-                ? () => navigate("/project")
-                : undefined
-            }
-          />
-        )}
+    <section className="relative">
+      {feedback && (
+        <Banner
+          key={feedback.key}
+          variant={feedback.variant}
+          message={feedback.message}
+          variantDurations={{ success: SUCCESS_REDIRECT_DELAY }}
+          duration={ERROR_BANNER_DURATION}
+          className="absolute left-1/2 top-2 w-[95%] -translate-x-1/2"
+          onDismiss={
+            feedback.variant === "success"
+              ? () => navigate("/project")
+              : undefined
+          }
+        />
+      )}
 
+      <div className="relative mx-4 mt-2 min-w-auto bg-(--surface-1) p-4 rounded-sm border border-(--border)">
         <div className="mt-4">
           <h2 className="text-2xl w-full text-center">Criação de projetos</h2>
           <p className="text-base text-(--text-muted) text-center">

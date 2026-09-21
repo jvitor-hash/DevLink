@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Calendar, MessageCircle, Send, X } from "react-feather";
+import { MessageCircle, Send, X } from "react-feather";
 import { useParams } from "react-router-dom";
 import Input from "@/components/ui/input_component";
 import Button from "@/components/ui/button_component";
@@ -148,23 +148,10 @@ export default function ProjectChatPanel({ open, onToggle }: ProjectChatPanelPro
 
   return (
     <>
-      {/* Top-right chat toggle, independent of the page layout */}
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-label={open ? "Fechar chat" : "Abrir chat"}
-        data-testid="open-chat-btn"
-        className="fixed right-4 top-20 z-40 rounded-full p-3 text-white shadow-lg transition-transform hover:cursor-pointer hover:scale-105"
-        style={{ backgroundColor: "color-mix(in srgb, var(--primary) 80%, black)" }}
-      >
-        <MessageCircle size={20} aria-hidden="true" />
-      </button>
-
-      {/* Floating dock */}
-      {open && (
-        <aside
+      {open ? (
+        <div
           data-testid="chat-dock"
-          className="fixed bottom-0 right-0 top-16 z-40 flex w-full max-w-md flex-col border-l border-(--border-subtle) bg-(--surface-1) shadow-2xl"
+          className="flex h-[70vh] max-h-180 w-80 shrink-0 flex-col rounded-md border border-(--border-subtle) bg-(--surface-1) xl:w-96"
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-(--border-subtle) p-4">
@@ -213,7 +200,7 @@ export default function ProjectChatPanel({ open, onToggle }: ProjectChatPanelPro
                           <span>Proposta de prazo: {formatDate(message.offerDeadline)}</span>
                         </div>
 
-                        <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                        <p className="whitespace-pre-wrap wrap-break-word">{message.content}</p>
 
                         {message.offerStatus === "PENDING" && !isOwn && (
                           <div className="mt-2 flex gap-2">
@@ -222,7 +209,7 @@ export default function ProjectChatPanel({ open, onToggle }: ProjectChatPanelPro
                               buttonType="button"
                               colorType="success"
                               onClick={() => void handleResolveOffer(message.id, "ACCEPTED")}
-                              className="!px-4 !py-1 text-xs"
+                              className="px-4 py-1 text-xs"
                               dataTestId="accept-offer-btn"
                             />
                             <Button
@@ -230,7 +217,7 @@ export default function ProjectChatPanel({ open, onToggle }: ProjectChatPanelPro
                               buttonType="button"
                               colorType="error"
                               onClick={() => void handleResolveOffer(message.id, "REJECTED")}
-                              className="!px-4 !py-1 text-xs"
+                              className="px-4 py-1 text-xs"
                               dataTestId="reject-offer-btn"
                             />
                           </div>
@@ -243,7 +230,7 @@ export default function ProjectChatPanel({ open, onToggle }: ProjectChatPanelPro
                         )}
                       </>
                     ) : (
-                      <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                      <p className="whitespace-pre-wrap wrap-break-word">{message.content}</p>
                     )}
 
                     <span className={`mt-1 block text-xs ${isOwn ? "text-white/70" : "text-(--text-muted)"}`}>
@@ -288,13 +275,9 @@ export default function ProjectChatPanel({ open, onToggle }: ProjectChatPanelPro
               aria-label="Enviar proposta de prazo"
               title="Enviar proposta de prazo"
               data-testid="offer-mode-btn"
-              className={`shrink-0 rounded-full border p-2.5 transition-colors hover:cursor-pointer ${
-                offerMode
-                  ? "border-(--warning) bg-(--warning) text-white"
-                  : "border-(--border-subtle) text-(--text-muted) hover:text-(--text-primary)"
-              }`}
+              className={`w-8 h-8 rounded-full border border-(--border-subtle) transition-colors hover:cursor-pointer`}
             >
-              <Calendar size={16} aria-hidden="true" />
+              $
             </button>
 
             <Input
@@ -311,12 +294,22 @@ export default function ProjectChatPanel({ open, onToggle }: ProjectChatPanelPro
               disabled={isSending || !draft.trim() || (offerMode && !offerDate)}
               aria-label="Enviar mensagem"
               data-testid="chat-send-btn"
-              className="shrink-0 rounded-full bg-(--primary) p-2.5 text-white transition-opacity hover:cursor-pointer hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-8 h-8 grid place-items-center rounded-full bg-(--primary) text-white transition-opacity hover:cursor-pointer hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Send size={16} aria-hidden="true" />
             </button>
           </form>
-        </aside>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-label="Abrir chat"
+          data-testid="open-chat-btn"
+          className="fixed bottom-6 right-6 z-40 grid h-12 w-12 place-items-center rounded-full bg-(--primary) text-white shadow-lg transition-opacity hover:cursor-pointer hover:opacity-90"
+        >
+          <MessageCircle size={20} aria-hidden="true" />
+        </button>
       )}
     </>
   );
