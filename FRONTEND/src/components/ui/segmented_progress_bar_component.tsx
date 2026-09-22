@@ -21,7 +21,7 @@ export default function ProgressBar({
         return (
           <div
             key={i}
-            className="flex-1 rounded-full transition-all max-w-0.5"
+            className="flex-1 rounded-full transition-all max-w-1"
             style={{
               backgroundColor: filled
                 ? `hsl(${hue}, 50%, 50%)`

@@ -1,11 +1,10 @@
 import Badge from "@/components/ui/badge_component";
 import type { ProjectDTO, ProjectStatus } from "@/lib/types/database";
-import { Bookmark, Calendar, MoreVertical } from "react-feather";
+import { Bookmark, Calendar, MessageCircle, MoreVertical } from "react-feather";
 
 type ProjectInfoPanelProps = {
   project: ProjectDTO;
   isSaved: boolean;
-  saveCount: number;
   onToggleSaved: () => void;
   onProjectUpdated: (project: ProjectDTO) => void;
 };
@@ -22,16 +21,16 @@ const formatCurrency = (value: number): string => {
   return value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
-export default function ProjectInfoPanel({ project, isSaved, saveCount, onToggleSaved }: ProjectInfoPanelProps) {
+export default function ProjectInfoPanel({ project, isSaved, onToggleSaved }: ProjectInfoPanelProps) {
   return (
     <article className="h-full overflow-y-auto rounded-md border border-(--border-subtle) bg-(--surface-1) p-6">
       {/* Header */}
       <header className="mb-3 flex items-start justify-between gap-3">
-        <div className="flex flex-col gap-1">
+        <div className="flex gap-2">
           <Badge label={project.category} badgeType="primary" />
 
           <div className="flex items-center gap-2 text-sm text-(--text-muted)">
-            <Calendar size={14} />
+            <Calendar size={16} />
             Prazo: {project.deadline ? String(project.deadline).slice(0, 10) : "Não definido"}
           </div>
         </div>
@@ -42,16 +41,26 @@ export default function ProjectInfoPanel({ project, isSaved, saveCount, onToggle
             onClick={onToggleSaved}
             aria-label={isSaved ? "Remover dos salvos" : "Salvar projeto"}
             data-testid="save-project-btn"
-            className="flex items-center gap-1 rounded-md border border-(--border-subtle) px-2 py-1 text-sm text-(--text-primary) transition-colors hover:cursor-pointer hover:bg-(--surface-2)"
+            className="flex items-center gap-1 rounded-md border border-(--border-subtle)
+            px-2 py-2 text-sm transition-colors hover:cursor-pointer hover:bg-(--surface-2)"
           >
-            <Bookmark size={14} fill={isSaved ? "currentColor" : "none"} />
-            {saveCount}
+            <Bookmark size={16} fill={isSaved ? "currentColor" : "none"} color="var(--text-primary)" />
+          </button>
+
+          <button
+            type="button"
+            aria-label="Chat"
+            className="rounded-md border border-(--border-subtle) px-2 py-2
+            hover:cursor-pointer hover:bg-(--surface-2) transition-colors"
+          >
+            <MessageCircle size={16} color="var(--text-primary)" />
           </button>
 
           <button
             type="button"
             aria-label="Mais opções"
-            className="grid h-8 w-8 place-items-center rounded-full hover:cursor-pointer hover:bg-(--surface-2)"
+            className="border rounded-md border-(--border-subtle) px-2 py-2
+            hover:cursor-pointer hover:bg-(--surface-2) transition-colors"
           >
             <MoreVertical size={16} color="var(--text-primary)" />
           </button>
@@ -97,7 +106,7 @@ export default function ProjectInfoPanel({ project, isSaved, saveCount, onToggle
       </ul>
 
       {/* Required Actions */}
-      <div className="rounded-lg border border-(--border-subtle) p-4 text-sm bg-(--surface-2)">
+      <div className="rounded-sm border border-(--border-subtle) p-4 text-sm bg-(--surface-2)">
         <div className="mb-1 font-bold text-(--text-primary)">Ações requeridas do usuário:</div>
         <div className="text-(--text-secondary)">{project.user_actions ?? "Nenhuma ação definida."}</div>
       </div>

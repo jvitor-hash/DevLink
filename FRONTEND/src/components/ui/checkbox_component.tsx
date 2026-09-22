@@ -14,9 +14,11 @@ export default function Checkbox({ label, checked, error, onToggle }: checkboxCo
 
   return (
     <>
-      <input
-        type="checkbox"
-        className={`checkbox-input
+      <div>
+
+        <input
+          type="checkbox"
+          className={`checkbox-input
           appearance-none m-0 w-5 h-5 inline-grid place-content-center
           bg-transparent border rounded
           hover:cursor-pointer checked:bg-(--primary) checked:border-(--primary)
@@ -24,14 +26,15 @@ export default function Checkbox({ label, checked, error, onToggle }: checkboxCo
           before:scale-0 checked:before:scale-100 checked:transition-all
           ${error && !isChecked ? "border-(--error)" : "border-(--border-subtle)"}
         `}
-        checked={isChecked}
-        aria-invalid={error && !isChecked ? true : undefined}
-        onChange={(e) => {
-          if (!isControlled) setChecked(e.target.checked);
-          onToggle?.(e.target.checked);
-        }}
-      />
-      <span> {label}</span>
+          checked={isChecked}
+          aria-invalid={error && !isChecked ? true : undefined}
+          onChange={(e) => {
+            if (!isControlled) setChecked(e.target.checked);
+            onToggle?.(e.target.checked);
+          }}
+        />
+        <span> {label}</span>
+      </div>
     </>
   )
 }

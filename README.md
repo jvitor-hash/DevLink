@@ -1,14 +1,13 @@
 # DevLink
-Versão: v2.7.0
+Versão: v2.8.0
 
 ## Tecnologias utilizadas
-- Bun.js (Runtime)
-- Typescript
+- ![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=for-the-badge&logo=bun&logoColor=white)
+- ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
 - Elysia (Similar ao express)
 - Better Auth (Autenticação)
-- Drizzle-orm
-- Next.js (Framework Front-End)
-- Postgresql (Banco de dados)
+- ![Drizzle](https://img.shields.io/badge/Drizzle-%23000000.svg?style=for-the-badge&logo=drizzle&logoColor=C5F74F)
+- ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
 
 ## Pré-requisitos
 - Bun.js (1.4.0+)

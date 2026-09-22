@@ -16,7 +16,7 @@ const MENU_LINKS: ReadonlyArray<{ to: string; label: string }> = [
   { to: "/profile", label: "Perfil" },
 ];
 
-const HEADER_CLASS = "sticky top-0 z-40 grid grid-cols-[1fr_auto_1fr] items-center p-4 bg-(--background)/80 backdrop-blur-md";
+const HEADER_CLASS = "sticky top-0 z-40 grid grid-cols-[1fr_auto_1fr] items-center p-4";
 
 export function NavbarLayout() : React.ReactElement {
   const [openLogin, setOpenLogin] = useState<boolean>(false);

@@ -11,6 +11,7 @@ import type {
 } from "@/lib/types/database";
 import { reviewService } from "@/services/review_service";
 import { formatRelativeTime } from "@/lib/utils/relative_time";
+import Badge from "@/components/ui/badge_component";
 
 type FeedTab = "ACTIVITY" | "PROJECTS" | "REVIEWS";
 
@@ -36,12 +37,12 @@ const toEpoch = (value: string | Date | null | undefined): number => {
   return Number.isNaN(epoch) ? 0 : epoch;
 };
 
-const roleBadge = (role: string | null | undefined): { label: string; className: string } =>
+const roleBadge = (role: string | null | undefined): { label: string; type: string } =>
   role === "PROGRAMMER"
-    ? { label: "PROGRAMMER", className: "bg-(--info)" }
+    ? { label: "PROGRAMMER", type: "info" }
     : role === "ADMIN"
-      ? { label: "ADMIN", className: "bg-(--primary)" }
-      : { label: "CLIENT", className: "bg-(--success)" };
+      ? { label: "ADMIN", type: "primary" }
+      : { label: "CLIENT", type: "success" };
 
 export default function ProfilePage() {
   const { userId } = useParams<{ userId?: string }>();
@@ -219,9 +220,7 @@ export default function ProfilePage() {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-2xl font-bold text-(--text-primary)">{profileUser.name}</h1>
-            <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold text-white ${badge.className}`}>
-              {badge.label}
-            </span>
+            <Badge label={badge.label} badgeType={badge.type as const} /> 
           </div>
 
           {profileUser.bio ? (

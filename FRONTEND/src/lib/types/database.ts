@@ -242,7 +242,6 @@ export interface MessageUpdate {
 export interface TodoDTO {
   id: string;
   projectId: string;
-  creatorId: string;
   title: string;
   description?: string | null;
   isDone: boolean;

@@ -98,6 +98,10 @@ export default function ProjectOpenPage() {
   return (
     <section className="flex flex-col gap-3 p-4">
       <div className="flex items-stretch gap-3">
+        <ProjectChatPanel
+          open={isChatOpen}
+          onToggle={() => setIsChatOpen((prev) => !prev)}
+        />
         <div className="min-w-0 flex-1">
           <ProjectInfoPanel
             project={project}
@@ -108,10 +112,6 @@ export default function ProjectOpenPage() {
           />
         </div>
 
-        <ProjectChatPanel
-          open={isChatOpen}
-          onToggle={() => setIsChatOpen((prev) => !prev)}
-        />
       </div>
 
       <ProjectWorkPanel projectId={project.id} />
