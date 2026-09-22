@@ -38,9 +38,9 @@ export default function ProjectChatPanel({ open, onToggle }: ProjectChatPanelPro
               aria-label="Fechar chat"
               data-testid="close-chat-btn"
               className="rounded-sm p-1 text-(--text-primary) border border-(--border-subtle)
-              hover:cursor-pointer transition-colors hover:bg-(--surface-2)"
+              hover:cursor-pointer transition-colors hover:bg-(--surface-2) hover:border-(--text-primary)"
             >
-              <X size={16} aria-hidden="true" />
+              <X size={18} aria-hidden="true" />
             </button>
           </div>
 
@@ -49,33 +49,33 @@ export default function ProjectChatPanel({ open, onToggle }: ProjectChatPanelPro
           </div>
 
           {/* Composer */}
-          <form className="flex">
-            <button
-              type="button"
-              aria-label="Enviar proposta de prazo"
-              title="Enviar proposta de prazo"
-              data-testid="offer-mode-btn"
-              className="w-8 h-8 rounded-full border border-(--border-subtle) transition-colors hover:cursor-pointer"
-            >
-              $
-            </button>
+          <form className="flex justify-between border-t border-(--border-subtle) mb-2">
+            <div className="w-full mx-2 mt-2">
+              <input className="slidedown-animate border border-(--border-subtle) p-4
+                rounded-sm outline-none appearance-none w-full hover:border-gray-400 transition-colors" placeholder="Digite sua messagem aqui..."></input>
+            </div>
 
-            <Input
-              label=""
-              placeholder="Digite a sua message aqui..."
-              name="chatMessage"
-              dataTestId="chat-input"
+            <div className="flex max-w-fit items-center gap-2 mr-2">
+              <button
+                type="submit"
+                aria-label="Enviar mensagem"
+                data-testid="chat-send-btn"
+                className="w-8 h-8 grid place-items-center rounded-full bg-(--primary) hover:cursor-pointer"
+              >
+                <Send size={16} aria-hidden="true" />
+              </button>
 
-            />
-
-            <button
-              type="submit"
-              aria-label="Enviar mensagem"
-              data-testid="chat-send-btn"
-              className="w-8 h-8 grid place-items-center rounded-full bg-(--primary) hover:cursor-pointer"
-            >
-              <Send size={16} aria-hidden="true" />
-            </button>
+              <button
+                type="button"
+                aria-label="Enviar proposta de prazo"
+                title="Enviar proposta de prazo"
+                data-testid="offer-mode-btn"
+                className="w-8 h-8 rounded-sm border border-(--border-subtle)
+                transition-colors hover:cursor-pointer hover:bg-(--surface-3)/50 hover:border-(--text-primary)"
+              >
+                $
+              </button>
+            </div>
           </form>
         </div>
       ) : ""}

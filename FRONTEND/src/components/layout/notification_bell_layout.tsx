@@ -76,7 +76,7 @@ export default function NotificationBell({ onOpenChange }: NotificationBellProps
         }`}
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-(--border-subtle)">
-          <p className="font-semibold">Notificacoes</p>
+          <p className="font-semibold">Notificações</p>
           <button type="button" className="text-sm text-(--info) hover:underline" onClick={openFullPage}>
             Ver todas
           </button>

@@ -37,7 +37,6 @@ const SECTIONS: Array<{ key: Section; label: string }> = [
   { key: "PROFILE", label: "Perfil" },
   { key: "NOTIFICATIONS", label: "Notificações" },
   { key: "PROJECT_PREFS", label: "Preferências de projetos" },
-  { key: "LANGUAGE", label: "Idioma / plataforma" },
   { key: "ACCOUNT", label: "Conta" },
 ];
 
@@ -226,7 +225,7 @@ export default function SettingsPage() {
                   <div>
                     <label className="mb-2 block text-sm text-(--text-muted)">E-mail</label>
                     <p className="rounded-md border border-(--border-subtle) bg-(--surface-2) p-3 text-(--text-muted)">
-                      {user.email} (somente leitura)
+                      {user.email}
                     </p>
                   </div>
 
@@ -326,38 +325,6 @@ export default function SettingsPage() {
                   <p className="text-xs text-(--text-muted) sm:col-span-2">
                     Deixe o orçamento máximo vazio para não filtrar por preço.
                   </p>
-                </div>
-              )}
-            </section>
-          )}
-
-          {section === "LANGUAGE" && (
-            <section className="rounded-md border border-(--border-subtle) bg-(--surface-1) p-6">
-              <h2 className="mb-4 text-xl font-semibold">Idioma / plataforma</h2>
-
-              {!preference ? (
-                <p className="text-(--text-muted)">Nenhuma preferência salva ainda.</p>
-              ) : (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="mb-2 block text-sm text-(--text-muted)">Idioma preferido</label>
-                    <Select
-                      name="language"
-                      defaultValue={preference.language}
-                      labels={LANGUAGE_LABELS}
-                      onChange={(e) => patchPreference({ language: e.currentTarget.value as "ALL" | ProgrammingLanguage })}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-sm text-(--text-muted)">Plataforma preferida</label>
-                    <Select
-                      name="platform"
-                      defaultValue={preference.platform}
-                      labels={PLATFORM_LABELS}
-                      onChange={(e) => patchPreference({ platform: e.currentTarget.value as "ALL" | PlatformType })}
-                    />
-                  </div>
                 </div>
               )}
             </section>

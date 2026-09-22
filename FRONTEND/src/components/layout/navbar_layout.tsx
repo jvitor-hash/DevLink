@@ -130,7 +130,7 @@ export function NavbarLayout() : React.ReactElement {
 
             <SavedTicketsMenu />
 
-            <Link to="/settings" className="flex items-center gap-2 text-white hover:text-(--primary) transition-colors">
+            <Link to="/settings" className="flex items-center">
               <Settings size={18}/>
             </Link>
 

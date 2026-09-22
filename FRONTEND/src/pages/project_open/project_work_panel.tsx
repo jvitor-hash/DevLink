@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Box, CheckCircle } from "react-feather";
+import { Box, Calendar, CheckCircle, MessageSquare, Paperclip } from "react-feather";
 import { authService } from "@/services/auth_service";
 import type { TicketDTO, TicketStatus, TodoDTO } from "@/lib/types/database";
 import ProgressBar from "@/components/ui/segmented_progress_bar_component";
 import Checkbox from "@/components/ui/checkbox_component";
+import Badge from "@/components/ui/badge_component";
+import Card from "@/components/ui/card_component";
 
 const KANBAN_COLUMNS: ReadonlyArray<{ item: string, translated: string}> = [
   { item: "BACKLOG",     translated: "Backlog"      },
@@ -54,7 +56,7 @@ export default function ProjectWorkPanel({ projectId }: ProjectWorkPanelProps) {
         </div>
 
         <div className="flex gap-2">
-          <section className="flex-1">
+          <section className="flex-1 border-r border-(--border)">
             <header className="flex items-center gap-2">
               <CheckCircle size={16} color="var(--text-primary)" />
               <span>Checklist</span>
@@ -81,9 +83,44 @@ export default function ProjectWorkPanel({ projectId }: ProjectWorkPanelProps) {
                     {column.translated}
                   </div>
 
-                  {kanbanTickets !== null && kanbanTickets.map((ticket) => (
+                  {/*{kanbanTickets !== null && kanbanTickets.map((ticket) => (
                     <div></div>
-                  ))}
+                  ))}*/}
+
+                  <Card className="flex flex-col gap-2 border border-(--border) shadow-md bg-(--surface-3) mx-1 rounded-md p-4">
+                    <div className="flex gap-2">
+                      <Badge label="Category" badgeType="secondary" />
+                      <Badge label="🏴 Priority" badgeType="secondary" />
+                    </div>
+
+                    <div>
+                      <h4 className="text-xl">Kanban Card Title</h4>
+                      <h6 className="text-md text-(--text-secondary)">Card Subtitle</h6>
+                    </div>
+
+                    <div className="flex justify-between">
+                      {/* Users assigned */}
+                      <div className="flex gap-1">
+                        <div className=""></div>
+                      </div>
+
+                      {/* Date */}
+                      <div className="flex items-center gap-1 border-r border-(--border-subtle)">
+                          <Calendar size={14} color="var(--text-secondary)"/>
+                          <span className="text-(--text-secondary)">25-09-2026</span>
+                        </div>
+                      <div className="flex gap-2">
+
+                        {/* Attachments & Messages */}
+                        <div className="flex items-center gap-1">
+                          <Paperclip size={14} color="var(--text-secondary)" />
+                          <span className="text-(--text-secondary)">00</span>
+                          <MessageSquare size={14} color="var(--text-secondary)" />
+                          <span className="text-(--text-secondary">00</span>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
 
                   <button
                   type="button"

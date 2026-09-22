@@ -42,7 +42,7 @@ export default function ProjectInfoPanel({ project, isSaved, onToggleSaved }: Pr
             aria-label={isSaved ? "Remover dos salvos" : "Salvar projeto"}
             data-testid="save-project-btn"
             className="flex items-center gap-1 rounded-md border border-(--border-subtle)
-            px-2 py-2 text-sm transition-colors hover:cursor-pointer hover:bg-(--surface-2)"
+            px-2 py-2 text-sm transition-colors hover:cursor-pointer hover:bg-(--surface-2) hover:border-(--text-primary)"
           >
             <Bookmark size={16} fill={isSaved ? "currentColor" : "none"} color="var(--text-primary)" />
           </button>
@@ -51,7 +51,7 @@ export default function ProjectInfoPanel({ project, isSaved, onToggleSaved }: Pr
             type="button"
             aria-label="Chat"
             className="rounded-md border border-(--border-subtle) px-2 py-2
-            hover:cursor-pointer hover:bg-(--surface-2) transition-colors"
+            hover:cursor-pointer hover:bg-(--surface-2) transition-colors hover:border-(--text-primary)"
           >
             <MessageCircle size={16} color="var(--text-primary)" />
           </button>
@@ -60,7 +60,7 @@ export default function ProjectInfoPanel({ project, isSaved, onToggleSaved }: Pr
             type="button"
             aria-label="Mais opções"
             className="border rounded-md border-(--border-subtle) px-2 py-2
-            hover:cursor-pointer hover:bg-(--surface-2) transition-colors"
+            hover:cursor-pointer hover:bg-(--surface-2) transition-colors hover:border-(--text-primary)"
           >
             <MoreVertical size={16} color="var(--text-primary)" />
           </button>
@@ -76,7 +76,7 @@ export default function ProjectInfoPanel({ project, isSaved, onToggleSaved }: Pr
       </p>
 
       {/* Project Information */}
-      <ul className="mb-4 max-w-fit list-none p-0 text-sm">
+      <ul className="mb-4 list-none p-0 text-sm">
         <li className="flex justify-between gap-4 border-b py-2.5 border-b-(--border-subtle)">
           <span className="text-(--text-muted)">Público-alvo:</span>
           <span className="text-right font-semibold text-(--text-primary)">{project.audience}</span>
