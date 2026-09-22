@@ -98,26 +98,23 @@ export default function ProjectWorkPanel({ projectId }: ProjectWorkPanelProps) {
                       <h6 className="text-md text-(--text-secondary)">Card Subtitle</h6>
                     </div>
 
-                    <div className="flex justify-between">
+                    <div className="">
                       {/* Users assigned */}
                       <div className="flex gap-1">
-                        <div className=""></div>
+                        <div></div>
                       </div>
-
                       {/* Date */}
                       <div className="flex items-center gap-1 border-r border-(--border-subtle)">
-                          <Calendar size={14} color="var(--text-secondary)"/>
-                          <span className="text-(--text-secondary)">25-09-2026</span>
-                        </div>
-                      <div className="flex gap-2">
+                        <Calendar size={14} color="var(--text-secondary)"/>
+                        <span className="text-(--text-secondary)">25-09-2026</span>
+                      </div>
 
-                        {/* Attachments & Messages */}
-                        <div className="flex items-center gap-1">
-                          <Paperclip size={14} color="var(--text-secondary)" />
-                          <span className="text-(--text-secondary)">00</span>
-                          <MessageSquare size={14} color="var(--text-secondary)" />
-                          <span className="text-(--text-secondary">00</span>
-                        </div>
+                      {/* Attachments & Messages */}
+                      <div className="flex items-center gap-1">
+                        <Paperclip size={14} color="var(--text-secondary)" />
+                        <span className="text-(--text-secondary)">00</span>
+                        <MessageSquare size={14} color="var(--text-secondary)" />
+                        <span className="text-(--text-secondary">00</span>
                       </div>
                     </div>
                   </Card>
