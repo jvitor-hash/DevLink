@@ -8,6 +8,8 @@ Versão: v2.8.0
 - Better Auth (Autenticação)
 - ![Drizzle](https://img.shields.io/badge/Drizzle-%23000000.svg?style=for-the-badge&logo=drizzle&logoColor=C5F74F)
 - ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
+- ![Cypress](https://img.shields.io/badge/cypress-%239FE5C8.svg?logo=cypress&logoColor=%231C1E2E&style=for-the-badge)
+- ![React](https://img.shields.io/badge/react-%2320232a.svg?logo=react&logoColor=%2361dafb&style=for-the-badge)
 
 ## Pré-requisitos
 - Bun.js (1.4.0+)
