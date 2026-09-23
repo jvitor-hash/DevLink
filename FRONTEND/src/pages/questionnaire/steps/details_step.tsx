@@ -2,16 +2,12 @@ import Input from "@/components/ui/input_component";
 import MoneyInput from "@/components/ui/money_input_component";
 import Select from "@/components/ui/select_component";
 import TextArea from "@/components/ui/textarea_component";
-import { categoryOptions } from "../questionnaire.constants";
+import { categoryOptions, subCategoryOptions } from "../questionnaire.constants";
 import type { QuestionnaireDetailsStepProps } from "../questionnaire.types";
 
-/** Step 4 — publication details and budget. */
-export function DetailsStep({
-  form,
-  setField,
-  isBudgetInverted,
-  showFieldErrors,
-}: QuestionnaireDetailsStepProps) {
+export function DetailsStep({ form, setField, isBudgetInverted, showFieldErrors }: QuestionnaireDetailsStepProps) {
+  const subCategories = subCategoryOptions.find((opt) => opt.category === form.category)?.subCategories ?? null;
+
   return (
     <div>
       <Input
@@ -41,13 +37,17 @@ export function DetailsStep({
         />
       </div>
 
-      <Input
-        label="Qual a sub-categoria do projeto?"
-        name="subCategory"
-        value={form.subCategory}
-        onChange={(e) => setField("subCategory", e.target.value)}
-        error={showFieldErrors && form.subCategory.trim() === ""}
-      />
+      <div>
+        <p>Qual a sub-categoria do projeto?</p>
+        <Select
+          labels={subCategories !== null && subCategories}
+          name="subCategory"
+          value={form.subCategory}
+          placeholder="Selecione uma categoria"
+          onChange={(e) => setField("subCategory", e.target.value)}
+          error={showFieldErrors && form.subCategory.trim() === ""}
+        />
+      </div>
 
       <div className="flex gap-4">
         <MoneyInput

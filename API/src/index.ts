@@ -6,16 +6,18 @@ import cors from "@elysiajs/cors";
 import { authPlugin } from "@/modules/auth_plugin";
 import { ProjectsRouter } from "@/routes/v1/projects";
 import { NotificationRouter } from "@/routes/v1/notification";
-import { MessageRouter } from "@/routes/v1/message";
 import { ReviewRouter } from "@/routes/v1/review";
 import { UserPreferenceRouter } from "@/routes/v1/user_preferences";
 import { SavedTicketRouter } from "@/routes/v1/saved_ticket";
 import { TodoRouter } from "@/routes/v1/todo";
+import { MessageRouter } from "@/routes/v1/message";
 import { TicketRouter } from "@/routes/v1/ticket";
 import { UsersRouter } from "@/routes/v1/users";
 import { ClientAuthRouter } from "./routes/v1/client";
 import { ProgrammerAuthRouter } from "./routes/v1/programmer";
 import { logger, loggerPlugin } from "./modules/logger";
+import { Websocket_Chat } from "./modules/websocket";
+import { startSchedulers, stopSchedulers } from "./modules/scheduler";
 
 const schema = await auth.api.generateOpenAPISchema();
 
@@ -67,13 +69,14 @@ const app = new Elysia()
   .mount(auth.handler)
   .use(ProjectsRouter)
   .use(NotificationRouter)
-  .use(MessageRouter)
   .use(ReviewRouter)
   .use(SavedTicketRouter)
   .use(TodoRouter)
+  .use(MessageRouter)
   .use(TicketRouter)
   .use(UserPreferenceRouter)
   .use(UsersRouter)
+  .use(Websocket_Chat)
   .get("/health", () => ({ OK: true }), {
     detail: {
       summary: "/health",
@@ -81,6 +84,9 @@ const app = new Elysia()
     },
   })
   .listen(env.PORT);
+
+startSchedulers();
+process.on("exit", stopSchedulers);
 
 console.log(`Elysia is running at ${app.server?.hostname}:${app.server?.port}`);
 

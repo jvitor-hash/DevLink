@@ -1,24 +1,19 @@
 import { relations } from "drizzle-orm/_relations";
-import { user } from "../user_schema";
-import { project } from "../project_schema";
-import { message } from "../message_schema";
-import { review } from "../review_schemas";
-import { savedTicket } from "../saved_ticket_schema";
-import { notification } from "../notification_schema";
+import { schemas } from "../index";
 
-export const projectsRelations = relations(project, ({ one, many }) => ({
-  message: many(message),
-  reviews: many(review),
-  savedBy: many(savedTicket),
-  notifications: many(notification),
-  client: one(user, {
-    fields: [project.clientId],
-    references: [user.id],
+export const projectsRelations = relations(schemas.project, ({ one, many }) => ({
+  message: many(schemas.message),
+  reviews: many(schemas.review),
+  savedBy: many(schemas.savedTicket),
+  notifications: many(schemas.notification),
+  client: one(schemas.user, {
+    fields: [schemas.project.clientId],
+    references: [schemas.user.id],
     relationName: "client_projects",
   }),
-  programmer: one(user, {
-    fields: [project.programmerId],
-    references: [user.id],
+  programmer: one(schemas.user, {
+    fields: [schemas.project.programmerId],
+    references: [schemas.user.id],
     relationName: "programmer_projects",
   }),
 }));

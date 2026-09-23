@@ -26,13 +26,21 @@ export const SavedTicketRouter = new Elysia({ prefix: "/api/v1/saved-tickets" })
       return newSavedTicket;
     } catch (error) {
       logError("POST /api/v1/saved-tickets", error);
-      set.status = 500;
+
+      if (error instanceof Error && error.message === "Concluded projects cannot be saved") {
+        set.status = 409;
+        return { error: "Concluded projects cannot be saved" };
+      }
+
+      set.status = 404;
       return { error: "Failed to create saved ticket" };
     }
   }, {
     body: SavedTicketCreateSchema,
     response: {
       201: SavedTicketSchema,
+      404: ErrorSchema,
+      409: ErrorSchema,
       500: ErrorSchema,
     },
     tags: ["Saved Tickets"],

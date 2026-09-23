@@ -19,7 +19,9 @@ export default function ProjectOpenPage() {
   const [project, setProject] = useState<ProjectDTO | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [isChatOpen, setIsChatOpen] = useState<boolean>(true);
+  // Chat starts hidden; it only opens when the user clicks the chat button
+  // in the info panel.
+  const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
 
   const { saveCounts, isSaved, toggleSaved, setSaveCountsFromProjects } =
     useSavedTickets();
@@ -109,6 +111,7 @@ export default function ProjectOpenPage() {
             saveCount={saveCounts[project.id] ?? project.saveTotalCount ?? 0}
             onToggleSaved={() => toggleSaved(project.id)}
             onProjectUpdated={handleProjectUpdated}
+            onOpenChat={() => setIsChatOpen(true)}
           />
         </div>
 

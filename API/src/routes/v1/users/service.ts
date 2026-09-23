@@ -55,6 +55,36 @@ export const UserService = {
     return rows[0];
   },
 
+  /** Base64 SPKI ECDH public key used for chat E2E encryption. */
+  getPublicKey: async (userId: string) => {
+    const rows = await db
+      .select({ publicKey: schemas.user.publicKey })
+      .from(schemas.user)
+      .where(eq(schemas.user.id, userId))
+      .limit(1);
+
+    return { publicKey: rows[0]?.publicKey ?? null };
+  },
+
+  findPublicKeyById: async (userId: string) => {
+    const rows = await db
+      .select({ publicKey: schemas.user.publicKey })
+      .from(schemas.user)
+      .where(eq(schemas.user.id, userId))
+      .limit(1);
+
+    return rows[0]?.publicKey ?? null;
+  },
+
+  updatePublicKey: async (userId: string, publicKey: string) => {
+    await db
+      .update(schemas.user)
+      .set({ publicKey })
+      .where(eq(schemas.user.id, userId));
+
+    return { publicKey };
+  },
+
   updateOwnProfile: async (
     userId: string,
     data: { name?: string; bio?: string | null; image?: string | null },

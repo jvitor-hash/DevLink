@@ -1,9 +1,18 @@
 import { schemas } from "@/database/schema";
 import { db } from "@/client";
-import { eq, or, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import type { InferInsertModel } from "drizzle-orm";
 
 type NewPreference = typeof schemas.userPreference.$inferSelect;
+
+// Notification inserts for a user set, in a single batch.
+const insertNotifications = async (
+  inserts: InferInsertModel<typeof schemas.notification>[],
+): Promise<void> => {
+  if (!inserts.length) return;
+
+  await db.insert(schemas.notification).values(inserts);
+};
 
 /**
  * Notify programmers about a newly published project, respecting each user's
@@ -66,7 +75,82 @@ export const notifyNewProject = async (project: {
     });
   }
 
-  if (inserts.length) {
-    await db.insert(schemas.notification).values(inserts);
+  await insertNotifications(inserts);
+};
+
+/**
+ * Inform the client that a programmer saved one of their projects.
+ * Concluded projects must never generate notifications.
+ */
+export const notifyProjectSaved = async (project: typeof schemas.project.$inferSelect): Promise<void> => {
+  if (project.status === "COMPLETED" || project.status === "CANCELLED") return;
+
+  const preferenceRows = await db
+    .select()
+    .from(schemas.userPreference)
+    .where(eq(schemas.userPreference.userId, project.clientId))
+    .limit(1);
+
+  const preference = preferenceRows[0];
+  if (preference && !preference.project_notifications) return;
+
+  const inserts: InferInsertModel<typeof schemas.notification>[] = [
+    {
+      userId: project.clientId,
+      type: "TICKET_SAVED",
+      title: "Projeto salvo",
+      message: `Um programador salvou o seu projeto "${project.title}" (${project.saveTotalCount} salvamento(s) no total).`,
+      projectId: project.id,
+      isRead: false,
+    },
+  ];
+
+  await insertNotifications(inserts);
+};
+
+/**
+ * Periodic insight for clients about how their open projects are performing.
+ * Only open (not concluded) projects are considered.
+ */
+export const notifyOpenProjectViews = async (sinceHours = 24): Promise<void> => {
+  const openProjects = await db
+    .select()
+    .from(schemas.project)
+    .where(
+      and(
+        isNull(schemas.project.programmerId),
+        inArray(schemas.project.status, ["OPEN", "NEGOTIATING"]),
+        sql`${schemas.project.viewTotalCount} > 0`,
+      ),
+    );
+
+  if (!openProjects.length) return;
+
+  const inserts: InferInsertModel<typeof schemas.notification>[] = [];
+
+  for (const project of openProjects) {
+    const preferenceRows = await db
+      .select()
+      .from(schemas.userPreference)
+      .where(eq(schemas.userPreference.userId, project.clientId))
+      .limit(1);
+
+    const preference = preferenceRows[0];
+    if (preference && !preference.project_notifications) continue;
+
+    const lastViewed = project.lastViewedAt ? new Date(project.lastViewedAt) : null;
+    const viewedRecently = lastViewed !== null && Date.now() - lastViewed.getTime() <= sinceHours * 3_600_000;
+    if (!viewedRecently) continue;
+
+    inserts.push({
+      userId: project.clientId,
+      type: "PROJECT_UPDATE",
+      title: "Seu projeto está recebendo visitas",
+      message: `"${project.title}" acumulou ${project.viewTotalCount} visualização(ões). Última em ${lastViewed!.toLocaleString("pt-BR")}.`,
+      projectId: project.id,
+      isRead: false,
+    });
   }
+
+  await insertNotifications(inserts);
 };

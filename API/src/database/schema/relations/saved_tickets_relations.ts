@@ -1,16 +1,14 @@
 import { relations } from "drizzle-orm/_relations";
-import { savedTicket } from "../saved_ticket_schema";
-import { project } from "../project_schema";
-import { user } from "../user_schema";
+import { schemas } from "../index";
 
-export const savedTicketsRelations = relations(savedTicket, ({ one }) => ({
-  user: one(user, {
-    fields: [savedTicket.userId],
-    references: [user.id],
+export const savedTicketsRelations = relations(schemas.savedTicket, ({ one }) => ({
+  user: one(schemas.user, {
+    fields: [schemas.savedTicket.userId],
+    references: [schemas.user.id],
   }),
 
-  project: one(project, {
-    fields: [savedTicket.projectId],
-    references: [project.id],
+  project: one(schemas.project, {
+    fields: [schemas.savedTicket.projectId],
+    references: [schemas.project.id],
   }),
 }));

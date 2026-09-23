@@ -1,5 +1,7 @@
 import { schemas } from "@/database/schema";
 import { crud } from "@/modules/crud_factory";
+import { isProjectConcluded } from "@/modules/project_status";
+import { notifyProjectSaved } from "@/modules/notification_fanout";
 import { eq, and, desc, inArray, sql, type SQL } from "drizzle-orm";
 import { db } from "@/client";
 
@@ -10,14 +12,30 @@ export const SavedTicketService = {
 
   /**
    * Create a saved ticket and bump the project save counter.
+   * Concluded (COMPLETED/CANCELLED) projects cannot be saved.
    */
   createForUser: async (data: { userId: string; projectId: string }) => {
+    const project = await db
+      .select()
+      .from(schemas.project)
+      .where(eq(schemas.project.id, data.projectId))
+      .limit(1);
+
+    if (!project.length) throw new Error("Project not found");
+    if (isProjectConcluded(project[0].status)) throw new Error("Concluded projects cannot be saved");
+
     const ticket = await base.create(data);
 
-    await db
+    const [updated] = await db
       .update(schemas.project)
       .set({ saveTotalCount: sql`${schemas.project.saveTotalCount} + 1` })
-      .where(eq(schemas.project.id, data.projectId));
+      .where(eq(schemas.project.id, data.projectId))
+      .returning();
+
+    // Inform the client that a programmer saved their project; must not block the save.
+    if (updated) {
+      await notifyProjectSaved(updated).catch(() => undefined);
+    }
 
     return ticket;
   },

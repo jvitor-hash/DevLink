@@ -3,6 +3,7 @@ import { Card3D } from "./3d_card_component";
 import Badge from "./badge_component";
 import Button from "./button_component";
 import { authService } from "@/services/auth_service";
+import { mapValueLabel } from "@/lib/value_labels";
 
 import type { Audience, ProjectStatus } from "@/lib/types/database";
 
@@ -24,6 +25,8 @@ type ProjectPreviewProps = {
   onToggleSaved?: () => void
 }
 
+const translate = mapValueLabel;
+
 export default function ProjectPreview({ item, title, category, deadline, problem, audience, platforms, status, actions, programming_language, minBudget, maxBudget, saved = false, saveCount = 0, onToggleSaved }: ProjectPreviewProps) {
   const navigate = useNavigate();
 
@@ -43,7 +46,7 @@ export default function ProjectPreview({ item, title, category, deadline, proble
         <div className="p-6">
           {/* Header */}
           <div className="mb-3 flex items-center justify-between gap-3">
-            <Badge label={category} badgeType="primary" />
+            <Badge label={translate(category)} badgeType="primary" />
             <span id="preview-deadline" className="text-sm text-(--text-muted)">Prazo: {deadline}</span>
           </div>
 
@@ -62,28 +65,28 @@ export default function ProjectPreview({ item, title, category, deadline, proble
             <li className="flex justify-between gap-4 border-b py-2.5 border-b-(--border-subtle)">
               <span className="text-(--text-muted)">Público-alvo:</span>
               <span id="preview-public" className="text-right font-semibold text-(--text-primary)">
-                {audience}
+                {translate(audience)}
               </span>
             </li>
 
             <li className="flex justify-between gap-4 border-b py-2.5 border-b-(--border-subtle)">
               <span className="text-(--text-muted)">Plataformas:</span>
               <span id="preview-platforms" className="text-right font-semibold text-(--text-primary)">
-                {platforms.join(", ")}
+                {platforms.map(translate).join(", ")}
               </span>
             </li>
 
             <li className="flex justify-between gap-4 border-b py-2.5 border-b-(--border-subtle)">
               <span className="text-(--text-muted)">Linguagem:</span>
               <span id="preview-language" className="text-right font-semibold text-(--text-primary)">
-                {programming_language}
+                {translate(programming_language)}
               </span>
             </li>
 
             <li className="flex justify-between gap-4 border-b py-2.5 border-b-(--border-subtle)">
               <span className="text-(--text-muted)">Status:</span>
               <span id="preview-status" className="text-right font-semibold text-(--text-primary)">
-                {status}
+                {translate(status)}
               </span>
             </li>
 

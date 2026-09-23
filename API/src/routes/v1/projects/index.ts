@@ -148,9 +148,15 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
     tags: ["Projects"],
     authOptional: true,
   })
-  .get("/:id", async ({ params, set }) => {
+  .get("/:id", async ({ params, user, set }) => {
     try {
       const project = await ProjectService.findOne(eq(schemas.project.id, params.id));
+
+      // Track views for the client's periodic insights; owner views are ignored.
+      if (project) {
+        await ProjectService.recordView(params.id, user?.id ?? null).catch(() => undefined);
+      }
+
       return project;
     } catch (error) {
       logError("GET /api/v1/projects/:id", error);
@@ -167,7 +173,7 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
       500: ErrorSchema,
     },
     tags: ["Projects"],
-    auth: true,
+    authOptional: true,
   })
   .put("/:id", async ({ body, params, user, set }) => {
     try {

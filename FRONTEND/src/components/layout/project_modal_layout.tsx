@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Button from "@/components/ui/button_component";
 import Badge from "@/components/ui/badge_component";
+import { mapValueLabel } from "@/lib/value_labels";
 import TextArea from "@/components/ui/textarea_component";
 import StarRating from "@/components/ui/star_rating_component";
 import { projectService } from "@/services/project_service";
@@ -179,8 +180,8 @@ export function ProjectModal() {
             <div className="flex justify-between items-start mb-6">
               <div>
                 <div className="flex gap-2 items-center">
-                  <Badge label={project.category} badgeType="primary" />
-                  <Badge label={project.status} badgeType={project.status === "OPEN" ? "success" : "info"} />
+                  <Badge label={mapValueLabel(project.category)} badgeType="primary" />
+                  <Badge label={mapValueLabel(project.status)} badgeType={project.status === "OPEN" ? "success" : "info"} />
                 </div>
                 <h2 className="text-3xl font-bold text-white mt-2">{project.title}</h2>
               </div>
@@ -200,11 +201,11 @@ export function ProjectModal() {
               <div className="mt-6 grid grid-cols-2 gap-4">
                 <div className="border border-(--border-subtle) rounded-lg p-4 bg-(--surface-2)">
                   <p className="text-sm text-(--text-muted)">Plataforma</p>
-                  <p className="text-white font-semibold">{project.platforms.join(", ")}</p>
+                  <p className="text-white font-semibold">{project.platforms.map(mapValueLabel).join(", ")}</p>
                 </div>
                 <div className="border border-(--border-subtle) rounded-lg p-4 bg-(--surface-2)">
                   <p className="text-sm text-(--text-muted)">Linguagem</p>
-                  <p className="text-white font-semibold">{project.primaryLanguage}</p>
+                  <p className="text-white font-semibold">{mapValueLabel(project.primaryLanguage)}</p>
                 </div>
                 <div className="border border-(--border-subtle) rounded-lg p-4 bg-(--surface-2)">
                   <p className="text-sm text-(--text-muted)">Prazo</p>
@@ -222,7 +223,7 @@ export function ProjectModal() {
 
               <div className="mt-6 border-t border-(--border-subtle) pt-4">
                 <p className="font-semibold text-white mb-2">Status do projeto</p>
-                <Badge label={project.status} badgeType={project.status === "OPEN" ? "success" : "info"} />
+                <Badge label={mapValueLabel(project.status)} badgeType={project.status === "OPEN" ? "success" : "info"} />
 
                 {canConclude && !showReviewForm && (
                   <div className="mt-3">

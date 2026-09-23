@@ -70,35 +70,38 @@ export const TodoService = {
 
     return base.create({
       projectId: data.projectId,
-      creatorId: data.creatorId,
       title: data.title,
       description: data.description ?? null,
     });
   },
 
   updateForUser: async (todoId: string, userId: string, data: { title?: string; description?: string | null; isDone?: boolean }) => {
+    const allowed = await db
+      .select({ id: schemas.todo.id })
+      .from(schemas.todo)
+      .innerJoin(schemas.project, eq(schemas.todo.projectId, schemas.project.id))
+      .where(and(eq(schemas.todo.id, todoId), sql`(${schemas.project.clientId} = ${userId} OR ${schemas.project.programmerId} = ${userId})`))
+      .limit(1);
+
+    if (!allowed.length) throw new Error("Todo not found or unauthorized");
+
     return base.update(
-      and(
-        eq(schemas.todo.id, todoId),
-        sql`(
-          ${schemas.project.clientId} = ${userId}
-          OR ${schemas.project.programmerId} = ${userId}
-        )`,
-      ) as SQL<unknown>,
+      eq(schemas.todo.id, todoId),
       data,
     );
   },
 
   removeForUser: async (todoId: string, userId: string) => {
-    return base.remove(
-      and(
-        eq(schemas.todo.id, todoId),
-        sql`(
-          ${schemas.project.clientId} = ${userId}
-          OR ${schemas.project.programmerId} = ${userId}
-        )`,
-      ) as SQL<unknown>,
-    );
+    const allowed = await db
+      .select({ id: schemas.todo.id })
+      .from(schemas.todo)
+      .innerJoin(schemas.project, eq(schemas.todo.projectId, schemas.project.id))
+      .where(and(eq(schemas.todo.id, todoId), sql`(${schemas.project.clientId} = ${userId} OR ${schemas.project.programmerId} = ${userId})`))
+      .limit(1);
+
+    if (!allowed.length) throw new Error("Todo not found or unauthorized");
+
+    return base.remove(eq(schemas.todo.id, todoId));
   },
 
   // Live progress counters per project: total todos and how many are done.

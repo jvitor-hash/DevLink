@@ -13,4 +13,10 @@ export const userService = {
   /** Update the authenticated user's own profile (name, bio, image). */
   updateMe: (data: { name?: string; bio?: string | null; image?: string | null }) =>
     apiClient.put<PublicUserDTO>(`${endpoint}/me`, data),
+
+  getMyPublicKey: () => apiClient.get<{ publicKey: string | null }>(`${endpoint}/me/public-key`),
+  updateMyPublicKey: (publicKey: string) =>
+    apiClient.put<{ publicKey: string }>(`${endpoint}/me/public-key`, { publicKey }),
+  getPublicKey: (userId: string) =>
+    apiClient.get<{ publicKey: string | null }>(`${endpoint}/${userId}/public-key`),
 };

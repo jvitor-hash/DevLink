@@ -1,244 +1,196 @@
-import { message } from "@/database/schema/message_schema";
 import { schemas } from "@/database/schema";
 import { crud } from "@/modules/crud_factory";
-import { eq, and, or, desc, ne, sql } from "drizzle-orm";
+import { isProjectConcluded, offerResponseProjectPatch } from "@/modules/project_status";
+import { and, asc, desc, eq, gt, or, sql, type SQL } from "drizzle-orm";
 import { db } from "@/client";
 
+const base = crud(schemas.message);
+
+const participantWhere = (projectId: string, userId: string): SQL<unknown> =>
+  and(
+    eq(schemas.message.projectId, projectId),
+    sql`(
+      ${schemas.project.clientId} = ${userId}
+      OR ${schemas.project.programmerId} = ${userId}
+    )`,
+  ) as SQL<unknown>;
+
+type MessageUpdateData = {
+  content?: string;
+  isRead?: boolean;
+  offerStatus?: "PENDING" | "ACCEPTED" | "REJECTED";
+};
+
 export const MessageService = {
-  ...crud(message),
+  ...base,
 
-  /**
-   * Find a message by id, readable only by its sender or the project's
-   * client/programmer participants.
-   */
-  findByIdForUser: async (messageId: string, userId: string) => {
-    const rows = await db
-      .select({ messageItem: message })
-      .from(message)
-      .innerJoin(schemas.project, eq(message.projectId, schemas.project.id))
-      .where(
-        and(
-          eq(message.id, messageId),
-          or(
-            eq(message.senderId, userId),
-            eq(schemas.project.clientId, userId),
-            eq(schemas.project.programmerId, userId),
-          ),
-        ),
-      )
-      .limit(1);
-
-    return rows[0]?.messageItem;
-  },
-
-  /**
-   * Find all messages for a specific user (as sender or recipient via project)
-   */
-  findAllByUser: async (userId: string, limit = 10, offset = 0) => {
+  // All messages across projects where the user is client or assigned programmer.
+  findAllByUser: async (userId: string, limit = 50, offset = 0) => {
     if (limit < 1 || limit > 100) throw new Error("Limit must be between 1 and 100");
     if (offset < 0) throw new Error("Offset must be >= 0");
 
     const rows = await db
-      .select()
-      .from(message)
-      .where(eq(message.senderId, userId))
-      .orderBy(desc(message.createdAt))
+      .select({ message: schemas.message })
+      .from(schemas.message)
+      .innerJoin(schemas.project, eq(schemas.message.projectId, schemas.project.id))
+      .where(
+        sql`(
+          ${schemas.project.clientId} = ${userId}
+          OR ${schemas.project.programmerId} = ${userId}
+        )`,
+      )
+      .orderBy(desc(schemas.message.createdAt))
       .limit(limit)
       .offset(offset);
 
-    return rows as typeof message.$inferSelect[];
+    return rows.map((row) => row.message);
   },
 
-  /**
-   * List a project's message thread, oldest first. Only participants of the
-   * project (client, assigned programmer, senders) may read the thread.
-   */
+  // Chat history for a project; only participants (client or programmer) can read it.
   findAllByProject: async (projectId: string, userId: string, limit = 50, offset = 0) => {
     if (limit < 1 || limit > 100) throw new Error("Limit must be between 1 and 100");
     if (offset < 0) throw new Error("Offset must be >= 0");
 
     const rows = await db
-      .select({ messageItem: message })
-      .from(message)
-      .innerJoin(schemas.project, eq(message.projectId, schemas.project.id))
-      .where(
-        and(
-          eq(message.projectId, projectId),
-          or(
-            eq(message.senderId, userId),
-            eq(schemas.project.clientId, userId),
-            eq(schemas.project.programmerId, userId),
-          ),
-        ),
-      )
-      .orderBy(message.createdAt)
+      .select({ message: schemas.message })
+      .from(schemas.message)
+      .innerJoin(schemas.project, eq(schemas.message.projectId, schemas.project.id))
+      .where(participantWhere(projectId, userId))
+      .orderBy(asc(schemas.message.createdAt))
       .limit(limit)
       .offset(offset);
 
-    return rows.map((row) => row.messageItem);
+    return rows.map((row) => row.message);
   },
 
-  /**
-   * Create a message; when it carries a negotiation offer the proposed
-   * deadline is capped at the project's actual deadline and the other
-   * participant is notified.
-   */
-  createWithOffer: async (data: {
-    projectId: string;
-    senderId: string;
-    content: string;
-    offerDeadline?: Date | string | null;
-  }) => {
-    const [project] = await db
+  // Messages created after a timestamp, for catching up missed realtime traffic.
+  findSince: async (projectId: string, userId: string, after: Date) => {
+    const rows = await db
+      .select({ message: schemas.message })
+      .from(schemas.message)
+      .innerJoin(schemas.project, eq(schemas.message.projectId, schemas.project.id))
+      .where(and(participantWhere(projectId, userId), gt(schemas.message.createdAt, after)))
+      .orderBy(asc(schemas.message.createdAt));
+
+    return rows.map((row) => row.message);
+  },
+
+  createForProject: async (data: { projectId: string; senderId: string; content: string; offerDeadline?: string | null }) => {
+    const project = await db
       .select()
       .from(schemas.project)
       .where(
         and(
           eq(schemas.project.id, data.projectId),
-          or(
-            eq(schemas.project.clientId, data.senderId),
-            eq(schemas.project.programmerId, data.senderId),
-          ),
+          sql`(
+            ${schemas.project.clientId} = ${data.senderId}
+            OR ${schemas.project.programmerId} = ${data.senderId}
+          )`,
         ),
       )
       .limit(1);
 
-    if (!project) throw new Error("Project not found or unauthorized");
+    if (!project.length) throw new Error("Project not found or unauthorized");
 
-    let cappedDeadline: Date | null = null;
-
+    // Only programmers may send negotiation offers.
     if (data.offerDeadline) {
-      const proposed = new Date(data.offerDeadline);
-      if (Number.isNaN(proposed.getTime())) throw new Error("Invalid offer deadline");
+      const senderRole = await db
+        .select({ role: schemas.user.role })
+        .from(schemas.user)
+        .where(eq(schemas.user.id, data.senderId))
+        .limit(1);
 
-      if (!project.deadline || proposed > project.deadline) {
-        cappedDeadline = project.deadline;
-      } else {
-        cappedDeadline = proposed;
-      }
+      if (senderRole[0]?.role !== "PROGRAMMER") throw new Error("Only programmers can send offers");
     }
 
-    const isOffer = Boolean(data.offerDeadline);
-
-    const [created] = await db
-      .insert(message)
-      .values({
-        projectId: data.projectId,
-        senderId: data.senderId,
-        content: data.content,
-        offerDeadline: isOffer ? cappedDeadline : null,
-        offerStatus: isOffer ? "PENDING" : null,
-      })
-      .returning();
-
-    if (!created) throw new Error("Failed to create message");
-
-    // Notify the other participant about the new message/offer.
-    const recipientId = project.clientId === data.senderId
-      ? project.programmerId
-      : project.clientId;
-
-    if (recipientId) {
-      await db.insert(schemas.notification).values({
-        userId: recipientId,
-        type: "NEW_MESSAGE",
-        title: isOffer ? "Nova proposta de prazo" : "Nova mensagem",
-        message: isOffer
-          ? `${project.title}: proposta de entrega para ${cappedDeadline ? cappedDeadline.toISOString().slice(0, 10) : "sem prazo"}`
-          : `${project.title}: ${data.content.slice(0, 140)}`,
-        projectId: project.id,
-        isRead: false,
-      });
-    }
-
-    return created;
+    return base.create({
+      projectId: data.projectId,
+      senderId: data.senderId,
+      content: data.content,
+      isRead: false,
+      offerDeadline: data.offerDeadline ? new Date(data.offerDeadline) : null,
+      offerStatus: data.offerDeadline ? "PENDING" : null,
+    });
   },
 
-  /**
-   * Resolve a pending offer (accept/reject). Only the recipient of the offer
-   * (the other participant) may resolve it. On acceptance the project's
-   * deadline becomes the offered date, the project moves to IN_DEVELOPMENT
-   * and the offering programmer is assigned.
-   */
-  resolveOffer: async (messageId: string, userId: string, decision: "ACCEPTED" | "REJECTED") => {
-    const rows = await db
-      .select({ messageItem: message, projectItem: schemas.project })
-      .from(message)
-      .innerJoin(schemas.project, eq(message.projectId, schemas.project.id))
-      .where(eq(message.id, messageId))
+  updateForUser: async (messageId: string, userId: string, data: MessageUpdateData) => {
+    const allowed = await db
+      .select({ id: schemas.message.id })
+      .from(schemas.message)
+      .innerJoin(schemas.project, eq(schemas.message.projectId, schemas.project.id))
+      .where(
+        and(
+          eq(schemas.message.id, messageId),
+          sql`(
+            ${schemas.project.clientId} = ${userId}
+            OR ${schemas.project.programmerId} = ${userId}
+          )`,
+        ),
+      )
       .limit(1);
 
-    const row = rows[0];
-    if (!row) throw new Error("Message not found");
-    if (row.messageItem.offerDeadline == null || row.messageItem.offerStatus == null) {
-      throw new Error("Message is not a negotiation offer");
+    if (!allowed.length) throw new Error("Message not found or unauthorized");
+
+    const updated = await base.update(eq(schemas.message.id, messageId), data);
+
+    // An offer decision drives the project state machine; failures must not
+    // break the message update itself.
+    if (data.offerStatus === "ACCEPTED" || data.offerStatus === "REJECTED") {
+      try {
+        const project = await db
+          .select()
+          .from(schemas.project)
+          .where(eq(schemas.project.id, updated.projectId))
+          .limit(1);
+
+        if (project.length) {
+          const patch = offerResponseProjectPatch(project[0].status, data.offerStatus);
+
+          if (patch) {
+            await db
+              .update(schemas.project)
+              .set({
+                status: patch.status,
+                negotiationStartedAt: patch.negotiationStartedAt,
+              })
+              .where(eq(schemas.project.id, project[0].id));
+          }
+        }
+      } catch {
+        // Offer state transition is best-effort.
+      }
     }
-    if (row.messageItem.offerStatus !== "PENDING") throw new Error("Offer already resolved");
-
-    const isParticipant =
-      row.projectItem.clientId === userId
-      || row.projectItem.programmerId === userId;
-    if (!isParticipant) throw new Error("Unauthorized");
-
-    // The offer sender cannot resolve their own offer.
-    if (row.messageItem.senderId === userId) throw new Error("Unauthorized");
-
-    const [updated] = await db
-      .update(message)
-      .set({ offerStatus: decision, updatedAt: new Date() })
-      .where(eq(message.id, messageId))
-      .returning();
-
-    if (!updated) throw new Error("Failed to resolve offer");
-
-    if (decision === "ACCEPTED") {
-      await db
-        .update(schemas.project)
-        .set({
-          deadline: row.messageItem.offerDeadline,
-          status: "IN_DEVELOPMENT",
-          programmerId: row.messageItem.senderId,
-          updatedAt: new Date(),
-        })
-        .where(eq(schemas.project.id, row.projectItem.id));
-    }
-
-    // Notify the offer sender of the decision.
-    await db.insert(schemas.notification).values({
-      userId: row.messageItem.senderId,
-      type: "PROJECT_UPDATE",
-      title: decision === "ACCEPTED" ? "Proposta aceita" : "Proposta rejeitada",
-      message:
-        decision === "ACCEPTED"
-          ? `${row.projectItem.title}: sua proposta foi aceita. Projeto em desenvolvimento.`
-          : `${row.projectItem.title}: sua proposta foi rejeitada.`,
-      projectId: row.projectItem.id,
-      isRead: false,
-    });
 
     return updated;
   },
 
-  /**
-   * Count pending offers the user can resolve (offers sent to them in their
-   * projects).
-   */
-  countPendingOffersForUser: async (userId: string) => {
+  findUnreadCountByProject: async (projectId: string, userId: string) => {
     const rows = await db
-      .select({ total: sql<number>`count(*)::int` })
-      .from(message)
-      .innerJoin(schemas.project, eq(message.projectId, schemas.project.id))
+      .select({ count: sql<number>`count(*)::int` })
+      .from(schemas.message)
+      .innerJoin(schemas.project, eq(schemas.message.projectId, schemas.project.id))
       .where(
         and(
-          eq(message.offerStatus, "PENDING"),
-          ne(message.senderId, userId),
+          participantWhere(projectId, userId),
+          eq(schemas.message.isRead, false),
           or(
-            eq(schemas.project.clientId, userId),
-            eq(schemas.project.programmerId, userId),
+            sql`${schemas.project.clientId} = ${userId}`,
+            sql`${schemas.project.programmerId} = ${userId}`,
           ),
         ),
       );
 
-    return rows[0]?.total ?? 0;
+    return rows[0]?.count ?? 0;
   },
+};
+
+// Concluded projects must not accept new chat activity through this service.
+export const assertProjectOpenForChat = async (projectId: string): Promise<boolean> => {
+  const rows = await db
+    .select({ status: schemas.project.status })
+    .from(schemas.project)
+    .where(eq(schemas.project.id, projectId))
+    .limit(1);
+
+  return rows.length > 0 && !isProjectConcluded(rows[0].status);
 };

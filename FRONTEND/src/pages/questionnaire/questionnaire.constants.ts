@@ -65,8 +65,50 @@ export const primaryLanguageOptions: Record<string, ProgrammingLanguage> = {
 };
 
 export const categoryOptions: Record<string, string> = {
-  "test": "test",
+  "Websites":                 "WEBSITES",
+  "Desenvolvimento de apps":  "APP_DEVELOPMENT",
+  "Plataforma Mobile":        "PLATFORM_MOBILE",
+  "Suporte e Cibersegurança": "SUPORT_CYBERSECURITY",
+  "Blockchain & Web3":        "BLOCKCHAIN_WEB3"
 };
+
+export const subCategoryOptions: ReadonlyArray<{category: string, subCategories: Record<string, string> }> = [
+  { category: "WEBSITES", subCategories: {
+    "Wordpress":                 "WORDPRESS",
+    "Shopify":                   "SHOPIFY",
+    "Sites personalizados":      "PERSONALIZED_WEBSITES",
+    "Wix & Webflow":             "WIX_WEBFLOW",
+    "Squarespace & WooCommerce": "SQUARESPACE_WOOCOMMERCE"
+  } },
+  
+  { category: "APP_DEVELOPMENT", subCategories: {
+    "Aplicação Full-Stack":      "FULL_STACK_APPLICATION",
+    "Aplicação Desktop & Jogos": "DESKTOP_GAMES_APLICATION",
+    "Extensão de navegador":     "BROWSER_EXTENSION",
+    "Desenvolvimento de APIs":   "APIS_DEVELOPMENT",
+    "Chatbots AI":               "CHATBOTS_AI"
+  } },
+
+  { category: "PLATFORM_MOBILE", subCategories: {
+    "Desenvolvimento Mobile":      "DEVELOPMENT_MOBILE",
+    "Aplicativos Multiplataforma": "MULTIPLATFORM_APLICATIONS",
+    "Aplicativos Android":         "ANDROID_APLICATIONS",
+    "Aplicativos iOS":             "IOS_APLICATIONS"
+  } },
+
+  { category: "SUPORT_CYBERSECURITY", subCategories: {
+    "Cloud Computing & DevOps": "CLOUD_COMPUTING_DEVOPS",
+    "Cibersegurança":           "CYBERSECURITY",
+    "Suporte e TI":             "SUPORT_IT",
+    "Manutenção de Sistemas":   "SYSTEMS_MAINTENANCE"
+  } },
+  
+  { category: "BLOCKCHAIN_WEB3", subCategories: {
+    "Desenvolvimento Blockchains": "DEVELOPMENT_BLOCKCHAINS",
+    "Apps Descentralizados":       "DECENTRALIZED_APPS",
+    "Criptomoedas e Tokens":       "CYPTOCURRENCY_TOKENS"
+  } }
+]
 
 /** Allowed enum values, derived from the option tables above, used to
  * sanitize a restored draft before it reaches the form state. */

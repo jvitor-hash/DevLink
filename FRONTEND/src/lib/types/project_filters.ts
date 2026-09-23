@@ -1,15 +1,19 @@
+import type { Audience, PlatformType, ProgrammingLanguage, ProjectStatus } from "./database";
+
 export type ProjectFilters = {
+  q: string;
   category: string;
   sub_category: string;
-  audience: string;
-  platforms: string;
-  primaryLanguage: string;
-  status: string;
+  audience: "ALL" | Audience;
+  platforms: "ALL" | PlatformType;
+  primaryLanguage: "ALL" | ProgrammingLanguage;
+  status: "ALL" | ProjectStatus;
   minBudget: string;
   maxBudget: string;
 };
 
 export const EMPTY_FILTERS: ProjectFilters = {
+  q: "",
   category: "ALL",
   sub_category: "ALL",
   audience: "ALL",

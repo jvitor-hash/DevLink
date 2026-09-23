@@ -88,6 +88,40 @@ export const UsersRouter = new Elysia({ prefix: "/api/v1/users" })
     tags: ["Users"],
     auth: true,
   })
+  .get("/me/public-key", async ({ user }) => {
+    return await UserService.getPublicKey(user.id);
+  }, {
+    response: {
+      200: z.object({ publicKey: z.string().nullable() }),
+    },
+    tags: ["Users"],
+    auth: true,
+  })
+  .put("/me/public-key", async ({ body, user }) => {
+    return await UserService.updatePublicKey(user.id, body.publicKey);
+  }, {
+    body: z.object({
+      publicKey: z.string().trim().min(1).max(512),
+    }),
+    response: {
+      200: z.object({ publicKey: z.string() }),
+    },
+    tags: ["Users"],
+    auth: true,
+  })
+  .get("/:id/public-key", async ({ params }) => {
+    const publicKey = await UserService.findPublicKeyById(params.id);
+    return { publicKey };
+  }, {
+    params: z.object({
+      id: z.string().uuid(),
+    }),
+    response: {
+      200: z.object({ publicKey: z.string().nullable() }),
+    },
+    tags: ["Users"],
+    auth: true,
+  })
   .get("/:id", async ({ params, set }) => {
     try {
       const user = await UserService.findById(params.id);

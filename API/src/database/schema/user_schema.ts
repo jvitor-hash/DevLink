@@ -1,4 +1,4 @@
-import { boolean, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { pgTable } from "drizzle-orm/pg-core/table";
 
 export const user = pgTable("user", {
@@ -9,6 +9,7 @@ export const user = pgTable("user", {
   tags: text("tags").array(),
   bio: text("bio"),
   image: text("image"),
+  publicKey: varchar("public_key", { length: 512 }),
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at")
     .$onUpdate(() => new Date())

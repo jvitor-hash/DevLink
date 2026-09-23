@@ -34,9 +34,12 @@ export const ProjectService = {
     }
 
     if (filters.platforms && filters.platforms.length) {
-      conditions.push(
-        sql`${schemas.project.platforms} && ARRAY[${sql.join(filters.platforms.map((platform) => sql`${platform}`), sql`, `)}]::text[]`,
-      );
+      const activePlatforms = filters.platforms.filter((p) => p !== "ALL");
+      if (activePlatforms.length) {
+        conditions.push(
+          sql`${schemas.project.platforms} && ARRAY[${sql.join(activePlatforms.map((platform) => sql`${platform}`), sql`, `)}]::platform_type[]`,
+        );
+      }
     }
 
     if (filters.primaryLanguage && filters.primaryLanguage !== "ALL") {
@@ -59,11 +62,11 @@ export const ProjectService = {
     }
 
     // Case-insensitive exact match so category cards can filter reliably.
-    if (filters.category) {
+    if (filters.category && filters.category !== "ALL") {
       conditions.push(sql`${schemas.project.category} ILIKE ${filters.category}`);
     }
 
-    if (filters.sub_category) {
+    if (filters.sub_category && filters.sub_category !== "ALL") {
       conditions.push(sql`${schemas.project.sub_category} ILIKE ${filters.sub_category}`);
     }
 
@@ -127,6 +130,26 @@ export const ProjectService = {
       counts[row.clientId] = row.total;
     }
     return counts;
+  },
+
+  // Bump view counters for a project; clients inspecting their own page do not count.
+  recordView: async (projectId: string, viewerId: string | null): Promise<void> => {
+    const rows = await db
+      .select({ clientId: schemas.project.clientId })
+      .from(schemas.project)
+      .where(eq(schemas.project.id, projectId))
+      .limit(1);
+
+    if (!rows.length) return;
+    if (viewerId && rows[0].clientId === viewerId) return;
+
+    await db
+      .update(schemas.project)
+      .set({
+        viewTotalCount: sql`${schemas.project.viewTotalCount} + 1`,
+        lastViewedAt: new Date(),
+      })
+      .where(eq(schemas.project.id, projectId));
   },
 };
 

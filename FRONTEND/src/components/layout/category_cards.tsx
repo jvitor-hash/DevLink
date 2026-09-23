@@ -21,27 +21,27 @@ export function CategoryCards() {
 
   return (
     <div className="grid grid-cols-1 gap-4 mt-6 sm:grid-cols-2 lg:grid-cols-3">
-      {Object.entries(homeCategories).map(([category, subCategories]) => (
+      {homeCategories.map((category) => (
         <Card
-          key={category}
+          key={category.value}
           className="w-full justify-self-center"
-          onClick={() => goToProjects({ category })}
+          onClick={() => goToProjects({ category: category.value })}
         >
           <div>
-            <h3 className="text-lg font-bold text-(--text-primary)">{category}</h3>
+            <h3 className="text-lg font-bold text-(--text-primary)">{category.label}</h3>
 
             <ul className="flex flex-col gap-2 mt-2">
-              {subCategories.map((subCategory) => (
-                <li key={subCategory}>
+              {category.subCategories.map((subCategory) => (
+                <li key={subCategory.value}>
                   <button
                     type="button"
                     className="rounded-sm bg-(--surface-2) px-2 py-1 text-xs text-(--text-secondary) hover:text-white transition-colors hover:cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation();
-                      goToProjects({ category, sub_category: subCategory });
+                      goToProjects({ category: category.value, sub_category: subCategory.value });
                     }}
                   >
-                    {subCategory}
+                    {subCategory.label}
                   </button>
                 </li>
               ))}

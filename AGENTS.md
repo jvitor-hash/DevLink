@@ -106,3 +106,5 @@ function myFunction(someParameter: string) : string {
 - Never use any git commands at all
 - Never utilize install commands unless explicitly instructed
 - Do not run destructive / hard-to-undo commands (git push, resets, deploys) without the user askins
+- Ignore component files unless explicitly instructed to modify/use them
+- Ignore the migrations

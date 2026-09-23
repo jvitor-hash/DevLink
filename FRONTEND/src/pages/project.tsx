@@ -1,17 +1,17 @@
 import ProfileCard from "@/components/layout/profile_card_layout";
 import SearchFiltersLayout from "@/components/layout/search_filters_layout";
 import { EMPTY_FILTERS, HIDDEN_PROJECT_STATUSES, type ProjectFilters } from "@/lib/types/project_filters";
-import Button from "@/components/ui/button_component";
 import Input from "@/components/ui/input_component";
 import ProjectPreview from "@/components/ui/project_ticket_component";
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ChevronRight } from "react-feather";
 import { type ProjectDTO, type ListParams, type PublicUserDTO } from "@/lib/types/database";
 import { projectService } from "@/services/project_service";
 import { userService } from "@/services/user_service";
 import { useSavedTickets } from "@/lib/hooks/use_saved_tickets";
-import { ActiveFiltersBanner } from "./active_filters_banner";
+import { ActiveFiltersBanner } from "../components/layout/active_filters_banner";
+import Button from "@/components/ui/button_component";
 
 const PAGE_SIZE = 10;
 
@@ -19,7 +19,30 @@ const filtersFromUrl = (searchParams: URLSearchParams): ProjectFilters => ({
   ...EMPTY_FILTERS,
   category: searchParams.get("category") ?? "ALL",
   sub_category: searchParams.get("sub_category") ?? "ALL",
+  q: searchParams.get("q") ?? "",
+  audience: (searchParams.get("audience") ?? "ALL") as ProjectFilters["audience"],
+  platforms: (searchParams.get("platforms") ?? "ALL") as ProjectFilters["platforms"],
+  primaryLanguage: (searchParams.get("primaryLanguage") ?? "ALL") as ProjectFilters["primaryLanguage"],
+  status: (searchParams.get("status") ?? "ALL") as ProjectFilters["status"],
+  minBudget: searchParams.get("minBudget") ?? "",
+  maxBudget: searchParams.get("maxBudget") ?? "",
 });
+
+const buildFilterQuery = (filters: ProjectFilters): string => {
+  const params = new URLSearchParams();
+
+  if (filters.q.trim()) params.set("q", filters.q.trim());
+  if (filters.category !== "ALL") params.set("category", filters.category);
+  if (filters.sub_category !== "ALL") params.set("sub_category", filters.sub_category);
+  if (filters.audience !== "ALL") params.set("audience", filters.audience);
+  if (filters.platforms !== "ALL") params.set("platforms", filters.platforms);
+  if (filters.primaryLanguage !== "ALL") params.set("primaryLanguage", filters.primaryLanguage);
+  if (filters.status !== "ALL") params.set("status", filters.status);
+  if (filters.minBudget) params.set("minBudget", filters.minBudget);
+  if (filters.maxBudget) params.set("maxBudget", filters.maxBudget);
+
+  return params.toString();
+};
 
 const buildListParams = (filters: ProjectFilters) : ListParams => {
   const params: ListParams = {
@@ -27,6 +50,7 @@ const buildListParams = (filters: ProjectFilters) : ListParams => {
     excludeStatuses: HIDDEN_PROJECT_STATUSES,
   };
 
+  if (filters.q && filters.q.trim() !== "") params.q = filters.q.trim();
   if (filters.category !== "ALL") params.category = filters.category;
   if (filters.sub_category !== "ALL") params.sub_category = filters.sub_category;
   if (filters.audience !== "ALL") params.audience = filters.audience;
@@ -56,12 +80,14 @@ export default function ProjectPage() {
   const [prominentClients, setProminentClients] = useState<PublicUserDTO[] | null>(null);
   const [filters, setFilters] = useState<ProjectFilters>(EMPTY_FILTERS);
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const urlQuery = searchParams.toString();
 
   // URL is the source of truth for category/sub_category deep links; the
   // rest of the filters stay user-managed state.
   const urlFilters = useMemo(
     () => filtersFromUrl(searchParams),
-    [searchParams],
+    [urlQuery],
   );
 
   // Snapshot of the filters behind the currently displayed results.
@@ -76,22 +102,6 @@ export default function ProjectPage() {
   }
 
   const { saveCounts, isSaved, toggleSaved, setSaveCountsFromProjects } = useSavedTickets();
-
-  const loadProjects = async (params: ListParams = {}) : Promise<void> => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const result = await projectService.list({ limit: PAGE_SIZE, ...params });
-
-      setProjects(result);
-      setSaveCountsFromProjects(result);
-    } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Nao foi possivel carregar os projetos.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // Prominent clients load once; state updates happen in async callbacks to keep the effect clean.
   useEffect(() => {
@@ -108,11 +118,11 @@ export default function ProjectPage() {
     };
   }, []);
 
-  // Projects reload whenever the URL filter params change (deep links from home cards).
-  // All state updates happen in async callbacks to keep the effect clean;
-  // the previous list stays visible until fresh data arrives.
+  // Projects reload whenever the URL filter params changes.
   useEffect(() => {
     let cancelled = false;
+
+    setIsLoading(true);
 
     projectService.list({ limit: PAGE_SIZE, ...buildListParams(urlFilters) })
       .then((projectList) => {
@@ -130,33 +140,46 @@ export default function ProjectPage() {
       .finally(() => {
         if (!cancelled) setIsLoading(false);
       });
+  }, [urlQuery, urlFilters, setSaveCountsFromProjects]);
 
-    return () => {
-      cancelled = true;
-    };
-  }, [urlFilters, setSaveCountsFromProjects]);
-
-  const currentFilters : ProjectFilters = { ...filters, ...urlFilters };
+  const currentFilters: ProjectFilters = {
+    ...filters,
+    category: urlFilters.category,
+    sub_category: urlFilters.sub_category,
+  };
 
   // Only pending when the standby filters would query something different.
   const hasPendingFilters : boolean =
     JSON.stringify(buildListParams(currentFilters)) !== JSON.stringify(buildListParams(appliedFilters));
 
-  const handleSearch = () : void => {
-    setAppliedFilters(currentFilters);
-    void loadProjects(buildListParams(currentFilters));
+  const handleSearch = (): void => {
+    const query = buildFilterQuery(currentFilters);
+
+    navigate(query ? `/project?${query}` : "/project");
   };
 
-  // Filter edits stay on standby in local state; only Pesquisar applies them.
+  // Filter edits stay on standby in local state; only "Pesquisar" applies them.
   const handleFilterChange = (next: ProjectFilters) : void => {
-    setFilters({ ...next, ...urlFilters });
+    setFilters({
+      ...next,
+      category: urlFilters.category,
+      sub_category: urlFilters.sub_category,
+    });
   };
 
   return (
     <>
       <section>
         <form className="relative mx-25 max-h-fit" onSubmit={(e) => { e.preventDefault(); handleSearch(); }}>
-          <Input icon="search" label="" name="searchQuery" inputType="text" placeholder="Busque por novos projetos ou usuarios..." />
+          <Input
+            icon="search"
+            label=""
+            name="searchQuery"
+            inputType="text"
+            placeholder="Busque por novos projetos ou usuarios..."
+            value={currentFilters.q}
+            onChange={(e) => handleFilterChange({ ...currentFilters, q: e.target.value })}
+          />
           <div className="absolute right-2 top-8 -translate-y-1/2 flex gap-2">
             {hasPendingFilters && (
               <button
@@ -168,7 +191,7 @@ export default function ProjectPage() {
                 Filtros não aplicados
               </button>
             )}
-            <Button label="Pesquisar" buttonType="button" onClick={handleSearch} />
+            <Button label="Pesquisar" buttonType="submit"/>
           </div>
 
           <SearchFiltersLayout value={currentFilters} onChange={handleFilterChange} />
@@ -176,7 +199,7 @@ export default function ProjectPage() {
       </section>
 
       <section className="mx-25">
-        <ActiveFiltersBanner category={urlFilters.category} subCategory={urlFilters.sub_category} />
+        <ActiveFiltersBanner filters={urlFilters} />
 
         <div className="mb-5 mt-5">
           <div className="flex justify-between">

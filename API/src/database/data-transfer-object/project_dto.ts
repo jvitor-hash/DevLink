@@ -31,6 +31,9 @@ export const ProjectDTOSchema = z.object({
   minBudget: z.number().min(1),
   maxBudget: z.number().min(1),
   saveTotalCount: z.number().int().min(0).default(0),
+  viewTotalCount: z.number().int().min(0).default(0),
+  lastViewedAt: z.union([z.date(), z.string().datetime(), z.string()]).nullable().optional(),
+  negotiationStartedAt: z.union([z.date(), z.string().datetime(), z.string()]).nullable().optional(),
   deadline: z.union([z.date(), z.string().datetime(), z.string()]).nullable().optional(),
   completedAt: z.union([z.date(), z.string().datetime(), z.string()]).nullable().optional(),
 }).merge(timestampsSchema);
@@ -45,6 +48,9 @@ const ProjectDTOs = createCrudSchemas(ProjectDTOSchema, [
   "createdAt",
   "updatedAt",
   "saveTotalCount",
+  "viewTotalCount",
+  "lastViewedAt",
+  "negotiationStartedAt",
 ]);
 
 const budgetRangeRefinement = (data: { minBudget?: number; maxBudget?: number }): boolean =>

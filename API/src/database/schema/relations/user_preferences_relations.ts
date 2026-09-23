@@ -1,10 +1,9 @@
 import { relations } from "drizzle-orm/_relations";
-import { userPreference } from "../user_preferences_schema";
-import { user } from "../user_schema";
+import { schemas } from "../index";
 
-export const userPreferencesRelations = relations(userPreference, ({ one }) => ({
-  user: one(user, {
-    fields: [userPreference.userId],
-    references: [user.id],
+export const userPreferencesRelations = relations(schemas.userPreference, ({ one }) => ({
+  user: one(schemas.user, {
+    fields: [schemas.userPreference.userId],
+    references: [schemas.user.id],
   }),
 }));
