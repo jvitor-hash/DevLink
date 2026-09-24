@@ -21,9 +21,10 @@ type InputComponentProps = {
   dataTestId?: string
   error?: boolean
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  autocomplete?: string
 };
 
-export default function Input({ icon, inputType = "text", label, name, value, dataTestId, className, placeholder, error, onChange }: InputComponentProps) {
+export default function Input({ icon, inputType = "text", label, name, value, dataTestId, className, placeholder, autocomplete, error, onChange }: InputComponentProps) {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isFocused, setFocus] = useState<boolean>(false);
   const isPassword = inputType === "password";
@@ -49,7 +50,7 @@ export default function Input({ icon, inputType = "text", label, name, value, da
           id={name ?? label.toLowerCase()}
           className={`outline-none w-full rounded-md border text-white p-3 invalid:border-(--primary) transition-colors
           ${error ? "border-(--error)" : isFocused ? "border-gray-400" : "border-(--border-subtle)"} ${isFocused === false && !error ? "hover:border-gray-400" : ""}
-          ${ IconComponent ? "pl-10" : "pl-3" } ${isPassword ? "pr-10" : "pr-3"} placeholder:text-(--text-muted) ${className}`}
+          ${IconComponent ? "pl-10" : "pl-3"} ${isPassword ? "pr-10" : "pr-3"} placeholder:text-(--text-muted) ${className}`}
           name={name ?? label.toLowerCase()}
           type={isPassword && showPassword ? "text" : inputType}
           placeholder={placeholder}
@@ -59,6 +60,7 @@ export default function Input({ icon, inputType = "text", label, name, value, da
           data-testid={dataTestId}
           onFocus={() => setFocus(true)}
           onBlur={() => setFocus(false)}
+          autoComplete={autocomplete}
         />
 
         {isPassword && (

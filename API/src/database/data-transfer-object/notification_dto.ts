@@ -10,6 +10,7 @@ export const NotificationSchema = z.object({
   message: z.string().min(1),
   projectId: idSchema.nullable().optional(),
   isRead: z.boolean().default(false),
+  archived: z.boolean().default(false),
 }).merge(timestampsSchema);
 
 const NotificationDTOs = createCrudSchemas(NotificationSchema, [

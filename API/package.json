@@ -11,7 +11,9 @@
     "db:pull": "bunx --bun drizzle-kit pull",
     "auth:generate": "bunx --bun auth generate",
     "test": "bun test src/tests",
-    "test:coverage": "bun test --coverage src/tests"
+    "test:coverage": "bun test --coverage src/tests",
+    "type-check": "tsc -b --pretty false",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "^1.7.2",

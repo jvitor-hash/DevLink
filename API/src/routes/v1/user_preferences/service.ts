@@ -22,4 +22,37 @@ export const UserPreferenceService = {
 
     return rows as typeof schemas.userPreference.$inferSelect[];
   },
+
+  /**
+   * Find the single preference of a user (null if none exists)
+   */
+  findByUser: async (userId: string) => {
+    const rows = await db
+      .select()
+      .from(schemas.userPreference)
+      .where(eq(schemas.userPreference.userId, userId))
+      .limit(1);
+
+    return (rows[0] ?? null) as typeof schemas.userPreference.$inferSelect | null;
+  },
+
+  /**
+   * Update a user's preference or create it with defaults if missing
+   */
+  upsertByUser: async (userId: string, data: Partial<typeof schemas.userPreference.$inferInsert>) => {
+    const [result] = await db
+      .insert(schemas.userPreference)
+      .values({ ...data, userId })
+      .onConflictDoUpdate({
+        target: schemas.userPreference.userId,
+        set: { ...data, updatedAt: new Date() },
+      })
+      .returning();
+
+    if (!result) {
+      throw new Error("Failed to upsert user preference");
+    }
+
+    return result as typeof schemas.userPreference.$inferSelect;
+  },
 } 

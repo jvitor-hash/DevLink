@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test, beforeAll, afterAll } from "bun:test";
 import {
   UserPreferenceCreateSchema,
   UserPreferenceUpdateSchema,
@@ -91,6 +91,41 @@ describe("UserPreference Schema Validation", () => {
 
     const result = UserPreferenceSchema.safeParse(fullPreference);
     expect(result.success).toBe(true);
+  });
+});
+
+describe("UserPreference By-User Routes", () => {
+  let app: any;
+  let serverPort: number;
+
+  beforeAll(async () => {
+    const { Elysia } = await import("elysia");
+    const { authPlugin } = await import("../modules/auth_plugin");
+
+    app = new Elysia()
+      .use(authPlugin)
+      .use(UserPreferenceRouter)
+      .listen(0);
+
+    serverPort = Number(app.server?.port);
+  });
+
+  afterAll(async () => {
+    await app.stop();
+  });
+
+  test("PUT /api/v1/user-preferences/:userId requires authentication (401)", async () => {
+    const response = await fetch(`http://localhost:${serverPort}/api/v1/user-preferences/550e8400-e29b-41d4-a716-446655440001`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email_notifications: false }),
+    });
+    expect(response.status).toBe(401);
+  });
+
+  test("GET /api/v1/user-preferences/user/:userId requires authentication (401)", async () => {
+    const response = await fetch(`http://localhost:${serverPort}/api/v1/user-preferences/user/550e8400-e29b-41d4-a716-446655440001`);
+    expect(response.status).toBe(401);
   });
 });
 

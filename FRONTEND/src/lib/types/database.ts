@@ -188,6 +188,7 @@ export interface NotificationDTO {
   message: string;
   projectId?: string | null;
   isRead: boolean;
+  archived: boolean;
   createdAt?: string | Date | null;
 }
 
@@ -207,6 +208,7 @@ export interface NotificationUpdate {
   message?: string;
   projectId?: string | null;
   isRead?: boolean;
+  archived?: boolean;
 }
 
 // Message Models

@@ -1,0 +1,15 @@
+# name: pipeline
+# on: [push, pull]
+
+# jobs:
+#   Setup:
+#     name: Setting-up project
+#     runs-on: ubuntu-latest
+
+#   Build:
+#     name: Build project
+#     runs-on: ubuntu-latest
+
+#   Test:
+#     name: Testing
+#     runs-on: ubuntu-latest

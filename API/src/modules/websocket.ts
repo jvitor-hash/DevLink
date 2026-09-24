@@ -59,7 +59,7 @@ const broadcast = (projectId: string, payload: object, excludeUserId?: string) =
 const ClientFrameSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("join"),
-    projectId: z.string().uuid(),
+    projectId: z.uuid(),
     publicKey: z.string().min(1),
   }),
   z.object({
@@ -68,24 +68,24 @@ const ClientFrameSchema = z.discriminatedUnion("type", [
   }),
   z.object({
     type: z.literal("message"),
-    projectId: z.string().uuid(),
+    projectId: z.uuid(),
     content: z.string().min(1),
   }),
   z.object({
     type: z.literal("offer"),
-    projectId: z.string().uuid(),
+    projectId: z.uuid(),
     content: z.string().min(1),
     offerDeadline: z.string(),
   }),
   z.object({
     type: z.literal("offer-response"),
-    messageId: z.string().uuid(),
-    projectId: z.string().uuid(),
+    messageId: z.uuid(),
+    projectId: z.uuid(),
     offerStatus: z.enum(["ACCEPTED", "REJECTED"]),
   }),
   z.object({
     type: z.literal("read"),
-    projectId: z.string().uuid(),
+    projectId: z.uuid(),
     messageIds: z.array(z.string().uuid()).min(1),
   }),
 ]);

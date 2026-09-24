@@ -80,8 +80,8 @@ export default function LoginModal({ show, onClose }: LoginModalProps) {
             <p className="mt-2">Não possui uma conta? <button type="button" className="text-(--info) hover:cursor-pointer" data-testid="register-link" onClick={() => changeMode("register")}>Cadastre-se</button></p>
             {error && <p role="alert" className="mt-3 text-(--error)">{error}</p>}
             <form className="mt-5 flex flex-col gap-3" onSubmit={submit}>
-              <Input icon="mail" dataTestId="email-input" inputType="email" name="email" placeholder="Nome@Exemplo.com" label="E-mail" />
-              <Input icon="lock" dataTestId="password-input" inputType="password" name="password" placeholder="Digite sua senha" label="Senha" />
+              <Input icon="mail" dataTestId="email-input" inputType="email" name="email" autocomplete="email" placeholder="Nome@Exemplo.com" label="E-mail" />
+              <Input icon="lock" dataTestId="password-input" inputType="password" name="password" autocomplete="password" placeholder="Digite sua senha" label="Senha" />
               <label className="flex items-center"><Checkbox label="Salvar essa sessão?" checked /></label>
               <div className="flex justify-center gap-5 mt-2">
                 <Button buttonType="submit" dataTestId="submit-btn" colorType="success" label={submitting ? "Entrando..." : "Login"} />
@@ -96,8 +96,8 @@ export default function LoginModal({ show, onClose }: LoginModalProps) {
             {error && <p role="alert" className="mt-3 text-(--error)">{error}</p>}
             <form className="mt-5 flex flex-col gap-3" onSubmit={submit}>
               <Input inputType="text" dataTestId="name-input" name="name" placeholder="Digite seu nome" label="Nome" />
-              <Input icon="mail" dataTestId="email-input" inputType="email" name="email" placeholder="Nome@Exemplo.com" label="E-mail" />
-              <Input icon="lock" dataTestId="password-input" inputType="password" name="password" placeholder="Digite sua senha" label="Senha" />
+              <Input icon="mail" dataTestId="email-input" inputType="email" name="email" autocomplete="email" placeholder="Nome@Exemplo.com" label="E-mail" />
+              <Input icon="lock" dataTestId="password-input" inputType="password" name="password" autocomplete="password" placeholder="Digite sua senha" label="Senha" />
               <SegmentedButton
                 title="Tipo de usuário"
                 name="role"

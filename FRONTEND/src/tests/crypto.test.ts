@@ -7,7 +7,7 @@ import {
   deriveSharedKey,
   encryptMessage,
   decryptMessage,
-} from "@/lib/crypto";
+} from "@/lib/utils/crypto";
 
 describe("crypto helpers", () => {
   test("generates an exportable SPKI public key", async () => {

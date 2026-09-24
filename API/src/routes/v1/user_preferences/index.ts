@@ -57,6 +57,32 @@ export const UserPreferenceRouter = new Elysia({ prefix: "/api/v1/user-preferenc
     tags: ["User Preferences"],
     auth: true,
   })
+  .get("/user/:userId", async ({ params, user, set }) => {
+    try {
+      if (params.userId !== user.id) {
+        set.status = 403;
+        return { error: "Forbidden" };
+      }
+
+      const preference = await UserPreferenceService.findByUser(params.userId);
+      return preference;
+    } catch (error) {
+      logError("GET /api/v1/user-preferences/user/:userId", error);
+      set.status = 500;
+      return { error: "Failed to fetch user preference" };
+    }
+  }, {
+    params: z.object({
+      userId: z.string().uuid(),
+    }),
+    response: {
+      200: UserPreferenceSchema.nullable(),
+      403: ErrorSchema,
+      500: ErrorSchema,
+    },
+    tags: ["User Preferences"],
+    auth: true,
+  })
   .get("/:id", async ({ params, user, set }) => {
     try {
       const preference = await UserPreferenceService.findOne(
@@ -80,27 +106,29 @@ export const UserPreferenceRouter = new Elysia({ prefix: "/api/v1/user-preferenc
     tags: ["User Preferences"],
     auth: true,
   })
-  .put("/:id", async ({ params, body, user, set }) => {
+  .put("/:userId", async ({ params, body, user, set }) => {
     try {
+      if (params.userId !== user.id) {
+        set.status = 403;
+        return { error: "Forbidden" };
+      }
+
       const data = body as UserPreferenceUpdate;
-      const updated = await UserPreferenceService.update(
-        and(eq(schemas.userPreference.id, params.id), eq(schemas.userPreference.userId, user.id)) as SQL<unknown>,
-        data
-      );
+      const updated = await UserPreferenceService.upsertByUser(params.userId, data);
       return updated;
     } catch (error) {
-      logError("PUT /api/v1/user-preferences/:id", error);
-      set.status = 404;
-      return { error: "User preference not found or unauthorized" };
+      logError("PUT /api/v1/user-preferences/:userId", error);
+      set.status = 500;
+      return { error: "Failed to update user preference" };
     }
   }, {
     params: z.object({
-      id: z.string().uuid(),
+      userId: z.string().uuid(),
     }),
     body: UserPreferenceUpdateSchema,
     response: {
       200: UserPreferenceSchema,
-      404: ErrorSchema,
+      403: ErrorSchema,
       500: ErrorSchema,
     },
     tags: ["User Preferences"],

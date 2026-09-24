@@ -42,7 +42,6 @@ export default function Home() {
       <section className="w-full min-h-screen overflow-hidden">
         <WaveEffect />
 
-        {/* Hero as a centered 2-col grid; text on the left, wave art on the right */}
         <div className="relative grid min-h-[calc(100vh-4rem)] grid-cols-1 items-center gap-8 px-8 md:grid-cols-2">
           <div className="max-w-xl">
             <h1 className="text-6xl mb-5">

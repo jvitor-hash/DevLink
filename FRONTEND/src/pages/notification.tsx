@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { useLoaderData, useNavigate } from "react-router-dom";
 import { notificationService } from "@/services/notification_service";
 import { savedTicketService } from "@/services/saved_ticket_service";
 import { authService } from "@/services/auth_service";
@@ -23,47 +23,44 @@ const isOld = (createdAt: string | Date | null | undefined): boolean => {
   return Date.now() - date.getTime() > 30 * 86_400_000;
 };
 
+export async function NotificationLoader() {
+  const user = authService.getCachedUser();
+  const items: NotificationDTO[] = [];
+  const pageSize = 100;
+  let savedProjectIds: string[] = [];
+
+  for (let offset = 0; ; offset += pageSize) {
+    const page = await notificationService.list({ limit: pageSize, offset });
+    if (!Array.isArray(page) || page.length === 0) break;
+    items.push(...page);
+    if (page.length < pageSize) break;
+  }
+
+  if (user) {
+    const result = await savedTicketService.getSavedProjectIdsByUser(user.id);
+    savedProjectIds = result.savedProjectIds;
+
+    for (let offset = 0; ; offset += pageSize) {
+      const page = await notificationService.list({ limit: pageSize, offset });
+      if (!Array.isArray(page) || page.length === 0) break;
+      items.push(...page);
+      if (page.length < pageSize) break;
+    }
+
+    if (user)
+      await savedTicketService.getSavedProjectIdsByUser(user.id)
+  }
+
+  return { items, pageSize, savedProjectIds }
+};
+
 export default function NotificationPage() {
+  const loaderData = useLoaderData<typeof NotificationLoader>();
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState<NotificationDTO[] | null>(null);
+  const [notifications, setNotifications] = useState<NotificationDTO[] | null>(loaderData.items ?? []);
   const [category, setCategory] = useState<Category>("RECENTS");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [savedIds, setSavedIds] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const load = async (): Promise<void> => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const items: NotificationDTO[] = [];
-        const pageSize = 100;
-
-        for (let offset = 0; ; offset += pageSize) {
-          const page = await notificationService.list({ limit: pageSize, offset });
-          if (!Array.isArray(page) || page.length === 0) break;
-          items.push(...page);
-          if (page.length < pageSize) break;
-        }
-
-        setNotifications(items);
-
-        const user = authService.getCachedUser();
-        if (user) {
-          const { savedProjectIds } = await savedTicketService.getSavedProjectIdsByUser(user.id);
-          setSavedIds(savedProjectIds ?? []);
-        }
-      } catch (loadError) {
-        setError(loadError instanceof Error ? loadError.message : "Não foi possível carregar as notificações.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    load();
-  }, []);
+  const [savedIds, setSavedIds] = useState<string[]>(loaderData.savedProjectIds ?? []);
 
   const markAsRead = async (item: NotificationDTO): Promise<void> => {
     setSelectedId(item.id);
@@ -104,7 +101,7 @@ export default function NotificationPage() {
 
   const archive = async (item: NotificationDTO): Promise<void> => {
     try {
-      await notificationService.update(item.id, { type: "SYSTEM", title: item.title, message: item.message });
+      await notificationService.update(item.id, { type: "SYSTEM", title: item.title, message: item.message, archived: true });
       setNotifications((prev) => (prev ? prev.filter((n) => n.id !== item.id) : prev));
       if (selectedId === item.id) setSelectedId(null);
     } catch {
@@ -132,7 +129,7 @@ export default function NotificationPage() {
       case "SAVED":
         return notifications.filter((item) => item.projectId != null && savedIds.includes(item.projectId));
       case "ARCHIVES":
-        return notifications.filter((item) => item.isRead && !isOld(item.createdAt));
+        return notifications.filter((item) => item.archived && !isOld(item.createdAt));
       default:
         return notifications.filter((item) => isOld(item.createdAt));
     }
@@ -146,18 +143,10 @@ export default function NotificationPage() {
     switch (key) {
       case "RECENTS": return notifications.filter((item) => !item.isRead && !isOld(item.createdAt)).length;
       case "SAVED": return notifications.filter((item) => item.projectId != null && savedIds.includes(item.projectId)).length;
-      case "ARCHIVES": return notifications.filter((item) => item.isRead && !isOld(item.createdAt)).length;
+      case "ARCHIVES": return notifications.filter((item) => item.archived && !isOld(item.createdAt)).length;
       default: return notifications.filter((item) => isOld(item.createdAt)).length;
     }
   };
-
-  if (isLoading) {
-    return <div className="p-8 text-(--text-muted)">Carregando notificações...</div>;
-  }
-
-  if (error) {
-    return <div className="p-8 text-(--error)">{error}</div>;
-  }
 
   return (
     <div className="mx-4 mt-4 grid min-h-[70vh] grid-cols-1 gap-4 lg:grid-cols-[240px_1fr_1fr]">
@@ -170,9 +159,8 @@ export default function NotificationPage() {
               key={key}
               type="button"
               onClick={() => setCategory(key)}
-              className={`flex shrink-0 items-center justify-between rounded px-3 py-2 text-left text-sm transition-colors hover:cursor-pointer ${
-                category === key ? "bg-(--primary) text-white" : "text-(--text-secondary) hover:bg-(--surface-2)"
-              }`}
+              className={`flex shrink-0 items-center justify-between rounded px-3 py-2 text-left text-sm transition-colors hover:cursor-pointer ${category === key ? "bg-(--primary) text-white" : "text-(--text-secondary) hover:bg-(--surface-2)"
+                }`}
             >
               {label}
               <span className="text-xs text-(--text-muted)">{categoryCount(key)}</span>
@@ -204,9 +192,8 @@ export default function NotificationPage() {
                 <button
                   type="button"
                   onClick={() => markAsRead(item)}
-                  className={`w-full rounded border px-4 py-3 text-left transition-colors hover:cursor-pointer ${
-                    selectedId === item.id ? "border-(--primary)" : "border-(--border-subtle)"
-                  } ${item.isRead ? "bg-(--surface-2) opacity-80" : "border-(--info) bg-(--surface-2)"}`}
+                  className={`w-full rounded border px-4 py-3 text-left transition-colors hover:cursor-pointer ${selectedId === item.id ? "border-(--primary)" : "border-(--border-subtle)"
+                    } ${item.isRead ? "bg-(--surface-2) opacity-80" : "border-(--info) bg-(--surface-2)"}`}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <p className={`flex items-center gap-2 text-sm ${item.isRead ? "text-(--text-muted)" : "font-semibold text-(--text-primary)"}`}>

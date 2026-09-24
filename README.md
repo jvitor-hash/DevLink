@@ -1,10 +1,10 @@
 # DevLink
-Versão: v2.8.0
+Versão: v2.8.2
 
 ## Tecnologias utilizadas
 - ![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=for-the-badge&logo=bun&logoColor=white)
 - ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
-- Elysia (Similar ao express)
+- Elysia
 - Better Auth (Autenticação)
 - ![Drizzle](https://img.shields.io/badge/Drizzle-%23000000.svg?style=for-the-badge&logo=drizzle&logoColor=C5F74F)
 - ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
@@ -19,8 +19,8 @@ Versão: v2.8.0
 
 1. Clonar o repositório:
 ```
-git clone https://github.com/jvitor-hash/Projeto-sem-nome
-cd '.\Projeto sem nome\'
+git clone https://github.com/jvitor-hash/DevLink
+cd '.\DevLink\'
 ```
 
 2. Instalação das dependências do projeto:

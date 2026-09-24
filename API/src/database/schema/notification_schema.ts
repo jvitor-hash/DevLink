@@ -17,6 +17,7 @@ export const notification = pgTable("notification", {
     onDelete: "set null",
   }),
   isRead: boolean("is_read").default(false).notNull(),
+  archived: boolean("archived").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 },
 (table) => [

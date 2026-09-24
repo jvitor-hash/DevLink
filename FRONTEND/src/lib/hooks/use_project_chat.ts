@@ -7,7 +7,7 @@ import {
   deriveSharedKey,
   encryptMessage,
   decryptMessage,
-} from "@/lib/crypto";
+} from "@/lib/utils/crypto";
 import { authService } from "@/services/auth_service";
 import { messageService } from "@/services/message_service";
 import { BASE_URL, type MessageDTO } from "@/lib/types/database";
