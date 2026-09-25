@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card3D } from "./3d_card_component";
 import Badge from "./badge_component";
 import Button from "./button_component";
-import { authService } from "@/services/auth_service";
+import { userSingleton } from "@/lib/types/user";
 import { mapValueLabel } from "@/lib/value_labels";
 
 import type { Audience, ProjectStatus } from "@/lib/types/database";
@@ -31,7 +31,7 @@ export default function ProjectPreview({ item, title, category, deadline, proble
   const navigate = useNavigate();
 
   // Only programmers can save projects.
-  const canSave = authService.getCachedUser()?.role === "PROGRAMMER";
+  const canSave = userSingleton.getCachedUser()?.role === "PROGRAMMER";
 
   const openProject = () => {
     navigate(`/project/open/${encodeURIComponent(item)}`);

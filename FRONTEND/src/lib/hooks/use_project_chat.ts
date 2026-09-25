@@ -8,7 +8,7 @@ import {
   encryptMessage,
   decryptMessage,
 } from "@/lib/utils/crypto";
-import { authService } from "@/services/auth_service";
+import { userSingleton } from "@/lib/types/user";
 import { messageService } from "@/services/message_service";
 import { BASE_URL, type MessageDTO } from "@/lib/types/database";
 
@@ -140,7 +140,7 @@ export function useProjectChat(projectId: string | undefined): UseProjectChatRes
     wsRef.current = socket;
 
     const join = async () => {
-      const user = authService.getCachedUser() ?? await authService.getCurrentUser();
+      const user = userSingleton.getCachedUser() ?? await userSingleton.getCurrentUser();
       if (!user) {
         setError("Sessão expirada. Faça login novamente.");
         socket.close();

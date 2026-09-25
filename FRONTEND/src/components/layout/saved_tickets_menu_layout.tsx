@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Bookmark } from "react-feather";
 import { savedTicketService } from "@/services/saved_ticket_service";
 import { projectService } from "@/services/project_service";
-import { authService } from "@/services/auth_service";
+import { userSingleton } from "@/lib/types/user";
 import type { ProjectDTO } from "@/lib/types/database";
 
 const POLL_INTERVAL_MS = 15_000;
@@ -41,7 +41,7 @@ export default function SavedTicketsMenu({ onOpenChange }: SavedTicketsMenuProps
     let cancelled = false;
 
     const load = async (): Promise<void> => {
-      const user = authService.getCachedUser();
+      const user = userSingleton.getCachedUser();
 
       if (!user) return;
 
@@ -100,7 +100,7 @@ export default function SavedTicketsMenu({ onOpenChange }: SavedTicketsMenuProps
     onOpenChange?.(next);
   };
 
-  if (!authService.getCachedUser()) return null;
+  if (!userSingleton.isSignedIn) return null;
 
   return (
     <div className="relative" ref={containerRef}>

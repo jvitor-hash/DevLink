@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { authService } from "@/services/auth_service";
+import { userSingleton } from "@/lib/types/user";
 import { savedTicketService } from "@/services/saved_ticket_service";
 
 interface UseSavedTicketsResult {
@@ -21,7 +21,7 @@ export function useSavedTickets(loadProjectsOnMount: boolean = true) : UseSavedT
     if (!loadProjectsOnMount) return;
 
     const loadSaved = async () : Promise<void> => {
-      const user = authService.getCachedUser();
+      const user = userSingleton.getCachedUser();
 
       if (!user) {
         setSavedProjectIds([]);
@@ -46,7 +46,7 @@ export function useSavedTickets(loadProjectsOnMount: boolean = true) : UseSavedT
 
   const toggleSaved = useCallback(async (projectId: string) : Promise<void> => {
     // Only programmers can save projects; the API enforces this as well.
-    if (authService.getCachedUser()?.role !== "PROGRAMMER") return;
+    if (userSingleton.getCachedUser()?.role !== "PROGRAMMER") return;
 
     try {
       const isNowSaved = await savedTicketService.toggle(projectId);

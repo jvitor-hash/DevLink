@@ -1,7 +1,8 @@
 // components/ProtectedRoute.tsx
 import { type ReactNode, useEffect, useState } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { authService, type Permissions } from '@/services/auth_service';
+import { userSingleton } from '@/lib/types/user';
+import type { Permissions } from '@/services/auth_service';
 
 interface ProtectedRouteProps {
   children?: ReactNode; // Make children optional
@@ -23,11 +24,11 @@ export const ProtectedRoute = ({
     const checkAuth = async () => {
       try {
         // Check if user is authenticated
-        const isAuthenticated = authService.isAuthenticated();
+        const isAuthenticated = userSingleton.isSignedIn;
 
         if (!isAuthenticated) {
           // Try to refresh session
-          const user = await authService.getCurrentUser();
+          const user = await userSingleton.getCurrentUser();
           if (!user) {
             navigate(redirectTo, { state: { from: location } });
             return;
@@ -36,7 +37,7 @@ export const ProtectedRoute = ({
 
         // Check for specific permission if required
         if (requiredPermission) {
-          const hasPermission = await authService.hasPermission(requiredPermission);
+          const hasPermission = await userSingleton.hasPermission(requiredPermission);
           if (!hasPermission) {
             navigate(redirectTo, { state: { from: location } });
             return;

@@ -1,0 +1,120 @@
+name: pipeline
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pipeline-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BETTER_AUTH_SECRET: ci-secret-key-with-at-least-32-characters
+  BETTER_AUTH_URL: http://localhost:3000
+  FRONT_END_URL: http://localhost:5173
+  LOGGER_LEVEL: INFO
+  DATABASE_URL: postgres://postgres:postgres@localhost:5432/db_test
+
+jobs:
+  Setup:
+    name: Setting-up project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Restore bun cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('API/bun.lock', 'FRONTEND/bun.lock') }}
+
+      - name: Install API dependencies
+        working-directory: API
+        run: bun install --frozen-lockfile
+
+      - name: Install FRONTEND dependencies
+        working-directory: FRONTEND
+        run: bun install --frozen-lockfile
+
+  Build:
+    name: Build project
+    runs-on: ubuntu-latest
+    needs: Setup
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Restore bun cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('API/bun.lock', 'FRONTEND/bun.lock') }}
+
+      - name: Install API dependencies
+        working-directory: API
+        run: bun install --frozen-lockfile
+
+      - name: Install FRONTEND dependencies
+        working-directory: FRONTEND
+        run: bun install --frozen-lockfile
+
+      - name: Build API
+        working-directory: API
+        run: bun run build
+
+      - name: Build FRONTEND
+        working-directory: FRONTEND
+        run: bunx vite build
+
+  Test:
+    name: Testing
+    runs-on: ubuntu-latest
+    needs: Setup
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: db_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Restore bun cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('API/bun.lock', 'FRONTEND/bun.lock') }}
+
+      - name: Install API dependencies
+        working-directory: API
+        run: bun install --frozen-lockfile
+
+      - name: Install FRONTEND dependencies
+        working-directory: FRONTEND
+        run: bun install --frozen-lockfile
+
+      - name: Test FRONTEND
+        working-directory: FRONTEND
+        run: bun test
+
+      - name: Push database schema
+        working-directory: API
+        run: bun run db:push
+
+      - name: Test API
+        working-directory: API
+        run: bun test src/tests

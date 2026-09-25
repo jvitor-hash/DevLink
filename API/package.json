@@ -2,7 +2,7 @@
   "name": "api",
   "version": "1.0.0",
   "scripts": {
-    "build": "bun build --compile --minify",
+    "build": "bun build --compile --minify --outfile dist/api src/index.ts",
     "dev": "bun run --console-depth 4 --watch src/index.ts",
     "dev:studio": "bunx --bun drizzle-kit studio",
     "db:generate": "bunx --bun drizzle-kit generate",
