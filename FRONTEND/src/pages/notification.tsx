@@ -1,11 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLoaderData, useNavigate } from "react-router-dom";
 import { notificationService } from "@/services/notification_service";
 import { savedTicketService } from "@/services/saved_ticket_service";
 import { authService } from "@/services/auth_service";
 import Button from "@/components/ui/button_component";
 import type { NotificationDTO } from "@/lib/types/database";
-import { formatRelativeTime } from "@/lib/utils/relative_time";
+import { formatRelativeTime } from "@/lib/utils/time_formatting";
+import { useNotifications } from "@/lib/hooks/use_notifications";
 
 type Category = "RECENTS" | "SAVED" | "ARCHIVES" | "OLD";
 
@@ -58,6 +59,18 @@ export default function NotificationPage() {
   const loaderData = useLoaderData<typeof NotificationLoader>();
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState<NotificationDTO[] | null>(loaderData.items ?? []);
+  const { notifications: liveNotifications } = useNotifications();
+
+  // Merge socket-pushed rows into the loader-loaded list.
+  useEffect(() => {
+    if (!liveNotifications.length) return;
+
+    setNotifications((prev) => {
+      const prevIds = new Set((prev ?? []).map((item) => item.id));
+      const fresh = liveNotifications.filter((item) => !prevIds.has(item.id));
+      return fresh.length ? [...fresh, ...(prev ?? [])] : prev;
+    });
+  }, [liveNotifications]);
   const [category, setCategory] = useState<Category>("RECENTS");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [savedIds, setSavedIds] = useState<string[]>(loaderData.savedProjectIds ?? []);

@@ -7,7 +7,7 @@ import { schemas } from "@/database/schema";
 import { and, eq, type SQL } from "drizzle-orm";
 import { authPlugin } from "@/modules/auth_plugin";
 import { logError } from "@/modules/logger";
-import { notifyNewProject } from "@/modules/notification_fanout";
+import { publishNotificationEvent, type NotificationEvent } from "@/modules/notification_outbox";
 
 export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
   .use(authPlugin)
@@ -20,14 +20,17 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
       });
 
       try {
-        await notifyNewProject({
-          id: newProject.id,
-          title: newProject.title,
-          minBudget: newProject.minBudget,
-          maxBudget: newProject.maxBudget,
-          deadline: newProject.deadline ? new Date(newProject.deadline) : null,
-          primaryLanguage: newProject.primaryLanguage,
-          platforms: newProject.platforms,
+        await publishNotificationEvent({
+          type: "NEW_PROJECT",
+          payload: {
+            id: newProject.id,
+            title: newProject.title,
+            minBudget: newProject.minBudget,
+            maxBudget: newProject.maxBudget,
+            deadline: newProject.deadline ? new Date(newProject.deadline) : null,
+            primaryLanguage: newProject.primaryLanguage,
+            platforms: newProject.platforms,
+          },
         });
       } catch {
         // Notification fan-out must never block project creation.

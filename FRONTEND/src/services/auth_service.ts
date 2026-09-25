@@ -45,7 +45,7 @@ interface LoginAttempt {
   success: boolean;
 }
 
-class AuthService {
+export class AuthService {
   private readonly MAX_FAILED_ATTEMPTS = 5;
   private readonly LOCKOUT_DURATION = 15 * 60 * 1000;
 
@@ -178,5 +178,3 @@ class AuthService {
     return role === "ADMIN" || role === "admin";
   }
 }
-
-export const authService = new AuthService();

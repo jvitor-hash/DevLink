@@ -4,8 +4,8 @@ import Button from "../ui/button_component";
 import Input from "../ui/input_component";
 import Checkbox from "../ui/checkbox_component";
 import { SegmentedButton } from "@/components/ui/segmented_button_component";
-import { authService } from "@/services/auth_service";
 import type { RegisterRole } from "@/services/auth_service";
+import { userSingleton } from "@/lib/types/user";
 
 type LoginModalProps = { show: boolean; onClose: () => void };
 
@@ -50,7 +50,7 @@ export default function LoginModal({ show, onClose }: LoginModalProps) {
       }
 
       if (mode === "login") {
-        await authService.login({ email, password });
+        userSingleton.login({ email, password });
       } else {
         const name = formData.get("name");
         if (typeof name !== "string" || !name.trim()) {
@@ -59,7 +59,7 @@ export default function LoginModal({ show, onClose }: LoginModalProps) {
         if (role !== "CLIENT" && role !== "PROGRAMMER") {
           throw new Error("Selecione o tipo de usuário.");
         }
-        await authService.register({ name, email, password, registrationRole: role as RegisterRole });
+        userSingleton.register({ name, email, password, registrationRole: role as RegisterRole });
       }
 
       close();

@@ -13,10 +13,12 @@ import { TodoRouter } from "@/routes/v1/todo";
 import { MessageRouter } from "@/routes/v1/message";
 import { TicketRouter } from "@/routes/v1/ticket";
 import { UsersRouter } from "@/routes/v1/users";
+import { WebhookRouter } from "@/routes/v1/webhook";
 import { ClientAuthRouter } from "./routes/v1/client";
 import { ProgrammerAuthRouter } from "./routes/v1/programmer";
 import { logger, loggerPlugin } from "./modules/logger";
 import { Websocket_Chat } from "./modules/websocket";
+import { Websocket_Notifications } from "./modules/websocket_notifications";
 import { startSchedulers, stopSchedulers } from "./modules/scheduler";
 
 const schema = await auth.api.generateOpenAPISchema();
@@ -76,7 +78,9 @@ const app = new Elysia()
   .use(TicketRouter)
   .use(UserPreferenceRouter)
   .use(UsersRouter)
+  .use(WebhookRouter)
   .use(Websocket_Chat)
+  .use(Websocket_Notifications)
   .get("/health", () => ({ OK: true }), {
     detail: {
       summary: "/health",

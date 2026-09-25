@@ -1,7 +1,7 @@
 import { schemas } from "@/database/schema";
 import { crud } from "@/modules/crud_factory";
 import { isProjectConcluded } from "@/modules/project_status";
-import { notifyProjectSaved } from "@/modules/notification_fanout";
+import { publishNotificationEvent, type NotificationEvent } from "@/modules/notification_outbox";
 import { eq, and, desc, inArray, sql, type SQL } from "drizzle-orm";
 import { db } from "@/client";
 
@@ -34,7 +34,15 @@ export const SavedTicketService = {
 
     // Inform the client that a programmer saved their project; must not block the save.
     if (updated) {
-      await notifyProjectSaved(updated).catch(() => undefined);
+      await publishNotificationEvent({
+        type: "PROJECT_SAVED",
+        payload: {
+          id: updated.id,
+          title: updated.title,
+          saveTotalCount: updated.saveTotalCount,
+          clientId: updated.clientId,
+        },
+      }).catch(() => undefined);
     }
 
     return ticket;

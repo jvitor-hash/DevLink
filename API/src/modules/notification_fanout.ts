@@ -2,16 +2,36 @@ import { schemas } from "@/database/schema";
 import { db } from "@/client";
 import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import type { InferInsertModel } from "drizzle-orm";
+import { notifyUserSockets } from "@/modules/websocket_notifications";
 
 type NewPreference = typeof schemas.userPreference.$inferSelect;
 
-// Notification inserts for a user set, in a single batch.
+const MAX_FAN_OUT_USERS = 1000;
+
+// Insert notifications; identical payloads for the same user/aggregate are
+// ignored so outbox retries never duplicate records.
 const insertNotifications = async (
   inserts: InferInsertModel<typeof schemas.notification>[],
+  outboxId: string | null,
 ): Promise<void> => {
   if (!inserts.length) return;
 
-  await db.insert(schemas.notification).values(inserts);
+  const pushCreated = (rows: InferInsertModel<typeof schemas.notification>[]): void => {
+    for (const row of rows) {
+      if (row.userId) notifyUserSockets(row.userId, { ...row, createdAt: new Date().toISOString() });
+    }
+  };
+
+  if (outboxId) {
+    const created = await db.insert(schemas.notification).values(inserts).onConflictDoNothing({
+      target: [schemas.notification.userId, schemas.notification.outboxId],
+    }).returning();
+    pushCreated(created);
+    return;
+  }
+
+  const created = await db.insert(schemas.notification).values(inserts).returning();
+  pushCreated(created);
 };
 
 /**
@@ -23,10 +43,10 @@ export const notifyNewProject = async (project: {
   title: string;
   minBudget: number;
   maxBudget: number;
-  deadline: Date | null;
+  deadline: Date | string | null;
   primaryLanguage: string;
   platforms: string[];
-}): Promise<void> => {
+}, outboxId: string | null = null): Promise<void> => {
   const users = await db
     .select({ id: schemas.user.id })
     .from(schemas.user)
@@ -44,6 +64,8 @@ export const notifyNewProject = async (project: {
     preferencesByUser.set(preference.userId, preference);
   }
 
+  const deadline = project.deadline ? new Date(project.deadline) : null;
+
   const inserts: InferInsertModel<typeof schemas.notification>[] = [];
 
   for (const { id } of users) {
@@ -56,8 +78,8 @@ export const notifyNewProject = async (project: {
 
       if (preference.platform !== "ALL" && !project.platforms.includes(preference.platform)) continue;
 
-      if (project.deadline) {
-        const days = Math.ceil((project.deadline.getTime() - Date.now()) / 86_400_000);
+      if (deadline) {
+        const days = Math.ceil((deadline.getTime() - Date.now()) / 86_400_000);
         if (days > Number(preference.maxDeadlineDays)) continue;
       }
 
@@ -75,16 +97,23 @@ export const notifyNewProject = async (project: {
     });
   }
 
-  await insertNotifications(inserts);
+  if (inserts.length > MAX_FAN_OUT_USERS) {
+    inserts.length = MAX_FAN_OUT_USERS;
+  }
+
+  await insertNotifications(inserts, outboxId);
 };
 
 /**
  * Inform the client that a programmer saved one of their projects.
- * Concluded projects must never generate notifications.
+ * Publishers must skip concluded projects before enqueuing the event.
  */
-export const notifyProjectSaved = async (project: typeof schemas.project.$inferSelect): Promise<void> => {
-  if (project.status === "COMPLETED" || project.status === "CANCELLED") return;
-
+export const notifyProjectSaved = async (project: {
+  id: string;
+  title: string;
+  saveTotalCount: number;
+  clientId: string;
+}, outboxId: string | null = null): Promise<void> => {
   const preferenceRows = await db
     .select()
     .from(schemas.userPreference)
@@ -105,14 +134,52 @@ export const notifyProjectSaved = async (project: typeof schemas.project.$inferS
     },
   ];
 
-  await insertNotifications(inserts);
+  await insertNotifications(inserts, outboxId);
+};
+
+/**
+ * View insight for a single project; only projects viewed recently are
+ * considered and concluded projects never generate notifications.
+ */
+export const notifyProjectViews = async (project: {
+  id: string;
+  title: string;
+  viewTotalCount: number;
+  lastViewedAt: string | null;
+  clientId: string;
+}, outboxId: string | null = null, sinceHours = 24): Promise<void> => {
+  const preferenceRows = await db
+    .select()
+    .from(schemas.userPreference)
+    .where(eq(schemas.userPreference.userId, project.clientId))
+    .limit(1);
+
+  const preference = preferenceRows[0];
+  if (preference && !preference.project_notifications) return;
+
+  const lastViewed = project.lastViewedAt ? new Date(project.lastViewedAt) : null;
+  const viewedRecently = lastViewed !== null && Date.now() - lastViewed.getTime() <= sinceHours * 3_600_000;
+  if (!viewedRecently) return;
+
+  const inserts: InferInsertModel<typeof schemas.notification>[] = [
+    {
+      userId: project.clientId,
+      type: "PROJECT_UPDATE",
+      title: "Seu projeto está recebendo visitas",
+      message: `"${project.title}" acumulou ${project.viewTotalCount} visualização(ões). Última em ${lastViewed!.toLocaleString("pt-BR")}.`,
+      projectId: project.id,
+      isRead: false,
+    },
+  ];
+
+  await insertNotifications(inserts, outboxId);
 };
 
 /**
  * Periodic insight for clients about how their open projects are performing.
  * Only open (not concluded) projects are considered.
  */
-export const notifyOpenProjectViews = async (sinceHours = 24): Promise<void> => {
+export const notifyOpenProjectViews = async (sinceHours = 24, outboxId: string | null = null): Promise<void> => {
   const openProjects = await db
     .select()
     .from(schemas.project)
@@ -126,31 +193,13 @@ export const notifyOpenProjectViews = async (sinceHours = 24): Promise<void> => 
 
   if (!openProjects.length) return;
 
-  const inserts: InferInsertModel<typeof schemas.notification>[] = [];
-
   for (const project of openProjects) {
-    const preferenceRows = await db
-      .select()
-      .from(schemas.userPreference)
-      .where(eq(schemas.userPreference.userId, project.clientId))
-      .limit(1);
-
-    const preference = preferenceRows[0];
-    if (preference && !preference.project_notifications) continue;
-
-    const lastViewed = project.lastViewedAt ? new Date(project.lastViewedAt) : null;
-    const viewedRecently = lastViewed !== null && Date.now() - lastViewed.getTime() <= sinceHours * 3_600_000;
-    if (!viewedRecently) continue;
-
-    inserts.push({
-      userId: project.clientId,
-      type: "PROJECT_UPDATE",
-      title: "Seu projeto está recebendo visitas",
-      message: `"${project.title}" acumulou ${project.viewTotalCount} visualização(ões). Última em ${lastViewed!.toLocaleString("pt-BR")}.`,
-      projectId: project.id,
-      isRead: false,
-    });
+    await notifyProjectViews({
+      id: project.id,
+      title: project.title,
+      viewTotalCount: project.viewTotalCount,
+      lastViewedAt: project.lastViewedAt ? new Date(project.lastViewedAt).toISOString() : null,
+      clientId: project.clientId,
+    }, outboxId, sinceHours);
   }
-
-  await insertNotifications(inserts);
 };

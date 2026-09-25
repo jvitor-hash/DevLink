@@ -2,7 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
-import { AppLayout } from "@/components/layout/app_layout";
+import { RootApp } from "@/components/layout/app_root";
 import { ProtectedRoute } from "@/components/routing/protected_route";
 import "@/global.css";
 
@@ -18,7 +18,7 @@ import ErrorPage from "@/pages/error";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <AppLayout />,
+    element: <RootApp />,
     errorElement: <ErrorPage />,
     children: [
       { index: true, element: <HomePage /> },

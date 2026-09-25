@@ -3,7 +3,7 @@ import type { UserDTO } from "@/lib/types/database";
 
 type SettingsProfileProps = {
     user: UserDTO
-    onChange: (changes: Partial<Pick<UserDTO, "name" | "bio" | "image">>) => void
+    onChange: (e) => void
 }
 
 export default function SettingsProfile({ user, onChange }: SettingsProfileProps) {

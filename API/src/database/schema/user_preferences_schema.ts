@@ -9,7 +9,6 @@ export const userPreference = pgTable("user_preference", {
     .references(() => user.id, {
       onDelete: "cascade",
     }),
-  email_notifications: boolean("email_notifications").default(true).notNull(),
   message_notifications: boolean("message_notifications").default(true).notNull(),
   project_notifications: boolean("project_notifications").default(true).notNull(),
   review_notifications: boolean("review_notifications").default(true).notNull(),

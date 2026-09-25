@@ -1,10 +1,10 @@
 import { schemas } from "@/database/schema";
 import { db } from "@/client";
-import { logger } from "@/modules/logger";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
+import { processOutbox, publishNotificationEvent } from "@/modules/notification_outbox";
 import { negotiationTimeoutMs, viewInsightsIntervalMs } from "@/modules/app_config";
 import { isNegotiationExpired } from "@/modules/project_status";
-import { notifyOpenProjectViews } from "@/modules/notification_fanout";
-import { eq, inArray } from "drizzle-orm";
+import { logger } from "@/modules/logger";
 
 // Reopen projects whose negotiation window expired without an accepted offer.
 export const sweepExpiredNegotiations = async (now: Date = new Date()): Promise<number> => {
@@ -32,8 +32,36 @@ export const sweepExpiredNegotiations = async (now: Date = new Date()): Promise<
 };
 
 // Send clients periodic insights about views on their open projects.
+// Enqueued through the outbox so each insight also fans out to webhook subscribers.
 export const sweepViewInsights = async (): Promise<void> => {
-  await notifyOpenProjectViews();
+  const openProjects = await db
+    .select()
+    .from(schemas.project)
+    .where(
+      and(
+        isNull(schemas.project.programmerId),
+        inArray(schemas.project.status, ["OPEN", "NEGOTIATING"]),
+        sql`${schemas.project.viewTotalCount} > 0`,
+      ),
+    );
+
+  for (const project of openProjects) {
+    await publishNotificationEvent({
+      type: "VIEW_INSIGHT",
+      payload: {
+        id: project.id,
+        title: project.title,
+        viewTotalCount: project.viewTotalCount,
+        lastViewedAt: project.lastViewedAt ? new Date(project.lastViewedAt).toISOString() : null,
+        clientId: project.clientId,
+      },
+    }).catch((error) => logger.error("[scheduler] view insight enqueue failed", error));
+  }
+};
+
+// Drain pending outbox events with retries.
+export const sweepOutbox = async (): Promise<number> => {
+  return await processOutbox();
 };
 
 const timers: ReturnType<typeof setInterval>[] = [];
@@ -47,7 +75,11 @@ export const startSchedulers = (): void => {
     void sweepViewInsights().catch((error) => logger.error("[scheduler] view insights failed", error));
   }, viewInsightsIntervalMs());
 
-  timers.push(negotiationTimer, insightsTimer);
+  const outboxTimer = setInterval(() => {
+    void sweepOutbox().catch((error) => logger.error("[scheduler] outbox sweep failed", error));
+  }, 30_000);
+
+  timers.push(negotiationTimer, insightsTimer, outboxTimer);
 };
 
 export const stopSchedulers = (): void => {

@@ -4,7 +4,6 @@ import SettingsProfile from "./settings_profile";
 import { authService } from "@/services/auth_service";
 import { useLoaderData } from "react-router-dom";
 import type { UserDTO, UserPreferenceUpdate } from "@/lib/types/database";
-import { userService } from "@/services/user_service";
 import SettingsNotification from "./settings_notification";
 import SettingsProjectPreferences from "./settings_project_preferences";
 import SettingsAccount from "./settings_account";
@@ -22,8 +21,7 @@ export async function SettingsLoader() {
   return { User };
 }
 
-type ProfileChanges = Partial<Pick<UserDTO, "name" | "bio" | "image">>;
-type PendingChanges = UserPreferenceUpdate & ProfileChanges;
+type PendingChanges = UserPreferenceUpdate;
 
 export default function SettingsPage() {
   const loaderData = useLoaderData<typeof SettingsLoader>();
@@ -40,12 +38,12 @@ export default function SettingsPage() {
     setIsSaving(true);
 
     try {
-      const { name, bio, image, ...preferences } = pending;
+      const preferences = pending;
 
-      if (name !== undefined || bio !== undefined || image !== undefined) {
-        const updatedUser = await userService.updateMe({ name, bio, image });
-        authService.updateCachedUser(updatedUser);
-      }
+      // if (name !== undefined || bio !== undefined || image !== undefined) {
+      //   const updatedUser = await userService.updateMe({ name, bio, image });
+      //   authService.updateCachedUser(updatedUser);
+      // }
 
       if (Object.keys(preferences).length > 0) {
         await userPreferenceService.updateByUser(user.id, preferences);
@@ -55,16 +53,14 @@ export default function SettingsPage() {
       setUnsaved(false);
       setSaveFeedback({ ok: true, message: "Todas alterações salvas" });
     } catch (error) {
-      setSaveFeedback({
-        ok: false,
-        message: error instanceof Error ? error.message : "Falha ao salvar as preferências",
-      });
+      setSaveFeedback({ ok: false, message: `Falha ao salvar as preferências. ${error}` });
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleUnsavedChanges = (changes: PendingChanges) => {
+    console.log(changes);
     setPending((prev) => ({ ...prev, ...changes }));
     setUnsaved(true);
   };

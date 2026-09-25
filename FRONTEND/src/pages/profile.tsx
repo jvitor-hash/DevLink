@@ -4,7 +4,7 @@ import Button from "@/components/ui/button_component";
 import { authService } from "@/services/auth_service";
 import { userService } from "@/services/user_service";
 import type { ProjectDTO, PublicUserDTO } from "@/lib/types/database";
-import { formatRelativeTime } from "@/lib/utils/relative_time";
+import { formatRelativeTime } from "@/lib/utils/time_formatting";
 import Badge from "@/components/ui/badge_component";
 import { projectService } from "@/services/project_service";
 import { HIDDEN_PROJECT_STATUSES } from "@/lib/types/project_filters";

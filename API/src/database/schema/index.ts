@@ -10,6 +10,7 @@ import { todo } from "./todo_schema";
 import { userPreference } from "./user_preferences_schema";
 import { user } from "./user_schema";
 import { verification } from "./verification_schema";
+import { outbox, webhookSubscription } from "./outbox_schema";
 
 export const schemas = {
   user,
@@ -20,6 +21,8 @@ export const schemas = {
   review,
   notification,
   userPreference,
+  outbox,
+  webhookSubscription,
   message,
   savedTicket,
   todo,
