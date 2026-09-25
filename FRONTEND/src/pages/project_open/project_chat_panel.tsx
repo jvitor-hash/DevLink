@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { Check, Lock, MessageCircle, Send, Unlock, X } from "react-feather";
 
 import { useProjectChat } from "@/lib/hooks/use_project_chat";
-import { authService } from "@/services/auth_service";
+import { userSingleton } from "@/lib/types/user";
 
 type ProjectChatPanelProps = {
   open: boolean;
@@ -15,7 +15,7 @@ export default function ProjectChatPanel({ open, onToggle }: ProjectChatPanelPro
   const [isOfferMode, setIsOfferMode] = useState<boolean>(false);
   const [offerDeadline, setOfferDeadline] = useState<string>("");
 
-  const currentUserId = authService.getCachedUser()?.id;
+  const currentUserId = userSingleton.getCachedUser()?.id;
   const { projectId } = useParams<{ projectId: string }>();
   const { messages, isConnected, isEncrypted, error, sendMessage, sendOffer, respondToOffer } =
     useProjectChat(projectId);

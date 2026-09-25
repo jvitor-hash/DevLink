@@ -1,7 +1,7 @@
 import Button from "@/components/ui/button_component";
 import { useState } from "react";
 import SettingsProfile from "./settings_profile";
-import { authService } from "@/services/auth_service";
+import { userSingleton } from "@/lib/types/user";
 import { useLoaderData } from "react-router-dom";
 import type { UserDTO, UserPreferenceUpdate } from "@/lib/types/database";
 import SettingsNotification from "./settings_notification";
@@ -17,7 +17,7 @@ const SECTIONS: ReadonlyArray<{ key: string; label: string }> = [
 ];
 
 export async function SettingsLoader() {
-  const User = await authService.getCurrentUser(); // Replace this later with a global state user
+  const User = await userSingleton.getCurrentUser();
   return { User };
 }
 
@@ -42,7 +42,7 @@ export default function SettingsPage() {
 
       // if (name !== undefined || bio !== undefined || image !== undefined) {
       //   const updatedUser = await userService.updateMe({ name, bio, image });
-      //   authService.updateCachedUser(updatedUser);
+      //   userSingleton.updateUser(updatedUser);
       // }
 
       if (Object.keys(preferences).length > 0) {

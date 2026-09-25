@@ -1,7 +1,7 @@
 import {useState } from "react";
 import { useLoaderData, useNavigate, type LoaderFunctionArgs } from "react-router-dom";
 import Button from "@/components/ui/button_component";
-import { authService } from "@/services/auth_service";
+import { userSingleton } from "@/lib/types/user";
 import { userService } from "@/services/user_service";
 import type { ProjectDTO, PublicUserDTO } from "@/lib/types/database";
 import { formatRelativeTime } from "@/lib/utils/time_formatting";
@@ -21,7 +21,7 @@ type ProfileLoaderData = {
 }
 
 export async function ProfileSelfLoader(): Promise<ProfileLoaderData> {
-  const cached = authService.getCachedUser(); // Replace with global user state.
+  const cached = userSingleton.getCachedUser();
   if (!cached) throw new Error("Usuario nao encontrado");
 
   const projects = await projectService.list({
@@ -63,7 +63,7 @@ export default function ProfilePage() {
 
   if (!profileUser) return null;
 
-  const isOwnProfile = authService.getCachedUser()?.id === profileUser.id;
+  const isOwnProfile = userSingleton.getCachedUser()?.id === profileUser.id;
 
   return (
     <div className="p-8 flex flex-col gap-6">

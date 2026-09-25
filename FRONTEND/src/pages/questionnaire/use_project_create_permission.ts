@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { authService } from "@/services/auth_service";
+import { userSingleton } from "@/lib/types/user";
 
 /**
  * Guards the questionnaire page: resolves whether the current user may
@@ -16,7 +16,7 @@ export function useProjectCreatePermission(): boolean | null {
 
     const checkPermission = async (): Promise<void> => {
       try {
-        const hasPermission = await authService.hasPermission({ projects: ["create"] });
+        const hasPermission = await userSingleton.hasPermission({ projects: ["create"] });
 
         if (cancelled) return;
 

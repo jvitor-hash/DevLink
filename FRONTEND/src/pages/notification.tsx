@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLoaderData, useNavigate } from "react-router-dom";
 import { notificationService } from "@/services/notification_service";
 import { savedTicketService } from "@/services/saved_ticket_service";
-import { authService } from "@/services/auth_service";
+import { userSingleton } from "@/lib/types/user";
 import Button from "@/components/ui/button_component";
 import type { NotificationDTO } from "@/lib/types/database";
 import { formatRelativeTime } from "@/lib/utils/time_formatting";
@@ -25,7 +25,7 @@ const isOld = (createdAt: string | Date | null | undefined): boolean => {
 };
 
 export async function NotificationLoader() {
-  const user = authService.getCachedUser();
+  const user = userSingleton.getCachedUser();
   const items: NotificationDTO[] = [];
   const pageSize = 100;
   let savedProjectIds: string[] = [];

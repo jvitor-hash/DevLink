@@ -1,68 +1,78 @@
-import { AuthService } from "@/services/auth_service";
+import { AuthService, type LoginCredentials, type RegisterCredentials, type Permissions } from "@/services/auth_service";
 import type { UserDTO } from "./database";
 
-// Cached user singleton
+// Cached user singleton abstracting the auth service away from the pages.
 export class CachedUser {
   private user: UserDTO | null = null;
-  private authService = new AuthService();
 
-  async login({ email, password }) {
+  private readonly authService = new AuthService();
+
+  getCachedUser() : UserDTO | null {
+    if (!this.user) this.user = this.authService.getCachedUser();
+
+    return this.user;
+  }
+
+  async getCurrentUser() : Promise<UserDTO | null> {
+    this.user = await this.authService.getCurrentUser();
+
+    return this.user;
+  }
+
+  async hasPermission(permissions: Permissions) : Promise<boolean> {
+    return this.authService.hasPermission(permissions);
+  }
+
+  async login({ email, password }: LoginCredentials) : Promise<void> {
     const authResponse = await this.authService.login({ email, password });
+
     this.user = authResponse.user;
   }
 
-  async register({ name, email, password, registrationRole }) {
-    const authResponse = await this.authService.register({
-      name,
-      email,
-      password,
-      registrationRole,
-    });
+  async register(credentials: RegisterCredentials) : Promise<void> {
+    const authResponse = await this.authService.register(credentials);
+
     this.user = authResponse.user;
   }
 
-  async logout() {
+  async logout() : Promise<void> {
     await this.authService.logout();
+
     this.user = null;
   }
 
-  async updateUser(data: Partial<UserDTO>) {
-    await this.authService.updateCachedUser(data);
+  updateUser(data: Partial<UserDTO>) : void {
+    this.user = this.authService.updateCachedUser(data) ?? this.user;
   }
 
   // Validates whether the current cached user is same as the database user.
-  async invalidateUser(): Promise<void> {
-    const currentUser = await this.authService.getCurrentUser();
-
-    if (!this.user && this.user !== currentUser) this.user = currentUser;
+  async invalidateUser() : Promise<void> {
+    this.user = await this.authService.getCurrentUser();
   }
 
-  isSignedIn(): boolean {
-    if (this.user) return true;
-    return false;
+  get isSignedIn() : boolean {
+    return this.getCachedUser() !== null;
   }
 
-  get id(): string {
-    return this.user?.id;
+  get id() : string | undefined {
+    return this.getCachedUser()?.id;
   }
 
-  get name(): string {
-    return this.user?.name;
+  get name() : string | undefined {
+    return this.getCachedUser()?.name;
   }
 
-  get email(): string {
-    return this.user?.email;
+  get email() : string | undefined {
+    return this.getCachedUser()?.email;
   }
 
-  get bio(): string {
-    return this.user?.bio;
+  get bio() : UserDTO["bio"] {
+    return this.getCachedUser()?.bio;
   }
 
-  get role(): string {
-    return this.user?.role;
+  get role() : UserDTO["role"] {
+    return this.getCachedUser()?.role;
   }
-
-  get;
 }
 
 export const userSingleton = new CachedUser();
