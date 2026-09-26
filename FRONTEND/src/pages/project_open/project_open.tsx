@@ -16,7 +16,7 @@ export async function ProjectOpenLoader({ params }: LoaderFunctionArgs): Promise
   if (!data)
     throw new Error("Não foi possível carregar o projeto.");
 
-  return { data };
+  return data;
 }
 
 export default function ProjectOpenPage() {

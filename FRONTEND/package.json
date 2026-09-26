@@ -42,6 +42,7 @@
     "unrs-resolver"
   ],
   "trustedDependencies": [
+    "cypress",
     "sharp",
     "unrs-resolver"
   ]

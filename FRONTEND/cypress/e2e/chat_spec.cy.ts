@@ -48,6 +48,9 @@ describe("Fluxo do chat do projeto", () => {
   });
 
   it("aceita e rejeita propostas de prazo", () => {
+    // Previous runs consumed the seeded offers; restore them to PENDING.
+    cy.task("resetChatFixture");
+
     cy.visit("/project/open/550e8400-e29b-41d4-a716-446655440000");
 
     openChat();

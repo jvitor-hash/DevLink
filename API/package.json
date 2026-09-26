@@ -31,6 +31,5 @@
     "bun-types": "latest",
     "drizzle-kit": "^1.0.0-rc.4",
     "tsx": "^4.23.13"
-  },
-  "module": "src/index.js"
+  }
 }

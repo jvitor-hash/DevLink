@@ -118,7 +118,6 @@ export function useProjectChat(projectId: string | undefined): UseProjectChatRes
   const peerKeysRef = useRef<Map<string, CryptoKey>>(new Map());
   const pendingOffersRef = useRef<OfferIntent[]>([]);
   const historyRef = useRef<MessageDTO[]>([]);
-  const hydratedPeersRef = useRef<Set<string>>(new Set());
 
   const decryptFrom = useCallback(async (senderId: string, content: string): Promise<string> => {
     const peerKey = peerKeysRef.current.get(senderId);
@@ -156,22 +155,33 @@ export function useProjectChat(projectId: string | undefined): UseProjectChatRes
       socket.send(JSON.stringify(frame));
     };
 
-    socket.onopen = () => void join();
+    socket.onopen = () => {
+      // History first, then join: hydration triggered by "joined"/"peer-joined"
+      // always finds the REST rows already in place (no empty-snapshot race).
+      void (async () => {
+        await loadHistory();
+        await join();
+      })();
+    };
 
     const hydrateHistoryFor = async (senderId: string, key: CryptoKey) => {
-      if (hydratedPeersRef.current.has(senderId)) return;
+      const rows = historyRef.current.filter((row) => row.senderId === senderId);
+      if (!rows.length) return;
 
-      hydratedPeersRef.current.add(senderId);
+      const decrypted = await Promise.all(rows.map((row) => toChatMessage(row, key)));
 
-      const decrypted = await Promise.all(
-        historyRef.current.filter((row) => row.senderId === senderId).map((row) => toChatMessage(row, key)),
-      );
+      // Dedupe by id: hydration may run before or after history loads, and
+      // control frames can trigger it multiple times.
+      setMessages((prev) => {
+        const existing = new Set(prev.map((message) => message.id));
+        const fresh = decrypted.filter((message) => !existing.has(message.id));
 
-      setMessages((prev) =>
-        [...decrypted, ...prev].sort(
+        if (!fresh.length) return prev;
+
+        return [...fresh, ...prev].sort(
           (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-        ),
-      );
+        );
+      });
     };
 
     // REST history: encrypted rows are decrypted once peer keys are available.
@@ -187,8 +197,6 @@ export function useProjectChat(projectId: string | undefined): UseProjectChatRes
         // History is best-effort; realtime still works.
       }
     };
-
-    void loadHistory();
 
     socket.onmessage = async (event) => {
       let frame: ServerFrame;
@@ -236,6 +244,13 @@ export function useProjectChat(projectId: string | undefined): UseProjectChatRes
             peerKeysRef.current.set(frame.userId, shared);
             setIsEncrypted(true);
             await hydrateHistoryFor(frame.userId, shared);
+
+            // A late peer unblocks offers queued while the room was empty.
+            const queued = pendingOffersRef.current.splice(0);
+            for (const offer of queued) {
+              const payload = await encryptContent(offer.content);
+              socket.send(JSON.stringify({ type: "offer", projectId, content: payload, offerDeadline: offer.offerDeadline }));
+            }
           } catch {
             // Ignore malformed peer keys.
           }
@@ -248,6 +263,42 @@ export function useProjectChat(projectId: string | undefined): UseProjectChatRes
         }
 
         case "message": {
+          // The server echoes our own broadcasts back; reconcile the optimistic
+          // row instead of rendering ciphertext (both peers share the same secret).
+          const ownId = userSingleton.getCachedUser()?.id;
+          if (frame.senderId === ownId) {
+            const peerKey = peerKeysRef.current.values().next().value as CryptoKey | undefined;
+            let ownContent = frame.content;
+
+            if (peerKey) {
+              try {
+                const parsed = JSON.parse(frame.content) as { iv: string; ciphertext: string };
+                ownContent = await decryptMessage(peerKey, parsed.iv, parsed.ciphertext);
+              } catch {
+                // Payload was plaintext (sent before any peer key existed).
+              }
+            }
+
+            setMessages((prev) => {
+              const index = prev.findIndex((message) => message.pending && message.senderId === ownId);
+              if (index === -1) return prev;
+
+              const next = [...prev];
+              next[index] = {
+                ...next[index],
+                id: frame.id,
+                content: ownContent,
+                offerDeadline: frame.offerDeadline ?? next[index].offerDeadline,
+                offerStatus: frame.offerStatus ?? next[index].offerStatus,
+                createdAt: String(frame.createdAt ?? next[index].createdAt),
+                pending: false,
+              };
+
+              return next;
+            });
+            break;
+          }
+
           const plaintext = await decryptFrom(frame.senderId, frame.content);
           setMessages((prev) => [
             ...prev,
@@ -308,7 +359,6 @@ export function useProjectChat(projectId: string | undefined): UseProjectChatRes
       wsRef.current = null;
       peerKeysRef.current = new Map();
       historyRef.current = [];
-      hydratedPeersRef.current = new Set();
       setIsConnected(false);
     };
   }, [projectId, decryptFrom]);
@@ -323,17 +373,31 @@ export function useProjectChat(projectId: string | undefined): UseProjectChatRes
     return JSON.stringify({ iv, ciphertext });
   }, []);
 
+  const appendOptimistic = useCallback((partial: Omit<ChatMessage, "createdAt" | "pending">): void => {
+    setMessages((prev) => [
+      ...prev,
+      {
+        ...partial,
+        createdAt: new Date().toISOString(),
+        pending: true,
+      },
+    ]);
+  }, []);
+
   const sendMessage = useCallback((content: string) => {
     const socket = wsRef.current;
     const trimmed = content.trim();
 
     if (!socket || socket.readyState !== WebSocket.OPEN || !projectId || !trimmed) return;
 
+    const ownId = userSingleton.getCachedUser()?.id ?? "";
+    appendOptimistic({ id: `pending-${Date.now()}`, senderId: ownId, content: trimmed, isRead: false, offerDeadline: null, offerStatus: null });
+
     void (async () => {
       const payload = await encryptContent(trimmed);
       socket.send(JSON.stringify({ type: "message", projectId, content: payload } satisfies ClientFrame));
     })();
-  }, [projectId, encryptContent]);
+  }, [projectId, encryptContent, appendOptimistic]);
 
   const sendOffer = useCallback((content: string, offerDeadline: string) => {
     const socket = wsRef.current;
@@ -341,11 +405,17 @@ export function useProjectChat(projectId: string | undefined): UseProjectChatRes
 
     if (!socket || socket.readyState !== WebSocket.OPEN || !projectId || !trimmed || !offerDeadline) return;
 
-    // Room key not ready yet: queue raw content; "joined" encrypts and flushes.
+    const ownId = userSingleton.getCachedUser()?.id ?? "";
+
+    // Room key not ready yet: render optimistically and queue the frame; it is
+    // encrypted and sent when a peer key arrives ("joined"/"peer-joined").
     if (peerKeysRef.current.size === 0) {
+      appendOptimistic({ id: `pending-${Date.now()}`, senderId: ownId, content: trimmed, isRead: false, offerDeadline, offerStatus: "PENDING" });
       pendingOffersRef.current.push({ content: trimmed, offerDeadline });
       return;
     }
+
+    appendOptimistic({ id: `pending-${Date.now()}`, senderId: ownId, content: trimmed, isRead: false, offerDeadline, offerStatus: "PENDING" });
 
     void (async () => {
       const payload = await encryptContent(trimmed);
@@ -353,7 +423,7 @@ export function useProjectChat(projectId: string | undefined): UseProjectChatRes
 
       socket.send(JSON.stringify(frame));
     })();
-  }, [projectId, encryptContent]);
+  }, [projectId, encryptContent, appendOptimistic]);
 
   const respondToOffer = useCallback((messageId: string, offerStatus: "ACCEPTED" | "REJECTED") => {
     const socket = wsRef.current;

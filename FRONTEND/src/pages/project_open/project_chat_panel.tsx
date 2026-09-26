@@ -98,7 +98,7 @@ export default function ProjectChatPanel({ open, onToggle }: ProjectChatPanelPro
                           Proposta de prazo: {new Date(message.offerDeadline).toLocaleDateString("pt-BR")}
                         </p>
 
-                        {message.offerStatus ? (
+                        {(message.offerStatus === "ACCEPTED" || message.offerStatus === "REJECTED") ? (
                           <p
                             className={`mt-1 text-xs ${
                               message.offerStatus === "ACCEPTED" ? "text-(--success)" : "text-(--error)"

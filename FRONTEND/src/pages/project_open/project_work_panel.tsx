@@ -3,9 +3,9 @@ import { Box, CheckCircle } from "react-feather";
 import type { TicketDTO, TicketStatus, TodoDTO } from "@/lib/types/database";
 
 const COLUMNS: ReadonlyArray<{ status: TicketStatus; label: string }> = [
-  { status: "BACKLOG",     label: "Backlog" }, 
+  { status: "BACKLOG",     label: "Backlog" },
   { status: "IN_PROGRESS", label: "Em andamento" },
-  { status: "REVIEW",      label: "Validação" }, 
+  { status: "REVIEW",      label: "Validação" },
   { status: "DONE",        label: "Finalizado" },
 ];
 
@@ -22,7 +22,7 @@ export default function ProjectWorkPanel({ projectId }: Props) {
     <div className="flex gap-4">
       {/* Checklist / Todos */}
       <section className="w-1/3 border-r border-(--border) pr-4"><header className="flex items-center gap-2"><CheckCircle size={16} /> Checklist</header>
-        
+
       </section>
 
       {/* Kanban board */}
@@ -30,7 +30,14 @@ export default function ProjectWorkPanel({ projectId }: Props) {
         <header className="mb-2 flex items-center gap-2">
           <Box size={18} /> Board
         </header>
-        
+
+        <main className="flex gap-2">
+          {COLUMNS.map((column) => (
+            <div>
+
+            </div>
+          ))}
+        </main>
       </section>
     </div>
   </div>;

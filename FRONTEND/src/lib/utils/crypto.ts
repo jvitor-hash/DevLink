@@ -33,6 +33,22 @@ export const exportPublicKey = async (keyPair: CryptoKeyPair): Promise<string> =
   return toBase64(spki);
 };
 
+// JWK round-trip so the ECDH keypair survives reloads; without it, restored
+// history would render as { iv, ciphertext } instead of plaintext.
+export const serializeKeyPair = async (keyPair: CryptoKeyPair): Promise<{ publicJwk: JsonWebKey; privateJwk: JsonWebKey }> => {
+  return {
+    publicJwk: await crypto.subtle.exportKey("jwk", keyPair.publicKey),
+    privateJwk: await crypto.subtle.exportKey("jwk", keyPair.privateKey),
+  };
+};
+
+export const deserializeKeyPair = async (serialized: { publicJwk: JsonWebKey; privateJwk: JsonWebKey }): Promise<CryptoKeyPair> => {
+  const publicKey = await crypto.subtle.importKey("jwk", serialized.publicJwk, { name: "ECDH", namedCurve: CURVE }, true, []);
+  const privateKey = await crypto.subtle.importKey("jwk", serialized.privateJwk, { name: "ECDH", namedCurve: CURVE }, true, ["deriveBits"]);
+
+  return { publicKey, privateKey };
+};
+
 export const importPeerPublicKey = async (publicKeyBase64: string): Promise<CryptoKey> => {
   return crypto.subtle.importKey("spki", fromBase64(publicKeyBase64), { name: "ECDH", namedCurve: CURVE }, true, []);
 };
@@ -72,4 +88,16 @@ export const decryptMessage = async (sharedKey: CryptoKey, ivBase64: string, cip
   const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv } as AesGcmParams, sharedKey, ciphertext);
 
   return new TextDecoder().decode(plaintext);
+};
+
+export const isEncryptedEnvelope = (content: string): boolean => {
+  if (!content.startsWith("{")) return false;
+
+  try {
+    const parsed = JSON.parse(content) as { iv?: unknown; ciphertext?: unknown };
+
+    return typeof parsed.iv === "string" && typeof parsed.ciphertext === "string";
+  } catch {
+    return false;
+  }
 };

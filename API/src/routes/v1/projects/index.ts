@@ -155,16 +155,19 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
     try {
       const project = await ProjectService.findOne(eq(schemas.project.id, params.id));
 
-      // Track views for the client's periodic insights; owner views are ignored.
-      if (project) {
-        await ProjectService.recordView(params.id, user?.id ?? null).catch(() => undefined);
+      if (!project) {
+        set.status = 404;
+        return { error: "Project not found" };
       }
+
+      // Track views for the client's periodic insights; owner views are ignored.
+      await ProjectService.recordView(params.id, user?.id ?? null).catch(() => undefined);
 
       return project;
     } catch (error) {
       logError("GET /api/v1/projects/:id", error);
-      set.status = 404;
-      return { error: "Project not found" };
+      set.status = 500;
+      return { error: "Failed to fetch project" };
     }
   }, {
     params: z.object({

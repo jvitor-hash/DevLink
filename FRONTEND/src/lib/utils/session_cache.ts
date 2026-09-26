@@ -5,6 +5,8 @@ export const CACHE_KEYS = {
   AUTH_TOKEN: "auth_token",
   TOKEN_EXPIRY: "token_expiry",
   QUESTIONNAIRE_DRAFT: "questionnaire_draft",
+  CHAT_IDENTITY_KEY: "chat_identity_key",
+  CHAT_PEER_KEYS: "chat_peer_keys",
 } as const;
 
 const storageKey = (key: string) : string => `${SESSION_CACHE_PREFIX}:${key}`;

@@ -6,7 +6,7 @@ import { useNotifications } from "@/lib/hooks/use_notifications";
 
 export default function NotificationBell() {
   const [open, setOpen] = useState<boolean>(false);
-  const { notifications: recent, unreadCount, isConnected, markAsRead, refresh } = useNotifications();
+  const { notifications: recent, unreadCount, isConnected, markAsRead, refresh } = useNotifications(25);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
 
