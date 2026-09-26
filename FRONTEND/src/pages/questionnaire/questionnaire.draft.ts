@@ -1,6 +1,6 @@
-import { cache, CACHE_KEYS } from "@/lib/utils/session_cache";
+import { cache, CACHE_KEYS } from "@/utils/session_cache";
 import { initialQuestionnaireForm, platformValues, audienceValues, primaryLanguageValues } from "./questionnaire.constants";
-import type { Audience, PlatformType, ProgrammingLanguage } from "@/lib/types/database";
+import type { Audience, PlatformType, ProgrammingLanguage } from "@/data/types/database";
 import type { QuestionnaireForm } from "./questionnaire.types";
 
 const DRAFT_VERSION = 1;

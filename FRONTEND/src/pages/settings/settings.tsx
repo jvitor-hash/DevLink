@@ -1,13 +1,13 @@
 import Button from "@/components/ui/button_component";
 import { useState } from "react";
 import SettingsProfile from "./settings_profile";
-import { userSingleton } from "@/lib/types/user";
+import { userSingleton } from "@/context/user";
 import { useLoaderData } from "react-router-dom";
-import type { UserDTO, UserPreferenceUpdate } from "@/lib/types/database";
+import type { UserDTO, UserPreferenceUpdate } from "@/data/types/database";
 import SettingsNotification from "./settings_notification";
 import SettingsProjectPreferences from "./settings_project_preferences";
 import SettingsAccount from "./settings_account";
-import { userPreferenceService } from "@/services/user_preference_service";
+import { userPreferenceService } from "@/data/services/user_preference_service";
 
 const SECTIONS: ReadonlyArray<{ key: string; label: string }> = [
   { key: "PROFILE", label: "Perfil" },

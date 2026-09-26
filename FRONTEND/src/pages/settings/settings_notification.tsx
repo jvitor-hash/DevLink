@@ -1,4 +1,4 @@
-import { Toggle } from "@/components/ui/toggle_component";
+import { Toggle } from "@/components/form/toggle_component";
 
 type SettingsNotificationProps = {
   preference?: Partial<Record<string, boolean>>;

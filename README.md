@@ -1,5 +1,5 @@
 # DevLink
-Versão: v2.8.2
+Versão: v2.8.3
 
 ## Tecnologias utilizadas
 - ![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=for-the-badge&logo=bun&logoColor=white)

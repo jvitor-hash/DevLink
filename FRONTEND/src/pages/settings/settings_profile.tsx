@@ -1,5 +1,5 @@
-import Input from "@/components/ui/input_component";
-import type { UserDTO } from "@/lib/types/database";
+import Input from "@/components/form/input_component";
+import type { UserDTO } from "@/data/types/database";
 
 type SettingsProfileProps = {
     user: UserDTO

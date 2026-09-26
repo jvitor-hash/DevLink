@@ -2,7 +2,7 @@ import type {
   Audience,
   PlatformType,
   ProgrammingLanguage,
-} from "@/lib/types/database";
+} from "@/data/types/database";
 
 export type QuestionnaireForm = {
   problem: string;

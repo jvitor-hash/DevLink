@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import type { ShaderCanvasProps } from '@/lib/types/shader_types';
+import type { ShaderCanvasProps } from '@/data/types/shader_types';
 
 const DEFAULT_VERTEX_SHADER = `
   attribute vec2 position;

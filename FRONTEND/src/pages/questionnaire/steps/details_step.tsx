@@ -1,7 +1,7 @@
-import Input from "@/components/ui/input_component";
-import MoneyInput from "@/components/ui/money_input_component";
-import Select from "@/components/ui/select_component";
-import TextArea from "@/components/ui/textarea_component";
+import Input from "@/components/form/input_component";
+import MoneyInput from "@/components/form/money_input_component";
+import Select from "@/components/form/select_component";
+import TextArea from "@/components/form/textarea_component";
 import { categoryOptions, subCategoryOptions } from "../questionnaire.constants";
 import type { QuestionnaireDetailsStepProps } from "../questionnaire.types";
 

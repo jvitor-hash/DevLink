@@ -2,7 +2,7 @@ import type {
   Audience,
   PlatformType,
   ProgrammingLanguage,
-} from "@/lib/types/database";
+} from "@/data/types/database";
 import type { QuestionnaireForm } from "./questionnaire.types";
 
 export const QUESTIONNAIRE_MAX_STEPS = 4;

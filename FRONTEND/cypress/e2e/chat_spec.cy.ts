@@ -21,6 +21,19 @@ describe("Fluxo do chat do projeto", () => {
     cy.get('[data-testid="chat-dock"]').should("not.exist");
   });
 
+  it("exibe o historico da conversa com o nome de cada usuario", () => {
+    cy.visit("/project/open/550e8400-e29b-41d4-a716-446655440000");
+
+    openChat();
+
+    cy.get('[data-testid="chat-history"]').should("exist").click();
+    cy.get('[data-testid^="chat-history-participant-"]')
+      .should("have.length.at.least", 1)
+      .first()
+      .should("be.visible")
+      .and("not.be.empty");
+  });
+
   it("conecta o chat e envia mensagem criptografada", () => {
     cy.intercept("POST", "**/api/v1/messages").as("createMessage");
     cy.visit("/project/open/550e8400-e29b-41d4-a716-446655440000");

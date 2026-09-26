@@ -1,8 +1,8 @@
 // components/ProtectedRoute.tsx
 import { type ReactNode, useEffect, useState } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { userSingleton } from '@/lib/types/user';
-import type { Permissions } from '@/services/auth_service';
+import { userSingleton } from '@/context/user';
+import type { Permissions } from '@/data/services/auth_service';
 
 interface ProtectedRouteProps {
   children?: ReactNode; // Make children optional

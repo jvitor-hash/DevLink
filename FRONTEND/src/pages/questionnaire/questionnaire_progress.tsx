@@ -1,4 +1,4 @@
-import { Steps } from "@/components/ui/steps_component";
+import { Steps } from "@/components/form/steps_component";
 
 type QuestionnaireProgressProps = {
   currentStep: number;

@@ -2,9 +2,9 @@ import { useState } from "react";
 import ProjectInfoPanel from "./project_info_panel";
 import ProjectWorkPanel from "./project_work_panel";
 import ProjectChatPanel from "./project_chat_panel";
-import { useSavedTickets } from "@/lib/hooks/use_saved_tickets";
-import { projectService } from "@/services/project_service";
-import type { ProjectDTO } from "@/lib/types/database";
+import { useSavedTickets } from "@/hooks/use_saved_tickets";
+import { projectService } from "@/data/services/project_service";
+import type { ProjectDTO } from "@/data/types/database";
 import { useLoaderData, type LoaderFunctionArgs } from "react-router-dom";
 
 export async function ProjectOpenLoader({ params }: LoaderFunctionArgs): Promise<ProjectDTO> {
@@ -21,7 +21,8 @@ export async function ProjectOpenLoader({ params }: LoaderFunctionArgs): Promise
 
 export default function ProjectOpenPage() {
   const loaderData = useLoaderData<ProjectDTO>();
-  const [project, setProject] = useState<ProjectDTO | null>(loaderData);
+  // The loader throws before render when the project is missing, so it is never null here.
+  const [project, setProject] = useState<ProjectDTO>(loaderData);
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
 
   const { saveCounts, isSaved, toggleSaved, setSaveCountsFromProjects } =
@@ -38,6 +39,7 @@ export default function ProjectOpenPage() {
         <ProjectChatPanel
           open={isChatOpen}
           onToggle={() => setIsChatOpen((prev) => !prev)}
+          clientId={project.clientId}
         />
         <div className="min-w-0 flex-1">
           <ProjectInfoPanel

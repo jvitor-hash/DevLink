@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import type { PlatformType } from "@/lib/types/database";
+import type { PlatformType } from "@/data/types/database";
 import { initialQuestionnaireForm } from "./questionnaire.constants";
 import { loadDraft, saveDraft, clearDraft } from "./questionnaire.draft";
 import { isBudgetInverted } from "./questionnaire.validation";

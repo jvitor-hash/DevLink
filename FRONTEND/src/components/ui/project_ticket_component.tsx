@@ -2,10 +2,10 @@ import { useNavigate } from 'react-router-dom';
 import { Card3D } from "./3d_card_component";
 import Badge from "./badge_component";
 import Button from "./button_component";
-import { userSingleton } from "@/lib/types/user";
-import { mapValueLabel } from "@/lib/value_labels";
+import { userSingleton } from "@/context/user";
+import { mapValueLabel } from "@/data/value_labels";
 
-import type { Audience, ProjectStatus } from "@/lib/types/database";
+import type { Audience, ProjectStatus } from "@/data/types/database";
 
 type ProjectPreviewProps = {
   item: string

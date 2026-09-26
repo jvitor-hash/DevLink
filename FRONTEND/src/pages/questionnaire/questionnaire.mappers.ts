@@ -1,4 +1,4 @@
-import type { ProjectCreate } from "@/lib/types/database";
+import type { ProjectCreate } from "@/data/types/database";
 import type { QuestionnaireForm } from "./questionnaire.types";
 
 const toNullableText = (value: string): string | null => (value.trim() ? value : null);

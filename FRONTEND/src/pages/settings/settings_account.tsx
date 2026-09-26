@@ -1,4 +1,4 @@
-import type { UserDTO } from "@/lib/types/database"
+import type { UserDTO } from "@/data/types/database"
 
 type SettingsAccountProps = {
     user: UserDTO

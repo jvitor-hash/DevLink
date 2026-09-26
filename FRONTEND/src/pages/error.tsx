@@ -1,4 +1,4 @@
-import Button from "../components/ui/button_component";
+import Button from "@/components/ui/button_component";
 
 type ErrorPageProps = { error?: Error | null };
 

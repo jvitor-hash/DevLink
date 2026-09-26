@@ -1,9 +1,9 @@
-import Checkbox from "@/components/ui/checkbox_component";
-import Select from "@/components/ui/select_component";
-import TextArea from "@/components/ui/textarea_component";
+import Checkbox from "@/components/form/checkbox_component";
+import Select from "@/components/form/select_component";
+import TextArea from "@/components/form/textarea_component";
 import { platformOptions, primaryLanguageOptions } from "../questionnaire.constants";
 import type { QuestionnairePlatformStepProps } from "../questionnaire.types";
-import type { ProgrammingLanguage } from "@/lib/types/database";
+import type { ProgrammingLanguage } from "@/data/types/database";
 
 /** Step 3 — solution scope: requirements, platforms and language. */
 export function SolutionStep({ form, setField, togglePlatform, showFieldErrors }: QuestionnairePlatformStepProps) {

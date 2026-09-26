@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { userSingleton } from "@/lib/types/user";
+import { userSingleton } from "@/context/user";
 
 /**
  * Guards the questionnaire page: resolves whether the current user may

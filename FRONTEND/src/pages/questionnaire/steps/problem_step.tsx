@@ -1,4 +1,4 @@
-import TextArea from "@/components/ui/textarea_component";
+import TextArea from "@/components/form/textarea_component";
 import type { QuestionnaireStepProps } from "../questionnaire.types";
 
 type ProblemStepProps = QuestionnaireStepProps;

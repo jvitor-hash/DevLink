@@ -1,4 +1,4 @@
-import Input from "@/components/ui/input_component";
+import Input from "@/components/form/input_component";
 
 type ProjectPreference = {
   maxDeadlineDays: string;

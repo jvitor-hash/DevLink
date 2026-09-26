@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Banner from "@/components/ui/banner_component";
-import { projectService } from "@/services/project_service";
+import { projectService } from "@/data/services/project_service";
 import { QUESTIONNAIRE_MAX_STEPS } from "./questionnaire.constants";
 import { toProjectCreatePayload } from "./questionnaire.mappers";
 import { validateQuestionnaire, validateStep } from "./questionnaire.validation";

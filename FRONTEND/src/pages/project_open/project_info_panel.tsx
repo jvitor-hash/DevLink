@@ -1,6 +1,7 @@
 import Badge from "@/components/ui/badge_component";
-import { mapValueLabel } from "@/lib/value_labels";
-import type { ProjectDTO, ProjectStatus } from "@/lib/types/database";
+import { mapValueLabel } from "@/data/value_labels";
+import { userSingleton } from "@/context/user";
+import type { ProjectDTO, ProjectStatus } from "@/data/types/database";
 import { Bookmark, Calendar, MessageCircle, MoreVertical } from "react-feather";
 
 type ProjectInfoPanelProps = {
@@ -29,6 +30,10 @@ const formatCurrency = (value: number): string => {
 
 export default function ProjectInfoPanel({ project, isSaved, onToggleSaved, onOpenChat }: ProjectInfoPanelProps) {
   const concluded = isConcluded(project.status);
+
+  // Saving is a programmer-only action; hide the control from everyone else.
+  const canSave = userSingleton.getCachedUser()?.role === "PROGRAMMER";
+
   return (
     <article className="h-full overflow-y-auto rounded-md border border-(--border-subtle) bg-(--surface-1) p-6">
       {/* Header */}
@@ -43,20 +48,22 @@ export default function ProjectInfoPanel({ project, isSaved, onToggleSaved, onOp
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={concluded ? undefined : onToggleSaved}
-            disabled={concluded}
-            aria-label={isSaved ? "Remover dos salvos" : "Salvar projeto"}
-            title={concluded ? "Projetos concluídos não podem ser salvos" : undefined}
-            data-testid="save-project-btn"
-            className={`flex items-center gap-1 rounded-md border border-(--border-subtle)
-            px-2 py-2 text-sm transition-colors hover:bg-(--surface-2) hover:border-(--text-primary) ${
-              concluded ? "cursor-not-allowed opacity-50" : "hover:cursor-pointer"
-            }`}
-          >
-            <Bookmark size={16} fill={isSaved ? "currentColor" : "none"} color="var(--text-primary)" />
-          </button>
+          {canSave && (
+            <button
+              type="button"
+              onClick={concluded ? undefined : onToggleSaved}
+              disabled={concluded}
+              aria-label={isSaved ? "Remover dos salvos" : "Salvar projeto"}
+              title={concluded ? "Projetos concluídos não podem ser salvos" : undefined}
+              data-testid="save-project-btn"
+              className={`flex items-center gap-1 rounded-md border border-(--border-subtle)
+              px-2 py-2 text-sm transition-colors hover:bg-(--surface-2) hover:border-(--text-primary) ${
+                concluded ? "cursor-not-allowed opacity-50" : "hover:cursor-pointer"
+              }`}
+            >
+              <Bookmark size={16} fill={isSaved ? "currentColor" : "none"} color="var(--text-primary)" />
+            </button>
+          )}
 
           <button
             type="button"

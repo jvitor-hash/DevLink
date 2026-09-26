@@ -1,8 +1,8 @@
-import Select from "@/components/ui/select_component";
-import TextArea from "@/components/ui/textarea_component";
+import Select from "@/components/form/select_component";
+import TextArea from "@/components/form/textarea_component";
 import { audienceOptions } from "../questionnaire.constants";
 import type { QuestionnaireStepProps } from "../questionnaire.types";
-import type { Audience } from "@/lib/types/database";
+import type { Audience } from "@/data/types/database";
 
 /** Step 2 — audience definition questions. */
 export function AudienceStep({ form, setField, showFieldErrors }: QuestionnaireStepProps) {

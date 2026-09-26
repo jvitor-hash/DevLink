@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { adoptExternalPosition, nextScrollPosition, adjustScrollTarget } from "@/lib/utils/scroll_bus";
+import { adoptExternalPosition, nextScrollPosition, adjustScrollTarget } from "@/utils/scroll_bus";
 
 export default function SmoothScroll() {
   useEffect(() => {

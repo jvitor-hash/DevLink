@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import ShaderCanvas from "@/components/ui/shader_component";
-import { WATER_DITHER_SHADER } from "../shaders/dither_water";
+import { WATER_DITHER_SHADER } from "@/assets/dither_water";
 
 export default function WaveEffect() {
   const [resolution, setResolution] = useState<[number, number]>([1, 1]);

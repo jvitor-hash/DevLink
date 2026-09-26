@@ -2,16 +2,16 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
-import { RootApp } from "@/components/layout/app_root";
+import { RootApp } from "@/components/ui/app_root";
 import { ProtectedRoute } from "@/components/routing/protected_route";
-import "@/global.css";
+import "@/assets/global.css";
 
-import HomePage from "@/pages/home";
-import ProjectPage from "@/pages/project";
+import HomePage from "@/pages/home/home";
+import ProjectPage, { ProjectLoader } from "@/pages/project/project";
 import ProjectOpenPage, { ProjectOpenLoader } from "@/pages/project_open/project_open";
-import ProfilePage, { ProfileOtherLoader, ProfileSelfLoader } from "@/pages/profile";
+import ProfilePage, { ProfileOtherLoader, ProfileSelfLoader } from "@/pages/profile/profile";
 import SettingsPage, { SettingsLoader } from "@/pages/settings/settings";
-import NotificationPage, { NotificationLoader } from "@/pages/notification";
+import NotificationPage, { NotificationLoader } from "@/pages/notification_center/notification";
 import QuestionnairePage from "@/pages/questionnaire/questionnaire";
 import ErrorPage from "@/pages/error";
 
@@ -22,7 +22,7 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       { index: true, element: <HomePage /> },
-      { path: "project", element: <ProjectPage /> },
+      { path: "project", loader: ProjectLoader, element: <ProjectPage /> },
 
       // Protected Routes
       {

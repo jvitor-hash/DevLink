@@ -1,24 +1,130 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Check, Lock, MessageCircle, Send, Unlock, X } from "react-feather";
+import { Check, ChevronLeft, Clock, Lock, MessageCircle, Send, Unlock, X } from "react-feather";
 
-import { useProjectChat } from "@/lib/hooks/use_project_chat";
-import { userSingleton } from "@/lib/types/user";
+import { useProjectChat, type ChatParticipant } from "@/hooks/use_project_chat";
+import { userSingleton } from "@/context/user";
 
 type ProjectChatPanelProps = {
   open: boolean;
   onToggle: () => void;
+  clientId?: string | null;
 };
 
-export default function ProjectChatPanel({ open, onToggle }: ProjectChatPanelProps) {
+const formatHistoryDate = (value: string | null): string => {
+  if (!value) return "";
+
+  return new Date(value).toLocaleDateString("pt-BR");
+};
+
+type ChatHistoryProps = {
+  participants: ChatParticipant[];
+  isProjectClient: boolean;
+  activeSenderId: string | null;
+  onSelectParticipant: (senderId: string | null) => void;
+};
+
+function ChatHistory({ participants, isProjectClient, activeSenderId, onSelectParticipant }: ChatHistoryProps) {
+  const [expanded, setExpanded] = useState<boolean>(false);
+
+  if (!participants.length) return null;
+
+  // Inbox order: most recent conversation first.
+  const sorted = [...participants].sort((a, b) => {
+    const aTime = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
+    const bTime = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
+
+    return bTime - aTime;
+  });
+
+  return (
+    <div className="border-b border-(--border-subtle) p-4" data-testid="chat-history">
+      <button
+        type="button"
+        onClick={() => setExpanded((prev) => !prev)}
+        aria-expanded={expanded}
+        className="flex w-full items-center justify-between text-sm font-semibold text-(--text-primary)
+        hover:cursor-pointer"
+      >
+        <span className="flex items-center gap-2">
+          <Clock size={14} aria-hidden="true" />
+          Histórico da conversa
+        </span>
+        <span className="text-xs font-normal text-(--text-muted)">{participants.length}</span>
+      </button>
+
+      {expanded && (
+        <ul className="mt-3 flex flex-col gap-2">
+          {sorted.map((participant) => {
+            const isActive = isProjectClient && activeSenderId === participant.senderId;
+
+            if (!isProjectClient) {
+              return (
+                <li
+                  key={participant.senderId}
+                  data-testid={`chat-history-participant-${participant.senderId}`}
+                  className="flex items-center justify-between rounded-sm bg-(--surface-2) px-2 py-1.5 text-sm"
+                >
+                  <span className="truncate text-(--text-primary)">{participant.name}</span>
+                  <span className="ml-2 shrink-0 text-xs text-(--text-muted)">
+                    {participant.messageCount} {participant.messageCount === 1 ? "mensagem" : "mensagens"}
+                    {participant.lastMessageAt && ` • ${formatHistoryDate(participant.lastMessageAt)}`}
+                  </span>
+                </li>
+              );
+            }
+
+            return (
+              <li key={participant.senderId} data-testid={`chat-history-participant-${participant.senderId}`}>
+                <button
+                  type="button"
+                  onClick={() => onSelectParticipant(isActive ? null : participant.senderId)}
+                  aria-pressed={isActive}
+                  className={`flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm transition-colors ${
+                    isActive ? "border border-(--primary) bg-(--surface-3)/50" : "border border-transparent bg-(--surface-2)"
+                  } ${isProjectClient ? "hover:cursor-pointer hover:border-(--primary)" : ""}`}
+                >
+                  <span className="truncate text-(--text-primary)">{participant.name}</span>
+                  <span className="ml-2 shrink-0 text-xs text-(--text-muted)">
+                    {participant.messageCount} {participant.messageCount === 1 ? "mensagem" : "mensagens"}
+                    {participant.lastMessageAt && ` • ${formatHistoryDate(participant.lastMessageAt)}`}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+export default function ProjectChatPanel({ open, onToggle, clientId }: ProjectChatPanelProps) {
   const [draft, setDraft] = useState<string>("");
   const [isOfferMode, setIsOfferMode] = useState<boolean>(false);
   const [offerDeadline, setOfferDeadline] = useState<string>("");
+  const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
 
   const currentUserId = userSingleton.getCachedUser()?.id;
   const { projectId } = useParams<{ projectId: string }>();
-  const { messages, isConnected, isEncrypted, error, sendMessage, sendOffer, respondToOffer } =
+  const { messages, participants, isConnected, isEncrypted, error, sendMessage, sendOffer, respondToOffer } =
     useProjectChat(projectId);
+
+  // Only the client who created the project browses messages per user.
+  const isProjectClient = Boolean(currentUserId && clientId && currentUserId === clientId);
+
+  const threadName =
+    participants.find((participant) => participant.senderId === activeThreadId)?.name ??
+    (activeThreadId ? activeThreadId.slice(0, 8) : "");
+
+  // A thread shows that user's messages plus my own replies in it.
+  const visibleMessages = useMemo(() => {
+    if (!activeThreadId) return messages;
+
+    return messages.filter(
+      (message) => message.senderId === activeThreadId || message.senderId === currentUserId,
+    );
+  }, [messages, activeThreadId, currentUserId]);
 
   const submit = (): void => {
     if (!draft.trim()) return;
@@ -71,11 +177,41 @@ export default function ProjectChatPanel({ open, onToggle }: ProjectChatPanelPro
             </div>
           </div>
 
+          {/* Conversation history */}
+          <ChatHistory
+            participants={participants}
+            isProjectClient={isProjectClient}
+            activeSenderId={activeThreadId}
+            onSelectParticipant={setActiveThreadId}
+          />
+
+          {/* Thread header (client browsing one conversation) */}
+          {activeThreadId && (
+            <div
+              className="flex items-center gap-2 border-b border-(--border-subtle) px-4 py-2"
+              data-testid="chat-thread-header"
+            >
+              <button
+                type="button"
+                onClick={() => setActiveThreadId(null)}
+                aria-label="Ver todas as mensagens"
+                data-testid="chat-thread-back"
+                className="rounded-sm border border-(--border-subtle) p-1 text-(--text-primary)
+                transition-colors hover:cursor-pointer hover:bg-(--surface-2)"
+              >
+                <ChevronLeft size={14} aria-hidden="true" />
+              </button>
+              <p className="truncate text-sm font-semibold text-(--text-primary)">
+                Conversa com {threadName}
+              </p>
+            </div>
+          )}
+
           {/* Messages */}
           <div className="flex-1 space-y-3 overflow-y-auto p-4">
             {error && <p className="text-sm text-(--error)">{error}</p>}
 
-            {messages.map((message) => {
+            {visibleMessages.map((message) => {
               const isOwn = message.senderId === currentUserId;
 
               return (

@@ -54,12 +54,40 @@ DevLink
 │   └── tsconfig.json
 ├── FRONTEND
 │   ├── bun.lock
+│   ├── cypress
+│   │   ├── e2e
+│   │   ├── fixtures
+│   │   ├── pom
+│   │   ├── screenshots
+│   │   ├── support
+│   │   └── videos
 │   ├── eslint.config.js
 │   ├── index.html
 │   ├── package.json
 │   ├── public
 │   ├── README.md
 │   ├── src
+│   │   ├── assets
+│   │   ├── components
+│   │   │   ├── form
+│   │   │   ├── routing
+│   │   │   └── ui
+│   │   ├── context
+│   │   │   └── __tests__
+│   │   ├── data
+│   │   │   ├── services
+│   │   │   └── types
+│   │   ├── hooks
+│   │   ├── pages
+│   │   │   ├── home
+│   │   │   ├── notification_center
+│   │   │   ├── profile
+│   │   │   ├── project
+│   │   │   ├── project_open
+│   │   │   ├── questionnaire
+│   │   │   └── settings
+│   │   └── utils
+│   │       └── __tests__
 │   ├── tsconfig.app.json
 │   ├── tsconfig.json
 │   ├── tsconfig.node.json
@@ -103,7 +131,7 @@ function myFunction(someParameter: string) : string {
 ## Boundaries
 
 - Never ever delete files with rm or similar commands
-- Never use any git commands at all
+- Do not run/use any git commands at all
 - Never utilize install commands unless explicitly instructed
 - Do not run destructive / hard-to-undo commands (git push, resets, deploys) without the user askins
 - Ignore component files unless explicitly instructed to modify/use them
