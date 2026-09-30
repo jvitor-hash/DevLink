@@ -4,9 +4,12 @@ import {
   generateKeyPair,
   exportPublicKey,
   importPeerPublicKey,
+  serializeKeyPair,
+  deserializeKeyPair,
   deriveSharedKey,
   encryptMessage,
   decryptMessage,
+  isEncryptedEnvelope,
 } from "@/utils/crypto";
 import { userSingleton } from "@/context/user";
 import { messageService } from "@/data/services/message_service";
@@ -23,10 +26,11 @@ type ClientFrame =
   | { type: "read"; projectId: string; messageIds: string[] };
 
 type ServerFrame =
-  | { type: "joined"; projectId: string; keys: Record<string, string> }
+  | { type: "joined"; projectId: string; keys: Record<string, string[]> }
   | { type: "peer-joined"; projectId: string; userId: string; publicKey: string }
   | { type: "peer-left"; projectId: string; userId: string }
   | { type: "left"; projectId: string }
+  | { type: "capability"; projectId: string; capability: "NONE" | "VIEW" | "MESSAGE" | "OFFER" }
   | {
     type: "message";
     id: string;
@@ -38,8 +42,10 @@ type ServerFrame =
     offerStatus?: "PENDING" | "ACCEPTED" | "REJECTED" | null;
     createdAt?: string | Date | null;
   }
-  | { type: "message-update"; id?: string; projectId: string; isRead?: boolean; offerStatus?: "PENDING" | "ACCEPTED" | "REJECTED" | null }
+  | { type: "message-update"; id?: string; projectId: string; messageIds?: string[]; isRead?: boolean; offerStatus?: "PENDING" | "ACCEPTED" | "REJECTED" | null }
   | { type: "error"; error: string };
+
+export type ChatCapability = "NONE" | "VIEW" | "MESSAGE" | "OFFER";
 
 export interface ChatMessage {
   id: string;
@@ -66,43 +72,102 @@ interface UseProjectChatResult {
   participants: ChatParticipant[];
   isConnected: boolean;
   isEncrypted: boolean;
+  capability: ChatCapability;
   error: string | null;
   sendMessage: (content: string) => void;
   sendOffer: (content: string, offerDeadline: string) => void;
   respondToOffer: (messageId: string, offerStatus: "ACCEPTED" | "REJECTED") => void;
+  markMessagesAsRead: (messageIds: string[]) => void;
 }
 
-// One shared hook instance per module keeps keys across panel mounts; the
-// connection itself is per-project.
-const keyPairCache = new Map<string, { keyPair: CryptoKeyPair; publicKey: string }>();
+// Retention horizon for locally stored session keys; mirrors the API-side
+// 30-day pruning of messages and public keys.
+const SESSION_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 
-const getOrCreateKeyPair = async (userId: string): Promise<{ keyPair: CryptoKeyPair; publicKey: string }> => {
-  const cached = keyPairCache.get(userId);
-  if (cached) return cached;
+type StoredSessionKey = { publicJwk: JsonWebKey; privateJwk: JsonWebKey; createdAt: string };
 
-  const keyPair = await generateKeyPair();
-  const publicKey = await exportPublicKey(keyPair);
-  const entry = { keyPair, publicKey };
-  keyPairCache.set(userId, entry);
+const storageKeyFor = (userId: string): string => `devlink:chat-keys:${userId}`;
 
-  return entry;
+const loadStoredKeyRing = (userId: string): StoredSessionKey[] => {
+  try {
+    const raw = localStorage.getItem(storageKeyFor(userId));
+    if (!raw) return [];
+
+    const parsed = JSON.parse(raw) as StoredSessionKey[];
+    const cutoff = Date.now() - SESSION_RETENTION_MS;
+    const fresh = parsed.filter((entry) => entry.createdAt && new Date(entry.createdAt).getTime() >= cutoff);
+
+    localStorage.setItem(storageKeyFor(userId), JSON.stringify(fresh));
+
+    return fresh;
+  } catch {
+    return [];
+  }
 };
 
-const toChatMessage = async (
-  row: MessageDTO,
-  senderKey: CryptoKey | undefined,
-): Promise<ChatMessage> => {
-  let content = row.content;
+const persistKeyRing = (userId: string, ring: StoredSessionKey[]): void => {
+  try {
+    localStorage.setItem(storageKeyFor(userId), JSON.stringify(ring.slice(-20)));
+  } catch {
+    // Storage unavailable; keys stay memory-only for this session.
+  }
+};
 
-  if (senderKey) {
+// One key ring and one active session key per page load; panel mount/unmount
+// cycles reuse it, and a reload naturally starts a new session key.
+const sessionRings = new Map<string, StoredSessionKey[]>();
+const activeSessionKeys = new Map<string, { privateKey: CryptoKey; publicKey: string }>();
+
+const getSessionRing = async (userId: string): Promise<{ privateKey: CryptoKey; publicKey: string }> => {
+  const active = activeSessionKeys.get(userId);
+  if (active) return active;
+
+  let ring = sessionRings.get(userId);
+  if (!ring) {
+    ring = loadStoredKeyRing(userId);
+    sessionRings.set(userId, ring);
+  }
+
+  const keyPair = await generateKeyPair();
+  const serialized = await serializeKeyPair(keyPair);
+  const stored: StoredSessionKey = { ...serialized, createdAt: new Date().toISOString() };
+
+  ring.push(stored);
+  persistKeyRing(userId, ring);
+  ownKeysCache.delete(userId);
+
+  const restored = await deserializeKeyPair(stored);
+  const session = { privateKey: restored.privateKey, publicKey: await exportPublicKey(keyPair) };
+
+  activeSessionKeys.set(userId, session);
+
+  return session;
+};
+
+const ownKeysCache = new Map<string, CryptoKey[]>();
+
+const getOwnPrivateKeys = async (userId: string): Promise<CryptoKey[]> => {
+  const cached = ownKeysCache.get(userId);
+  if (cached) return cached;
+
+  const ring = sessionRings.get(userId) ?? loadStoredKeyRing(userId);
+
+  const keys: CryptoKey[] = [];
+  for (const entry of ring) {
     try {
-      const parsed = JSON.parse(row.content) as { iv: string; ciphertext: string };
-      content = await decryptMessage(senderKey, parsed.iv, parsed.ciphertext);
+      const pair = await deserializeKeyPair(entry);
+      keys.push(pair.privateKey);
     } catch {
-      // Keep raw content when it is not an encrypted envelope.
+      // Skip entries that cannot be imported anymore.
     }
   }
 
+  ownKeysCache.set(userId, keys);
+
+  return keys;
+};
+
+const toChatMessage = (row: MessageDTO, content: string): ChatMessage => {
   return {
     id: row.id,
     senderId: row.senderId,
@@ -120,6 +185,7 @@ export function useProjectChat(projectId: string | undefined): UseProjectChatRes
   const [participants, setParticipants] = useState<ChatParticipant[]>([]);
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [isEncrypted, setIsEncrypted] = useState<boolean>(false);
+  const [capability, setCapability] = useState<ChatCapability>("NONE");
   const [error, setError] = useState<string | null>(null);
 
   // senderId -> user name, filled once per participant.
@@ -184,32 +250,98 @@ export function useProjectChat(projectId: string | undefined): UseProjectChatRes
   }, [messages, resolveParticipantNames]);
 
   const wsRef = useRef<WebSocket | null>(null);
-  const keyPairRef = useRef<{ keyPair: CryptoKeyPair; publicKey: string } | null>(null);
-  // peer userId -> derived AES-GCM key.
-  const peerKeysRef = useRef<Map<string, CryptoKey>>(new Map());
+  // My session private keys, oldest first.
+  const ownKeysRef = useRef<CryptoKey[]>([]);
+  // userId -> every session public key they ever advertised (newest last).
+  const peerKeyRingsRef = useRef<Map<string, CryptoKey[]>>(new Map());
+  // senderId -> shared key that last decrypted one of their messages.
+  const sharedKeyCacheRef = useRef<Map<string, CryptoKey>>(new Map());
   const pendingOffersRef = useRef<OfferIntent[]>([]);
   const historyRef = useRef<MessageDTO[]>([]);
 
+  // Tries every stored session combination for a sender; remembers the key
+  // that worked so later messages skip the search.
   const decryptFrom = useCallback(async (senderId: string, content: string): Promise<string> => {
-    const peerKey = peerKeysRef.current.get(senderId);
-    if (!peerKey) return content;
+    if (!isEncryptedEnvelope(content)) return content;
 
-    try {
-      const parsed = JSON.parse(content) as { iv: string; ciphertext: string };
-      return await decryptMessage(peerKey, parsed.iv, parsed.ciphertext);
-    } catch {
-      return content;
+    const parsed = JSON.parse(content) as { iv: string; ciphertext: string };
+
+    const cached = sharedKeyCacheRef.current.get(senderId);
+    if (cached) {
+      try {
+        return await decryptMessage(cached, parsed.iv, parsed.ciphertext);
+      } catch {
+        sharedKeyCacheRef.current.delete(senderId);
+      }
     }
+
+    const peerKeys = peerKeyRingsRef.current.get(senderId) ?? [];
+
+    for (const ownKey of [...ownKeysRef.current].reverse()) {
+      for (const peerKey of [...peerKeys].reverse()) {
+        try {
+          const shared = await deriveSharedKey(ownKey, peerKey);
+          const plaintext = await decryptMessage(shared, parsed.iv, parsed.ciphertext);
+
+          sharedKeyCacheRef.current.set(senderId, shared);
+
+          return plaintext;
+        } catch {
+          // Wrong combination; keep searching.
+        }
+      }
+    }
+
+    return content;
   }, []);
 
+  // My own history rows were sealed with one of my keys plus a peer session key.
+  const decryptOwnRow = useCallback(async (content: string): Promise<string> => {
+    if (!isEncryptedEnvelope(content)) return content;
+
+    const parsed = JSON.parse(content) as { iv: string; ciphertext: string };
+    const ownId = userSingleton.getCachedUser()?.id;
+
+    for (const [peerId, ring] of peerKeyRingsRef.current) {
+      if (peerId === ownId) continue;
+
+      for (const peerKey of [...ring].reverse()) {
+        for (const ownKey of [...ownKeysRef.current].reverse()) {
+          try {
+            const shared = await deriveSharedKey(ownKey, peerKey);
+
+            return await decryptMessage(shared, parsed.iv, parsed.ciphertext);
+          } catch {
+            // Wrong combination; keep searching.
+          }
+        }
+      }
+    }
+
+    return content;
+  }, []);
+
+  // Encrypts with my newest session key towards the newest session of the
+  // first peer in the room.
   const encryptContent = useCallback(async (content: string): Promise<string> => {
-    // Encrypt towards the first peer; both participants share the same secret.
-    const peerKey = peerKeysRef.current.values().next().value as CryptoKey | undefined;
-    if (!peerKey) return content;
+    const ownKey = ownKeysRef.current[ownKeysRef.current.length - 1];
+    if (!ownKey) return content;
 
-    const { iv, ciphertext } = await encryptMessage(peerKey, content);
+    const ownId = userSingleton.getCachedUser()?.id;
 
-    return JSON.stringify({ iv, ciphertext });
+    for (const [peerId, ring] of peerKeyRingsRef.current) {
+      if (peerId === ownId) continue;
+
+      const peerKey = ring[ring.length - 1];
+      if (!peerKey) continue;
+
+      const shared = await deriveSharedKey(ownKey, peerKey);
+      const { iv, ciphertext } = await encryptMessage(shared, content);
+
+      return JSON.stringify({ iv, ciphertext });
+    }
+
+    return content;
   }, []);
 
   useEffect(() => {
@@ -227,11 +359,13 @@ export function useProjectChat(projectId: string | undefined): UseProjectChatRes
         return;
       }
 
-      keyPairRef.current = await getOrCreateKeyPair(user.id);
+      const session = await getSessionRing(user.id);
+      ownKeysRef.current = await getOwnPrivateKeys(user.id);
+
       const frame: ClientFrame = {
         type: "join",
         projectId,
-        publicKey: keyPairRef.current.publicKey,
+        publicKey: session.publicKey,
       };
       socket.send(JSON.stringify(frame));
     };
@@ -249,15 +383,14 @@ export function useProjectChat(projectId: string | undefined): UseProjectChatRes
     // a peer key (plaintext or raw) and are upgraded once keys are derived.
     const hydrateHistory = async (): Promise<void> => {
       const ownId = userSingleton.getCachedUser()?.id;
-      const firstPeerKey = [...peerKeysRef.current.entries()].find(([id]) => id !== ownId)?.[1];
 
       const decrypted = await Promise.all(
-        historyRef.current.map((row) => {
-          // My own rows were sealed with the shared peer secret; unknown
-          // senders have no key yet and fall back to raw content.
-          const key = row.senderId === ownId ? firstPeerKey : peerKeysRef.current.get(row.senderId);
+        historyRef.current.map(async (row) => {
+          const content = row.senderId === ownId
+            ? await decryptOwnRow(row.content)
+            : await decryptFrom(row.senderId, row.content);
 
-          return toChatMessage(row, key);
+          return toChatMessage(row, content);
         }),
       );
 
@@ -300,20 +433,21 @@ export function useProjectChat(projectId: string | undefined): UseProjectChatRes
           setIsConnected(true);
           setError(null);
 
-          for (const [peerId, peerPublicKey] of Object.entries(frame.keys)) {
-            if (!keyPairRef.current || peerKeysRef.current.has(peerId)) continue;
-
-            try {
-              const peerKey = await importPeerPublicKey(peerPublicKey);
-              const shared = await deriveSharedKey(keyPairRef.current.keyPair, peerKey);
-              peerKeysRef.current.set(peerId, shared);
-            } catch {
-              // Skip peers whose keys cannot be imported; messages fall back to plaintext.
+          for (const [peerId, peerKeys] of Object.entries(frame.keys)) {
+            const imported: CryptoKey[] = [];
+            for (const peerPublicKey of peerKeys) {
+              try {
+                imported.push(await importPeerPublicKey(peerPublicKey));
+              } catch {
+                // Skip keys that cannot be imported.
+              }
             }
+
+            if (imported.length) peerKeyRingsRef.current.set(peerId, imported);
           }
 
           await hydrateHistory();
-          setIsEncrypted(peerKeysRef.current.size > 0);
+          setIsEncrypted(peerKeyRingsRef.current.size > 0);
 
           // Offers queued before a peer key existed are encrypted and sent now.
           const queued = pendingOffersRef.current.splice(0);
@@ -324,13 +458,16 @@ export function useProjectChat(projectId: string | undefined): UseProjectChatRes
           break;
         }
 
-        case "peer-joined": {
-          if (!keyPairRef.current || peerKeysRef.current.has(frame.userId)) break;
+        case "capability": {
+          setCapability(frame.capability);
+          break;
+        }
 
+        case "peer-joined": {
           try {
             const peerKey = await importPeerPublicKey(frame.publicKey);
-            const shared = await deriveSharedKey(keyPairRef.current.keyPair, peerKey);
-            peerKeysRef.current.set(frame.userId, shared);
+            const ring = peerKeyRingsRef.current.get(frame.userId) ?? [];
+            peerKeyRingsRef.current.set(frame.userId, [...ring, peerKey]);
             setIsEncrypted(true);
             await hydrateHistory();
 
@@ -347,7 +484,7 @@ export function useProjectChat(projectId: string | undefined): UseProjectChatRes
         }
 
         case "peer-left": {
-          peerKeysRef.current.delete(frame.userId);
+          // Keep derived keys; offline peers must stay decryptable.
           break;
         }
 
@@ -356,17 +493,7 @@ export function useProjectChat(projectId: string | undefined): UseProjectChatRes
           // row instead of rendering ciphertext (both peers share the same secret).
           const ownId = userSingleton.getCachedUser()?.id;
           if (frame.senderId === ownId) {
-            const peerKey = peerKeysRef.current.values().next().value as CryptoKey | undefined;
-            let ownContent = frame.content;
-
-            if (peerKey) {
-              try {
-                const parsed = JSON.parse(frame.content) as { iv: string; ciphertext: string };
-                ownContent = await decryptMessage(peerKey, parsed.iv, parsed.ciphertext);
-              } catch {
-                // Payload was plaintext (sent before any peer key existed).
-              }
-            }
+            const ownContent = await decryptOwnRow(frame.content);
 
             setMessages((prev) => {
               const index = prev.findIndex((message) => message.pending && message.senderId === ownId);
@@ -406,9 +533,12 @@ export function useProjectChat(projectId: string | undefined): UseProjectChatRes
         }
 
         case "message-update": {
+          const updateIds = new Set(frame.messageIds ?? (frame.id ? [frame.id] : []));
+
           setMessages((prev) =>
             prev.map((message) =>
-              message.id === frame.id || !frame.id
+              // No ids at all means a room-wide update (e.g. every message read).
+              updateIds.size === 0 || updateIds.has(message.id)
                 ? {
                   ...message,
                   isRead: frame.isRead ?? message.isRead,
@@ -446,11 +576,12 @@ export function useProjectChat(projectId: string | undefined): UseProjectChatRes
       }
       socket.close();
       wsRef.current = null;
-      peerKeysRef.current = new Map();
+      peerKeyRingsRef.current = new Map();
+      sharedKeyCacheRef.current = new Map();
       historyRef.current = [];
       setIsConnected(false);
     };
-  }, [projectId, decryptFrom, encryptContent]);
+  }, [projectId, decryptFrom, encryptContent, decryptOwnRow]);
 
   const appendOptimistic = useCallback((partial: Omit<ChatMessage, "createdAt" | "pending">): void => {
     setMessages((prev) => [
@@ -468,6 +599,7 @@ export function useProjectChat(projectId: string | undefined): UseProjectChatRes
     const trimmed = content.trim();
 
     if (!socket || socket.readyState !== WebSocket.OPEN || !projectId || !trimmed) return;
+    if (capability !== "MESSAGE" && capability !== "OFFER") return;
 
     const ownId = userSingleton.getCachedUser()?.id ?? "";
     appendOptimistic({ id: `pending-${Date.now()}`, senderId: ownId, content: trimmed, isRead: false, offerDeadline: null, offerStatus: null });
@@ -476,19 +608,20 @@ export function useProjectChat(projectId: string | undefined): UseProjectChatRes
       const payload = await encryptContent(trimmed);
       socket.send(JSON.stringify({ type: "message", projectId, content: payload } satisfies ClientFrame));
     })();
-  }, [projectId, encryptContent, appendOptimistic]);
+  }, [projectId, encryptContent, appendOptimistic, capability]);
 
   const sendOffer = useCallback((content: string, offerDeadline: string) => {
     const socket = wsRef.current;
     const trimmed = content.trim();
 
     if (!socket || socket.readyState !== WebSocket.OPEN || !projectId || !trimmed || !offerDeadline) return;
+    if (capability !== "OFFER") return;
 
     const ownId = userSingleton.getCachedUser()?.id ?? "";
 
     // Room key not ready yet: render optimistically and queue the frame; it is
     // encrypted and sent when a peer key arrives ("joined"/"peer-joined").
-    if (peerKeysRef.current.size === 0) {
+    if (peerKeyRingsRef.current.size === 0) {
       appendOptimistic({ id: `pending-${Date.now()}`, senderId: ownId, content: trimmed, isRead: false, offerDeadline, offerStatus: "PENDING" });
       pendingOffersRef.current.push({ content: trimmed, offerDeadline });
       return;
@@ -502,7 +635,7 @@ export function useProjectChat(projectId: string | undefined): UseProjectChatRes
 
       socket.send(JSON.stringify(frame));
     })();
-  }, [projectId, encryptContent, appendOptimistic]);
+  }, [projectId, encryptContent, appendOptimistic, capability]);
 
   const respondToOffer = useCallback((messageId: string, offerStatus: "ACCEPTED" | "REJECTED") => {
     const socket = wsRef.current;
@@ -512,14 +645,30 @@ export function useProjectChat(projectId: string | undefined): UseProjectChatRes
     socket.send(JSON.stringify({ type: "offer-response", projectId, messageId, offerStatus } satisfies ClientFrame));
   }, [projectId]);
 
+  // Flags messages as seen (persisted server-side) and updates local state
+  // immediately so unseen badges drop without waiting for the echo.
+  const markMessagesAsRead = useCallback((messageIds: string[]) => {
+    const socket = wsRef.current;
+
+    if (!socket || socket.readyState !== WebSocket.OPEN || !projectId || !messageIds.length) return;
+
+    const idSet = new Set(messageIds);
+
+    setMessages((prev) => prev.map((message) => (idSet.has(message.id) ? { ...message, isRead: true } : message)));
+
+    socket.send(JSON.stringify({ type: "read", projectId, messageIds } satisfies ClientFrame));
+  }, [projectId]);
+
   return {
     messages,
     participants,
     isConnected,
     isEncrypted,
+    capability,
     error,
     sendMessage,
     sendOffer,
     respondToOffer,
+    markMessagesAsRead,
   };
 }

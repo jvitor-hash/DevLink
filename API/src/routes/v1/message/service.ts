@@ -1,5 +1,6 @@
 import { schemas } from "@/database/schema";
 import { crud } from "@/modules/crud_factory";
+import { canPostMessage, canPostOffer, canViewChat } from "@/modules/chat_access";
 import { isProjectConcluded, offerResponseProjectPatch } from "@/modules/project_status";
 import { and, asc, desc, eq, gt, or, sql, type SQL } from "drizzle-orm";
 import { db } from "@/client";
@@ -46,16 +47,34 @@ export const MessageService = {
     return rows.map((row) => row.message);
   },
 
-  // Chat history for a project; only participants (client or programmer) can read it.
+  // Chat history for a project; viewers must hold at least VIEW rights and
+  // rows outside the retention window are hidden.
   findAllByProject: async (projectId: string, userId: string, limit = 50, offset = 0) => {
     if (limit < 1 || limit > 100) throw new Error("Limit must be between 1 and 100");
     if (offset < 0) throw new Error("Offset must be >= 0");
 
+    const [project] = await db
+      .select()
+      .from(schemas.project)
+      .where(eq(schemas.project.id, projectId))
+      .limit(1);
+
+    if (!project) throw new Error("Project not found");
+
+    const requester = await db
+      .select({ role: schemas.user.role })
+      .from(schemas.user)
+      .where(eq(schemas.user.id, userId))
+      .limit(1);
+
+    if (!canViewChat(project, userId, requester[0]?.role ?? null)) throw new Error("Chat is read-only for this user");
+
+    // Viewers with VIEW rights read the whole room; rows outside the
+    // retention window are erased by the scheduler and never surface.
     const rows = await db
       .select({ message: schemas.message })
       .from(schemas.message)
-      .innerJoin(schemas.project, eq(schemas.message.projectId, schemas.project.id))
-      .where(participantWhere(projectId, userId))
+      .where(eq(schemas.message.projectId, projectId))
       .orderBy(asc(schemas.message.createdAt))
       .limit(limit)
       .offset(offset);
@@ -76,31 +95,29 @@ export const MessageService = {
   },
 
   createForProject: async (data: { projectId: string; senderId: string; content: string; offerDeadline?: string | null }) => {
-    const project = await db
+    const [project] = await db
       .select()
       .from(schemas.project)
-      .where(
-        and(
-          eq(schemas.project.id, data.projectId),
-          sql`(
-            ${schemas.project.clientId} = ${data.senderId}
-            OR ${schemas.project.programmerId} = ${data.senderId}
-          )`,
-        ),
-      )
+      .where(eq(schemas.project.id, data.projectId))
       .limit(1);
 
-    if (!project.length) throw new Error("Project not found or unauthorized");
+    if (!project) throw new Error("Project not found or unauthorized");
 
-    // Only programmers may send negotiation offers.
-    if (data.offerDeadline) {
-      const senderRole = await db
-        .select({ role: schemas.user.role })
-        .from(schemas.user)
-        .where(eq(schemas.user.id, data.senderId))
-        .limit(1);
+    const role = await db
+      .select({ role: schemas.user.role })
+      .from(schemas.user)
+      .where(eq(schemas.user.id, data.senderId))
+      .limit(1);
+    const senderRole = role[0]?.role ?? null;
 
-      if (senderRole[0]?.role !== "PROGRAMMER") throw new Error("Only programmers can send offers");
+    // Owner keeps chatting; other clients are view-only; programmers may
+    // converse while they can still offer on the project.
+    if (!canPostMessage(project, data.senderId, senderRole)) throw new Error("Chat is read-only for this user");
+
+    // Only programmers may send negotiation offers, and only while the
+    // project is still open to proposals (not assigned/concluded).
+    if (data.offerDeadline && !canPostOffer(project, data.senderId, senderRole)) {
+      throw new Error("Only programmers can send offers");
     }
 
     return base.create({

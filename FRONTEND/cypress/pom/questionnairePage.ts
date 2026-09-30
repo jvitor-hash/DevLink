@@ -1,10 +1,3 @@
-/**
- * Page object for the questionnaire wizard (/questionnaire).
- *
- * The page sits behind ProtectedRoute; seedAdminUser() fakes an
- * authenticated ADMIN session in localStorage so no real API is needed
- * to reach the page (isAdmin short-circuits the permission check).
- */
 export class QuestionnairePage {
   // Banner
   private bannerError = '[data-testid="banner-error"]';
@@ -30,8 +23,8 @@ export class QuestionnairePage {
   // Step 4 — details
   private titleInput = 'input[name="title"]';
   private descriptionInput = 'textarea[name="description"]';
-  private categorySelect = 'select[name="category"]';
-  private subCategoryInput = 'input[name="subCategory"]';
+  private categorySelect = '[data-testid="category"]';
+  private subCategorySelect = '[data-testid="subCategory"]';
   private minBudgetInput = '[data-testid="minBudget"]';
   private maxBudgetInput = '[data-testid="maxBudget"]';
   private deadlineInput = 'input[name="deadline"]';
@@ -50,24 +43,15 @@ export class QuestionnairePage {
       role: "ADMIN",
     };
 
-    // cy.window() targets the application under test: a bare
-    // window.localStorage here would write to Cypress' spec frame,
-    // where the app never looks.
     cy.window().then((win) => {
       win.localStorage.setItem("devlink:current_user", JSON.stringify(adminUser));
     });
   }
 
   visit(): void {
-    // Visit the app first so localStorage belongs to the app's origin,
-    // then seed the session and enter the protected route. Seeding
-    // before any visit would write to the spec frame's origin, where
-    // the app would never read it.
     cy.visit("/");
     this.seedAdminUser();
     cy.visit("/questionnaire");
-
-    // Page is ready once the first step's first input is visible.
     cy.get(this.problemInput, { timeout: 15000 }).should("be.visible");
   }
 
@@ -126,15 +110,8 @@ export class QuestionnairePage {
     // Step 4 — details
     cy.get(this.titleInput).type("Emissor de notas fiscais automatizado");
     cy.get(this.descriptionInput).type("Ferramenta que gera notas fiscais a partir de planilhas de vendas.");
-    cy.get(this.categorySelect).then(($select) => {
-      const nativeSetter = Object.getOwnPropertyDescriptor(
-        window.HTMLSelectElement.prototype,
-        "value",
-      )?.set;
-      nativeSetter?.call($select[0], "test");
-      $select[0].dispatchEvent(new Event("change", { bubbles: true }));
-    });
-    cy.get(this.subCategoryInput).type("automacao");
+    cy.get(this.categorySelect).select("WEBSITES")
+    cy.get(this.subCategorySelect, { timeout: 5000 }).select("WORDPRESS");
     cy.get(this.minBudgetInput).type("1000");
     cy.get(this.maxBudgetInput).type("5000");
     cy.get(this.deadlineInput).then(($el) => this.setNativeValue($el, "2026-12-31", "input"));
@@ -163,13 +140,6 @@ export class QuestionnairePage {
       .check();
   }
 
-  /**
-   * Sets a form control's value through the native prototype setter and
-   * dispatches the matching events: keystroke typing into
-   * `<input type="date">` is segment/locale dependent, and `.select()`
-   * on a controlled select can be suppressed by React's value tracker.
-   * The native setter bypasses the tracker so React registers the change.
-   */
   private setNativeValue($el: JQuery<HTMLElement>, value: string, tag: "input" | "select"): void {
     const proto = tag === "select" ? window.HTMLSelectElement.prototype : window.HTMLInputElement.prototype;
     const nativeSetter = Object.getOwnPropertyDescriptor(proto, "value")?.set;

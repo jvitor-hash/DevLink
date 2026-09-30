@@ -176,6 +176,43 @@ export const notifyProjectViews = async (project: {
 };
 
 /**
+ * Tell the client that a programmer sent a negotiation offer on their project;
+ * respects the user's message notification preference.
+ */
+export const notifyOfferSent = async (payload: {
+  id: string;
+  title: string;
+  clientId: string;
+  programmerName: string;
+  offerDeadline: string;
+}, outboxId: string | null = null): Promise<void> => {
+  const preferenceRows = await db
+    .select()
+    .from(schemas.userPreference)
+    .where(eq(schemas.userPreference.userId, payload.clientId))
+    .limit(1);
+
+  const preference = preferenceRows[0];
+  if (preference && !preference.message_notifications) return;
+
+  const deadline = new Date(payload.offerDeadline).toLocaleDateString("pt-BR");
+
+  await insertNotifications(
+    [
+      {
+        userId: payload.clientId,
+        type: "NEW_MESSAGE",
+        title: "Nova proposta de prazo",
+        message: `${payload.programmerName} enviou uma proposta com prazo para ${deadline} em "${payload.title}".`,
+        projectId: payload.id,
+        isRead: false,
+      },
+    ],
+    outboxId,
+  );
+};
+
+/**
  * Periodic insight for clients about how their open projects are performing.
  * Only open (not concluded) projects are considered.
  */

@@ -1,7 +1,7 @@
 import { schemas } from "@/database/schema";
 import { db } from "@/client";
 import { and, asc, eq, inArray, lt } from "drizzle-orm";
-import { notifyNewProject, notifyProjectSaved, notifyProjectViews } from "@/modules/notification_fanout";
+import { notifyNewProject, notifyOfferSent, notifyProjectSaved, notifyProjectViews } from "@/modules/notification_fanout";
 import { deliverToSubscribers } from "@/modules/webhook_delivery";
 import { logger } from "@/modules/logger";
 
@@ -35,6 +35,16 @@ export type NotificationEvent =
         viewTotalCount: number;
         lastViewedAt: string | null;
         clientId: string;
+      };
+    }
+  | {
+      type: "OFFER_SENT";
+      payload: {
+        id: string;
+        title: string;
+        clientId: string;
+        programmerName: string;
+        offerDeadline: string;
       };
     };
 
@@ -70,6 +80,9 @@ const applyNotificationEvent = async ( event: NotificationEvent, outboxId: strin
       break;
     case "VIEW_INSIGHT":
       await notifyProjectViews(event.payload, outboxId);
+      break;
+    case "OFFER_SENT":
+      await notifyOfferSent(event.payload);
       break;
   }
 };
@@ -135,4 +148,23 @@ export const requeueDeadEvents = async (): Promise<number> => {
     .returning({ id: schemas.outbox.id });
 
   return result.length;
+};
+
+// Requeue FAILED events so the next drain retries them immediately.
+export const requeueFailedEvents = async (): Promise<number> => {
+  const result = await db
+    .update(schemas.outbox)
+    .set({ status: "PENDING", errorMessage: null })
+    .where(eq(schemas.outbox.status, "FAILED"))
+    .returning({ id: schemas.outbox.id });
+
+  return result.length;
+};
+
+// Requeue both DEAD and FAILED events, for maintenance scripts.
+export const requeueStalledEvents = async (): Promise<number> => {
+  const dead = await requeueDeadEvents();
+  const failed = await requeueFailedEvents();
+
+  return dead + failed;
 };

@@ -54,11 +54,16 @@ export const importPeerPublicKey = async (publicKeyBase64: string): Promise<Cryp
 };
 
 // ECDH -> HKDF (SHA-256) -> AES-GCM 256 key. Both peers calling this with
-// opposite key pairs get the same key.
-export const deriveSharedKey = async (keyPair: CryptoKeyPair, peerPublicKey: CryptoKey): Promise<CryptoKey> => {
+// opposite key pairs get the same key. Accepts a key pair or a bare private key.
+export const deriveSharedKey = async (
+  keyPair: CryptoKeyPair | CryptoKey,
+  peerPublicKey: CryptoKey,
+): Promise<CryptoKey> => {
+  const privateKey = "privateKey" in keyPair ? keyPair.privateKey : keyPair;
+
   const sharedBits = await crypto.subtle.deriveBits(
     { name: "ECDH", public: peerPublicKey },
-    keyPair.privateKey,
+    privateKey,
     256,
   );
 

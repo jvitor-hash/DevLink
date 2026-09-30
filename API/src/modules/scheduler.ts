@@ -1,9 +1,10 @@
 import { schemas } from "@/database/schema";
 import { db } from "@/client";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
-import { processOutbox, publishNotificationEvent } from "@/modules/notification_outbox";
+import { processOutbox, publishNotificationEvent, requeueFailedEvents } from "@/modules/notification_outbox";
 import { negotiationTimeoutMs, viewInsightsIntervalMs } from "@/modules/app_config";
 import { isNegotiationExpired } from "@/modules/project_status";
+import { sweepExpiredChatData } from "@/modules/chat_retention";
 import { logger } from "@/modules/logger";
 
 // Reopen projects whose negotiation window expired without an accepted offer.
@@ -64,6 +65,20 @@ export const sweepOutbox = async (): Promise<number> => {
   return await processOutbox();
 };
 
+// Requeue FAILED events that hit the retry cap so the next drain retries them.
+export const sweepFailedOutbox = async (): Promise<number> => {
+  return await requeueFailedEvents();
+};
+
+// Erase chat history and session keys past the retention window.
+export const sweepChatRetention = async (): Promise<void> => {
+  const { messagesDeleted, keysDeleted } = await sweepExpiredChatData();
+
+  if (messagesDeleted || keysDeleted) {
+    logger.info(`[scheduler] chat retention erased ${messagesDeleted} message(s) and ${keysDeleted} session key(s)`);
+  }
+};
+
 const timers: ReturnType<typeof setInterval>[] = [];
 
 export const startSchedulers = (): void => {
@@ -79,7 +94,11 @@ export const startSchedulers = (): void => {
     void sweepOutbox().catch((error) => logger.error("[scheduler] outbox sweep failed", error));
   }, 30_000);
 
-  timers.push(negotiationTimer, insightsTimer, outboxTimer);
+  const retentionTimer = setInterval(() => {
+    void sweepChatRetention().catch((error) => logger.error("[scheduler] chat retention sweep failed", error));
+  }, 60 * 60_000);
+
+  timers.push(negotiationTimer, insightsTimer, outboxTimer, retentionTimer);
 };
 
 export const stopSchedulers = (): void => {

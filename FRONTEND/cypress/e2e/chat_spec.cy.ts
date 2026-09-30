@@ -3,83 +3,97 @@ describe("Fluxo do chat do projeto", () => {
     cy.loginViaApi("test@example.com", "123456789");
   });
 
-  const openChat = () => {
-    cy.get('button[aria-label="chat"]').should("exist").click();
-    cy.get('[data-testid="chat-dock"]').should("exist");
-  };
-
-  it("mantem o chat oculto ate o usuario abrir pelo botao", () => {
+  it("exibe o chat embutido na pagina sem botao de abrir", () => {
     cy.visit("/project/open/550e8400-e29b-41d4-a716-446655440000");
 
-    cy.get('[data-testid="chat-dock"]').should("not.exist");
-
-    cy.get('button[aria-label="chat"]').click();
+    // The panel is part of the page: visible on load, no toggle button anywhere.
     cy.get('[data-testid="chat-dock"]').should("exist");
     cy.get('[data-testid="chat-connection-status"]').should("exist");
-
-    cy.get('[data-testid="close-chat-btn"]').click();
-    cy.get('[data-testid="chat-dock"]').should("not.exist");
+    cy.get('button[aria-label="chat"]').should("not.exist");
+    cy.get('[data-testid="close-chat-btn"]').should("not.exist");
   });
 
-  it("exibe o historico da conversa com o nome de cada usuario", () => {
+  it("exibe a caixa de entrada com uma conversa por participante", () => {
     cy.visit("/project/open/550e8400-e29b-41d4-a716-446655440000");
 
-    openChat();
-
-    cy.get('[data-testid="chat-history"]').should("exist").click();
-    cy.get('[data-testid^="chat-history-participant-"]')
+    cy.get('[data-testid="chat-history"]').should("exist");
+    cy.get('[data-testid="chat-history-participant"]')
       .should("have.length.at.least", 1)
       .first()
       .should("be.visible")
       .and("not.be.empty");
   });
 
-  it("conecta o chat e envia mensagem criptografada", () => {
-    cy.intercept("POST", "**/api/v1/messages").as("createMessage");
+  it("abre a conversa de um programador a partir da caixa de entrada", () => {
     cy.visit("/project/open/550e8400-e29b-41d4-a716-446655440000");
 
-    openChat();
+    cy.get('[data-testid="chat-history-participant"]').first().click();
 
-    cy.get('input[placeholder="Digite sua mensagem aqui..."]').type("Olá do Cypress");
-    cy.get('[data-testid="chat-send-btn"]').click();
-
-    cy.contains("Olá do Cypress").should("exist");
+    cy.get('[data-testid="chat-thread-header"]').should("exist");
+    cy.get('[data-testid="chat-thread-back"]').should("exist").click();
+    cy.get('[data-testid="chat-history"]').should("exist");
   });
 
-  it("envia proposta de prazo", () => {
+  it("conecta o chat em modo leitura para o cliente criador", () => {
     cy.visit("/project/open/550e8400-e29b-41d4-a716-446655440000");
 
-    openChat();
-
-    cy.get('[data-testid="offer-mode-btn"]').click();
-    cy.get('input[placeholder="Descreva a proposta de prazo..."]').type("Proposta de teste");
-    cy.get('input[type="date"]').type("2026-12-31");
-    cy.get('[data-testid="chat-send-btn"]').click();
-
-    cy.contains("Proposta de prazo:").should("exist");
-    cy.contains("Proposta de teste").should("exist");
+    // The project creator is view-only; programmers write the messages.
+    cy.get('input[placeholder="Digite sua mensagem aqui..."]').should("not.exist");
+    cy.contains("Apenas programadores podem enviar mensagens neste chat.").should("exist");
   });
 
-  it("aceita e rejeita propostas de prazo", () => {
+  it("marca propostas como vistas ao rolar a conversa", () => {
     // Previous runs consumed the seeded offers; restore them to PENDING.
     cy.task("resetChatFixture");
 
     cy.visit("/project/open/550e8400-e29b-41d4-a716-446655440000");
 
-    openChat();
+    // Unseen offers badge on the panel header while the inbox is open.
+    cy.get('[data-testid="chat-offer-badge"]').first()
+      .should("have.attr", "data-count")
+      .and("match", /^[1-9][0-9]*$/);
 
-    cy.get('[data-testid^="offer-accept-"]').first().then(($accept) => {
-      const messageId = $accept.attr("data-testid")?.replace("offer-accept-", "") ?? "";
+    // Capture the count before opening the thread.
+    cy.get('[data-testid="chat-offer-badge"]').first().then(($badge) => {
+      const before = Number($badge.attr("data-count"));
 
-      cy.get(`[data-testid="offer-accept-${messageId}"]`).click();
-      cy.get(`[data-testid="offer-status-${messageId}"]`).should("contain", "Proposta aceita");
+      cy.get('[data-testid="chat-history-participant"]').first().click();
+
+      // Offers visible in the viewport are marked seen automatically.
+      cy.get("[data-seen-watcher='true']").its("length").then((watched) => {
+        if (watched === 0) return;
+
+        cy.get("[data-seen-watcher='true']").first().should("be.visible");
+        cy.get('[data-testid="chat-offer-badge"]', { timeout: 8000 }).then(($after) => {
+          if ($after.length === 0) {
+            expect(before).to.be.greaterThan(0);
+          } else {
+            expect(Number($after.attr("data-count"))).to.be.lessThan(before);
+          }
+        });
+      });
+    });
+  });
+
+  it("aceita e rejeita propostas de prazo", () => {
+    // Offers arrive from programmers; the client creator reviews them here.
+    // Previous runs consumed the seeded offers; restore them to PENDING.
+    cy.task("resetChatFixture");
+
+    cy.visit("/project/open/550e8400-e29b-41d4-a716-446655440000");
+
+    cy.get('[data-testid="offer-accept"]').first().then(($accept) => {
+      const messageId = $accept.attr("data-message-id") ?? "";
+
+      cy.get(`[data-testid="offer-accept"][data-message-id="${messageId}"]`).click();
+      cy.get(`[data-testid="offer-status-accepted"][data-message-id="${messageId}"]`).should("contain", "Proposta aceita");
     });
 
-    cy.get('[data-testid^="offer-reject-"]').first().then(($reject) => {
-      const messageId = $reject.attr("data-testid")?.replace("offer-reject-", "") ?? "";
+    cy.get('[data-testid="offer-reject"]').first().then(($reject) => {
+      const messageId = $reject.attr("data-message-id") ?? "";
 
-      cy.get(`[data-testid="offer-reject-${messageId}"]`).click();
-      cy.get(`[data-testid="offer-status-${messageId}"]`).should("contain", "Proposta rejeitada");
+      cy.get(`[data-testid="offer-reject"][data-message-id="${messageId}"]`).click();
+      cy.get(`[data-testid="offer-status-rejected"][data-message-id="${messageId}"]`).should("contain", "Proposta rejeitada");
     });
   });
 });

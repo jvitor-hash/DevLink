@@ -32,6 +32,7 @@ export function DetailsStep({ form, setField, isBudgetInverted, showFieldErrors 
           name="category"
           value={form.category}
           placeholder="Selecione uma categoria"
+          dataTestId="category"
           onChange={(e) => setField("category", e.target.value)}
           error={showFieldErrors && form.category.trim() === ""}
         />
@@ -44,6 +45,7 @@ export function DetailsStep({ form, setField, isBudgetInverted, showFieldErrors 
           name="subCategory"
           value={form.subCategory}
           placeholder="Selecione uma categoria"
+          dataTestId="subCategory"
           onChange={(e) => setField("subCategory", e.target.value)}
           error={showFieldErrors && form.subCategory.trim() === ""}
         />

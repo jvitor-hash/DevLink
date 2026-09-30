@@ -23,7 +23,6 @@ export default function ProjectOpenPage() {
   const loaderData = useLoaderData<ProjectDTO>();
   // The loader throws before render when the project is missing, so it is never null here.
   const [project, setProject] = useState<ProjectDTO>(loaderData);
-  const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
 
   const { saveCounts, isSaved, toggleSaved, setSaveCountsFromProjects } =
     useSavedTickets();
@@ -35,22 +34,18 @@ export default function ProjectOpenPage() {
 
   return (
     <section className="flex flex-col gap-3 p-4">
-      <div className="flex items-stretch gap-3">
-        <ProjectChatPanel
-          open={isChatOpen}
-          onToggle={() => setIsChatOpen((prev) => !prev)}
-          clientId={project.clientId}
-        />
-        <div className="min-w-0 flex-1">
+      <div className="flex flex-col items-stretch gap-3 lg:flex-row">
+        <div className="flex min-w-0 flex-1 flex-col">
           <ProjectInfoPanel
             project={project}
             isSaved={isSaved(project.id)}
             saveCount={saveCounts[project.id] ?? project.saveTotalCount ?? 0}
             onToggleSaved={() => toggleSaved(project.id)}
             onProjectUpdated={handleProjectUpdated}
-            onOpenChat={() => setIsChatOpen(true)}
           />
         </div>
+
+        <ProjectChatPanel clientId={project.clientId} />
       </div>
 
       <ProjectWorkPanel projectId={project.id} />

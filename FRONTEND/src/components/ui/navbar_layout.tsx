@@ -8,6 +8,7 @@ import LoginModal from "@/components/ui/login_modal";
 import NotificationBell from "@/components/ui/notification_bell";
 import SavedTicketsMenu from "@/components/ui/saved_tickets_menu";
 import { userSingleton } from "@/context/user";
+import { useCurrentUser } from "@/hooks/use_current_user";
 
 const MENU_LINKS: ReadonlyArray<{ to: string; label: string }> = [
   { to: "/questionnaire", label: "Criação de projetos" },
@@ -18,6 +19,9 @@ const MENU_LINKS: ReadonlyArray<{ to: string; label: string }> = [
 export function NavbarLayout() : React.ReactElement {
   const [openLogin, setOpenLogin] = useState<boolean>(false);
   const [openDrawer, setOpenDrawer] = useState<boolean>(false);
+
+  // Re-renders on login, register and logout through the singleton subscription.
+  const user = useCurrentUser();
 
   const navigate = useNavigate();
 
@@ -40,7 +44,7 @@ export function NavbarLayout() : React.ReactElement {
         </div>
 
         <div className="justify-self-end">
-        {userSingleton.isSignedIn ? (
+        {user ? (
           <div className="flex items-center gap-3">
             <NotificationBell />
 
@@ -50,7 +54,7 @@ export function NavbarLayout() : React.ReactElement {
               <Settings size={18}/>
             </Link>
 
-            <span className="text-white font-medium" data-testid="navbar-username">{userSingleton.name}</span>
+            <span className="text-white font-medium" data-testid="navbar-username">{user.name}</span>
 
             <Button label="Log-out" buttonType="button" colorType="primary" onClick={handleSignOut}/>
           </div>

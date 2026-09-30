@@ -3,6 +3,8 @@ import { db } from "@/client";
 import { schemas } from "@/database/schema";
 import { MessageService } from "@/routes/v1/message/service";
 import { UserService } from "@/routes/v1/users/service";
+import { canPostOffer, canPostMessage, canViewChat, resolveChatCapability } from "@/modules/chat_access";
+import { publishNotificationEvent } from "@/modules/notification_outbox";
 import { eq } from "drizzle-orm";
 import Elysia from "elysia";
 import { z } from "zod";
@@ -54,6 +56,26 @@ const broadcast = (projectId: string, payload: object, excludeUserId?: string) =
   }
 };
 
+const loadProject = async (projectId: string) => {
+  const rows = await db
+    .select()
+    .from(schemas.project)
+    .where(eq(schemas.project.id, projectId))
+    .limit(1);
+
+  return rows[0] ?? null;
+};
+
+const userName = async (userId: string): Promise<string> => {
+  const rows = await db
+    .select({ name: schemas.user.name })
+    .from(schemas.user)
+    .where(eq(schemas.user.id, userId))
+    .limit(1);
+
+  return rows[0]?.name ?? "Um programador";
+};
+
 // Wire protocol mirrors the message schema: messages carry projectId, senderId,
 // content, isRead and the offer fields used for deadline negotiation.
 const ClientFrameSchema = z.discriminatedUnion("type", [
@@ -97,8 +119,8 @@ const ServerFrameSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("joined"),
     projectId: z.string(),
-    // userId -> base64 SPKI public key of everyone currently in the room.
-    keys: z.record(z.string(), z.string()),
+    // userId -> base64 SPKI public keys across every stored session.
+    keys: z.record(z.string(), z.array(z.string())),
   }),
   z.object({
     type: z.literal("peer-joined"),
@@ -116,6 +138,11 @@ const ServerFrameSchema = z.discriminatedUnion("type", [
     projectId: z.string(),
   }),
   z.object({
+    type: z.literal("capability"),
+    projectId: z.string(),
+    capability: z.enum(["NONE", "VIEW", "MESSAGE", "OFFER"]),
+  }),
+  z.object({
     type: z.literal("message"),
     id: z.string(),
     projectId: z.string(),
@@ -128,8 +155,9 @@ const ServerFrameSchema = z.discriminatedUnion("type", [
   }),
   z.object({
     type: z.literal("message-update"),
-    id: z.string(),
+    id: z.string().optional(),
     projectId: z.string(),
+    messageIds: z.array(z.string()).optional(),
     isRead: z.boolean().optional(),
     offerStatus: z.enum(["PENDING", "ACCEPTED", "REJECTED"]).nullable().optional(),
   }),
@@ -153,8 +181,12 @@ export const Websocket_Chat = new Elysia()
         throw new Error("Unauthorized")
       }
 
+      // The session cookie cache can hold a pre-signup role snapshot; the
+      // DB row is the source of truth for chat capability checks.
+      const user = await UserService.findById(session.user.id);
+
       (context as WsData).userId = session.user.id;
-      (context as WsData).role = (session.user as { role?: string | null }).role ?? null;
+      (context as WsData).role = user?.role ?? null;
     },
 
     async message(ws, raw) {
@@ -174,9 +206,21 @@ export const Websocket_Chat = new Elysia()
 
       switch (frame.type) {
         case 'join': {
-          // Persist the advertised key so peers can derive secrets even when
-          // this user is offline (history catch-up).
-          await UserService.updatePublicKey(userId, frame.publicKey).catch(() => undefined);
+          const project = await loadProject(frame.projectId);
+          if (!project) {
+            sendFrame(ws, { type: "error", error: "Project not found" });
+            return;
+          }
+
+          const capability = resolveChatCapability(project, userId, data.role ?? null);
+          if (!canViewChat(project, userId, data.role ?? null)) {
+            sendFrame(ws, { type: "error", error: "Chat unavailable for this project" });
+            return;
+          }
+
+          // Persist the advertised session key so peers can derive secrets
+          // even when this user is offline (history catch-up).
+          await UserService.addChatSessionKey(userId, frame.publicKey).catch(() => undefined);
 
           removeParticipant(frame.projectId, userId);
 
@@ -198,29 +242,26 @@ export const Websocket_Chat = new Elysia()
           }, userId);
 
           const room = addParticipant(frame.projectId, participant);
-          const keys: Record<string, string> = {};
-          for (const peer of room) keys[peer.userId] = peer.publicKey;
 
-          // Room may lack the other participant; fall back to their persisted key.
-          const project = await db
-            .select({ clientId: schemas.project.clientId, programmerId: schemas.project.programmerId })
-            .from(schemas.project)
-            .where(eq(schemas.project.id, frame.projectId))
-            .limit(1);
-
-          const participantIds = [project[0]?.clientId, project[0]?.programmerId].filter(
-            (id): id is string => Boolean(id) && id !== userId,
+          // Everyone in the room sends their current session key plus every
+          // historical one so old envelopes stay decryptable after reloads.
+          const roomUserIds = [...room].map((peer) => peer.userId);
+          const participantIds = [project.clientId, project.programmerId].filter(
+            (id): id is string => Boolean(id),
           );
 
-          for (const peerId of participantIds) {
-            if (keys[peerId]) continue;
+          const keys = await UserService.listChatSessionKeysByUsers([
+            ...new Set([...roomUserIds, ...participantIds]),
+          ]);
 
-            const persisted = await UserService.findPublicKeyById(peerId).catch(() => null);
-            if (persisted) keys[peerId] = persisted;
+          const keysPayload: Record<string, string[]> = {};
+          for (const [peerId, peerKeys] of keys) {
+            keysPayload[peerId] = peerKeys;
           }
 
           data.projectId = frame.projectId;
-          sendFrame(ws, { type: "joined", projectId: frame.projectId, keys });
+          sendFrame(ws, { type: "joined", projectId: frame.projectId, keys: keysPayload });
+          sendFrame(ws, { type: "capability", projectId: frame.projectId, capability });
           break;
         }
 
@@ -233,6 +274,12 @@ export const Websocket_Chat = new Elysia()
 
         case 'message': {
           try {
+            const project = await loadProject(frame.projectId);
+            if (!project || !canPostMessage(project, userId, data.role ?? null)) {
+              sendFrame(ws, { type: "error", error: "Chat is read-only for this user" });
+              return;
+            }
+
             const created = await MessageService.createForProject({
               projectId: frame.projectId,
               senderId: userId,
@@ -248,19 +295,35 @@ export const Websocket_Chat = new Elysia()
         }
 
         case 'offer': {
-          // Offers are a programmer-only action.
-          if (data.role !== "PROGRAMMER") {
-            sendFrame(ws, { type: "error", error: "Only programmers can send offers" });
-            return;
-          }
-
+          // Offers are a programmer-only action, checked against the current
+          // project state so an accepted offer (IN_DEVELOPMENT) locks
+          // everyone else out until the project reopens.
           try {
+            const project = await loadProject(frame.projectId);
+            if (!project || !canPostOffer(project, userId, data.role ?? null)) {
+              sendFrame(ws, { type: "error", error: "Only programmers can send offers" });
+              return;
+            }
+
             const created = await MessageService.createForProject({
               projectId: frame.projectId,
               senderId: userId,
               content: frame.content,
               offerDeadline: frame.offerDeadline,
             });
+
+            // Outbox-routed notification: survives restarts and is retried
+            // with webhook fan-out; a failed enqueue must not break the offer.
+            void publishNotificationEvent({
+              type: "OFFER_SENT",
+              payload: {
+                id: frame.projectId,
+                title: project.title,
+                clientId: project.clientId,
+                programmerName: await userName(userId),
+                offerDeadline: frame.offerDeadline,
+              },
+            }).catch(() => undefined);
 
             const payload = { type: "message", ...created };
             broadcast(frame.projectId, payload);
@@ -298,6 +361,7 @@ export const Websocket_Chat = new Elysia()
             const payload = {
               type: "message-update",
               projectId: frame.projectId,
+              messageIds: frame.messageIds,
               isRead: true,
             };
             broadcast(frame.projectId, payload, userId);

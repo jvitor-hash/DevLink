@@ -20,18 +20,39 @@ const signIn = (email: string, password: string): Cypress.Chainable<Cypress.Resp
     return response;
   });
 
+const ensureUser = (name: string, email: string, password: string, role: 'client' | 'programmer'): void => {
+  const endpoint = role === 'client'
+    ? `${API_URL}/api/auth/sign-up/client`
+    : `${API_URL}/api/auth/sign-up/programmer`;
+
+  cy.request({
+    method: 'POST',
+    url: endpoint,
+    body: { name, email, password },
+    failOnStatusCode: false,
+  });
+};
+
 Cypress.Commands.add('loginViaApi', (email: string, password: string) => {
   // Session is created once per user; later tests replay cached cookies
   // instead of hammering the auth endpoint.
   cy.session([email, password], () => {
     signIn(email, password).then((response) => {
       if (response.status !== 200) {
-        cy.request({
-          method: 'POST',
-          url: `${API_URL}/api/auth/sign-up/client`,
-          body: { name: 'test', email, password },
-          failOnStatusCode: false,
-        });
+        ensureUser('test', email, password, 'client');
+
+        signIn(email, password);
+      }
+    });
+  });
+});
+
+// Programmers sign up through a dedicated endpoint that assigns the role.
+Cypress.Commands.add('loginViaApiAsProgrammer', (email: string, password: string, name = 'programmer') => {
+  cy.session([email, password, 'programmer'], () => {
+    signIn(email, password).then((response) => {
+      if (response.status !== 200) {
+        ensureUser(name, email, password, 'programmer');
 
         signIn(email, password);
       }
@@ -43,6 +64,7 @@ Cypress.Commands.add('loginViaApi', (email: string, password: string) => {
 //   namespace Cypress {
 //     interface Chainable {
 //       loginViaApi(email: string, password: string): Chainable<void>
+//       loginViaApiAsProgrammer(email: string, password: string, name?: string): Chainable<void>
 //     }
 //   }
 // }

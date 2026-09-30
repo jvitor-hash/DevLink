@@ -2,7 +2,7 @@ import Badge from "@/components/ui/badge_component";
 import { mapValueLabel } from "@/data/value_labels";
 import { userSingleton } from "@/context/user";
 import type { ProjectDTO, ProjectStatus } from "@/data/types/database";
-import { Bookmark, Calendar, MessageCircle, MoreVertical } from "react-feather";
+import { Bookmark, Calendar, MoreVertical } from "react-feather";
 
 type ProjectInfoPanelProps = {
   project: ProjectDTO;
@@ -10,7 +10,6 @@ type ProjectInfoPanelProps = {
   saveCount?: number;
   onToggleSaved: () => void;
   onProjectUpdated: (project: ProjectDTO) => void;
-  onOpenChat: () => void;
 };
 
 const statusBadgeTypes: Record<ProjectStatus, "success" | "info" | "primary" | "error"> = {
@@ -28,7 +27,7 @@ const formatCurrency = (value: number): string => {
   return value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
-export default function ProjectInfoPanel({ project, isSaved, onToggleSaved, onOpenChat }: ProjectInfoPanelProps) {
+export default function ProjectInfoPanel({ project, isSaved, onToggleSaved }: ProjectInfoPanelProps) {
   const concluded = isConcluded(project.status);
 
   // Saving is a programmer-only action; hide the control from everyone else.
@@ -64,17 +63,6 @@ export default function ProjectInfoPanel({ project, isSaved, onToggleSaved, onOp
               <Bookmark size={16} fill={isSaved ? "currentColor" : "none"} color="var(--text-primary)" />
             </button>
           )}
-
-          <button
-            type="button"
-            onClick={onOpenChat}
-            aria-label="chat"
-            data-testid="open-chat-btn"
-            className="rounded-md border border-(--border-subtle) px-2 py-2
-            hover:cursor-pointer hover:bg-(--surface-2) transition-colors hover:border-(--text-primary)"
-          >
-            <MessageCircle size={16} color="var(--text-primary)" />
-          </button>
 
           <button
             type="button"

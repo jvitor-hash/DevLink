@@ -50,7 +50,7 @@ export default function LoginModal({ show, onClose }: LoginModalProps) {
       }
 
       if (mode === "login") {
-        userSingleton.login({ email, password });
+        await userSingleton.login({ email, password });
       } else {
         const name = formData.get("name");
         if (typeof name !== "string" || !name.trim()) {
@@ -59,7 +59,7 @@ export default function LoginModal({ show, onClose }: LoginModalProps) {
         if (role !== "CLIENT" && role !== "PROGRAMMER") {
           throw new Error("Selecione o tipo de usuário.");
         }
-        userSingleton.register({ name, email, password, registrationRole: role as RegisterRole });
+        await userSingleton.register({ name, email, password, registrationRole: role as RegisterRole });
       }
 
       close();

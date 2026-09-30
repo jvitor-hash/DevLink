@@ -11,6 +11,7 @@ import { userPreference } from "./user_preferences_schema";
 import { user } from "./user_schema";
 import { verification } from "./verification_schema";
 import { outbox, webhookSubscription } from "./outbox_schema";
+import { chatSessionKey } from "./chat_session_key_schema";
 
 export const schemas = {
   user,
@@ -23,6 +24,7 @@ export const schemas = {
   userPreference,
   outbox,
   webhookSubscription,
+  chatSessionKey,
   message,
   savedTicket,
   todo,

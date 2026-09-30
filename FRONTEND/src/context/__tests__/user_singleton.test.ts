@@ -99,4 +99,51 @@ describe("CachedUser singleton", () => {
     expect(allowed).toBe(true);
     expect(postCalls.some((call) => call.path.includes("has-permission"))).toBe(true);
   });
+
+  test("notifies subscribers on login, logout and session refresh", async () => {
+    const events: boolean[] = [];
+    const unsubscribe = userSingleton.subscribe(() => events.push(userSingleton.isSignedIn));
+
+    try {
+      await userSingleton.login({ email: "ada@devlink.dev", password: "secret" });
+      await userSingleton.logout();
+      await userSingleton.getCurrentUser();
+
+      expect(events).toEqual([true, false, true]);
+    } finally {
+      unsubscribe();
+    }
+  });
+
+  test("unsubscribe stops notifications", async () => {
+    let calls = 0;
+    const unsubscribe = userSingleton.subscribe(() => {
+      calls += 1;
+    });
+
+    unsubscribe();
+
+    await userSingleton.login({ email: "ada@devlink.dev", password: "secret" });
+
+    expect(calls).toBe(0);
+
+    await userSingleton.logout();
+  });
+
+  test("updateUser notifies subscribers with the patched user", async () => {
+    await userSingleton.login({ email: "ada@devlink.dev", password: "secret" });
+
+    let notifiedName = "";
+    const unsubscribe = userSingleton.subscribe(() => {
+      notifiedName = userSingleton.name ?? "";
+    });
+
+    userSingleton.updateUser({ name: "Grace" });
+
+    expect(notifiedName).toBe("Grace");
+
+    unsubscribe();
+
+    await userSingleton.logout();
+  });
 });
