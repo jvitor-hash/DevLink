@@ -1,4 +1,14 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, type ReactNode } from 'react';
+
+type TooltipPosition = 'top' | 'bottom' | 'left' | 'right';
+
+type TooltipProps = {
+  children: ReactNode;
+  content: ReactNode;
+  position?: TooltipPosition;
+  delay?: number;
+  className?: string;
+};
 
 // Tooltip component
 const Tooltip = ({
@@ -7,14 +17,14 @@ const Tooltip = ({
   position = 'top',
   delay = 200,
   className = '',
-}) => {
+}: TooltipProps) => {
   const [isVisible, setIsVisible] = useState(false);
-  const triggerRef = useRef(null);
-  const tooltipRef = useRef(null);
-  const timeoutRef = useRef(null);
+  const triggerRef = useRef<HTMLDivElement | null>(null);
+  const tooltipRef = useRef<HTMLDivElement | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Position classes for the tooltip container
-  const positionClasses = {
+  const positionClasses: Record<TooltipPosition, string> = {
     top: 'bottom-full left-1/2 -translate-x-1/2 mb-2',
     bottom: 'top-full left-1/2 -translate-x-1/2 mt-2',
     left: 'right-full top-1/2 -translate-y-1/2 mr-2',
@@ -22,7 +32,7 @@ const Tooltip = ({
   };
 
   // Arrow classes based on position
-  const arrowClasses = {
+  const arrowClasses: Record<TooltipPosition, string> = {
     top: 'top-full left-1/2 -translate-x-1/2 border-t-surface-3 border-x-transparent border-b-transparent',
     bottom: 'bottom-full left-1/2 -translate-x-1/2 border-b-surface-3 border-x-transparent border-t-transparent',
     left: 'left-full top-1/2 -translate-y-1/2 border-l-surface-3 border-y-transparent border-r-transparent',

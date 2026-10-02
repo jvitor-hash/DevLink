@@ -2,6 +2,10 @@ import Checkbox from "@/components/form/checkbox_component";
 import Select from "@/components/form/select_component";
 import TextArea from "@/components/form/textarea_component";
 import { platformOptions, primaryLanguageOptions } from "../questionnaire.constants";
+import {
+  QUESTIONNAIRE_TEXT_MAX,
+  QUESTIONNAIRE_TEXT_MIN,
+} from "../questionnaire.limits";
 import type { QuestionnairePlatformStepProps } from "../questionnaire.types";
 import type { ProgrammingLanguage } from "@/data/types/database";
 
@@ -15,6 +19,8 @@ export function SolutionStep({ form, setField, togglePlatform, showFieldErrors }
         label="O que o produto deve realizar?"
         name="requirements"
         value={form.requirements}
+        minLength={QUESTIONNAIRE_TEXT_MIN}
+        maxLength={QUESTIONNAIRE_TEXT_MAX}
         onChange={(e) => setField("requirements", e.target.value)}
         error={showFieldErrors && form.requirements.trim() === ""}
       />
@@ -22,6 +28,8 @@ export function SolutionStep({ form, setField, togglePlatform, showFieldErrors }
         label="Como é o sucesso?"
         name="successCriteria"
         value={form.successCriteria}
+        minLength={QUESTIONNAIRE_TEXT_MIN}
+        maxLength={QUESTIONNAIRE_TEXT_MAX}
         onChange={(e) => setField("successCriteria", e.target.value)}
         error={showFieldErrors && form.successCriteria.trim() === ""}
       />
@@ -29,6 +37,8 @@ export function SolutionStep({ form, setField, togglePlatform, showFieldErrors }
         label="Qual é a proposta de valor central do produto?"
         name="valueProposition"
         value={form.valueProposition}
+        minLength={QUESTIONNAIRE_TEXT_MIN}
+        maxLength={QUESTIONNAIRE_TEXT_MAX}
         onChange={(e) => setField("valueProposition", e.target.value)}
         error={showFieldErrors && form.valueProposition.trim() === ""}
       />
@@ -36,6 +46,8 @@ export function SolutionStep({ form, setField, togglePlatform, showFieldErrors }
         label="O que o diferencia das alternativas?"
         name="differentiation"
         value={form.differentiation}
+        minLength={QUESTIONNAIRE_TEXT_MIN}
+        maxLength={QUESTIONNAIRE_TEXT_MAX}
         onChange={(e) => setField("differentiation", e.target.value)}
         error={showFieldErrors && form.differentiation.trim() === ""}
       />

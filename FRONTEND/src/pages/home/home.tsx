@@ -3,20 +3,22 @@ import Button from "@/components/ui/button_component";
 import WaveEffect from "@/components/ui/wave_shader_component";
 import { scrollToY } from "@/utils/scroll_bus";
 import { CategoryCards } from "@/components/ui/category_cards";
+import { GlassFrame } from "@/components/ui/glass_frame";
+import { TagLabel } from "@/components/ui/tag_label";
 
 const HOW_IT_WORKS = [
   {
-    step: "1",
+    step: "01",
     title: "Descreva a ideia",
     body: "Responda o questionário guiado sobre problema e público.",
   },
   {
-    step: "2",
+    step: "02",
     title: "Publique o projeto",
     body: "A especificação vira um projeto visível para desenvolvedores.",
   },
   {
-    step: "3",
+    step: "03",
     title: "Receba propostas",
     body: "Negocie prazo e orçamento pelo chat do projeto.",
   },
@@ -39,89 +41,166 @@ export default function Home() {
 
   return (
     <main>
-      <section className="w-full min-h-screen overflow-hidden">
+      {/* Masthead: the zine cover strip */}
+      <div className="flex flex-wrap items-end justify-between gap-4 px-8 pt-6">
+        <div className="flex items-center gap-4">
+          <span className="gb-register" aria-hidden="true" />
+
+          <span className="gb-display text-3xl">DEVLINK</span>
+
+          <TagLabel label="Nova Edição" />
+        </div>
+
+        <div className="text-right">
+          <span className="gb-kicker block">Technical Zine</span>
+
+          <span className="gb-kicker">Nº 001 — {new Date().getFullYear()}</span>
+        </div>
+      </div>
+
+      <div className="gb-rule-heavy mt-4" />
+
+      {/* Cover: headline plus a vertical Japanese column */}
+      <section className="w-full overflow-hidden">
         <WaveEffect />
 
-        <div className="relative grid min-h-[calc(100vh-4rem)] grid-cols-1 items-center gap-8 px-8 md:grid-cols-2">
-          <div className="max-w-xl">
-            <h1 className="text-6xl mb-5">
-              Transforme suas ideias em <br />especificações técnicas.
+        <div className="relative grid min-h-[calc(100vh-8rem)] grid-cols-1 items-center gap-8 px-8 py-12 md:grid-cols-[1fr_auto]">
+          <div className="max-w-2xl">
+            <p className="gb-kicker mb-4">transforming ideas into specs</p>
+
+            <h1 className="gb-heading text-5xl leading-[0.95] mb-6 md:text-6xl">
+              Transforme<br />
+              suas ideias<br />
+              em especificações
             </h1>
-            <p className="text-lg mb-5 text-(--text-muted)">
+
+            <p className="gb-body text-lg mb-8 max-w-xl">
               Tire suas ideias do papel e transforme-as em planos técnicos objetivos.
             </p>
-            <div className="flex gap-4">
+
+            <div className="flex flex-wrap gap-4">
               <Button label="Questionário" colorType="primary" buttonType="button" href="/questionnaire" />
               <Button label="Como funciona?" colorType="secondary" buttonType="button" onClick={scrollToHowItWorks} />
             </div>
           </div>
+
+          <div className="hidden items-start gap-6 md:flex">
+            <div className="gb-halftone h-48 w-24 text-(--primary)" aria-hidden="true" />
+          </div>
         </div>
       </section>
 
-      <section className="w-full min-h-screen py-16">
-        <p className="text-3xl text-center w-full mb-2">Categorias</p>
-        <p className="text-lg text-(--text-muted) w-full text-center mb-3">
-          Pesquise por categoria e encontre o projeto que procura.
-        </p>
+      {/* 01 Categories */}
+      <section className="w-full py-16">
+        <div className="px-8">
+          <div className="flex items-baseline gap-4">
+            <span className="gb-heading text-4xl">01</span>
+
+            <div>
+              <h2 className="gb-heading text-2xl">Categorias</h2>
+
+              <p className="gb-kicker mt-1">Browse by category</p>
+            </div>
+          </div>
+
+          <div className="gb-rule-heavy my-6" />
+
+          <p className="gb-body mb-8 max-w-2xl">
+            Pesquise por categoria e encontre o projeto que procura.
+          </p>
+        </div>
 
         <div className="mx-8">
           <CategoryCards />
         </div>
       </section>
 
-      <section id="como-funciona" className="w-full min-h-screen scroll-mt-16 py-16">
-        <p className="text-3xl text-center w-full mb-10">Como funciona</p>
+      {/* 02 How it works */}
+      <section id="como-funciona" className="w-full scroll-mt-16 py-16">
+        <div className="px-8">
+          <div className="flex items-baseline gap-4">
+            <span className="gb-heading text-4xl">02</span>
+
+            <div>
+              <h2 className="gb-heading text-2xl">Como funciona</h2>
+
+              <p className="gb-kicker mt-1">How it works</p>
+            </div>
+          </div>
+
+          <div className="gb-rule-heavy my-6" />
+        </div>
 
         <div className="mx-8 grid grid-cols-1 gap-6 md:grid-cols-3">
           {HOW_IT_WORKS.map(({ step, title, body }) => (
-            <div
-              key={step}
-              className="rounded-xl border border-(--border-subtle) bg-(--surface-1) p-6 transition-all hover:-translate-y-1 hover:shadow-lg"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-(--primary) text-sm font-bold text-white">
-                  {step}
-                </span>
-                <h3 className="text-lg font-bold text-(--text-primary)">{title}</h3>
+            <GlassFrame key={step} panelClassName="p-6">
+              <div className="mb-4 flex items-baseline gap-3">
+                <span className="gb-heading text-4xl text-(--primary)">{step}</span>
+
+                <h3 className="gb-heading text-lg">{title}</h3>
               </div>
-              <p className="text-sm text-(--text-secondary)">{body}</p>
-            </div>
+
+              <div className="gb-rule-hair my-4" />
+
+              <p className="gb-body text-sm">{body}</p>
+            </GlassFrame>
           ))}
         </div>
       </section>
 
+      {/* 03 Roster */}
       <section className="w-full min-h-[60vh] py-16">
-        <p className="text-3xl text-center w-full mb-2">Quem somos</p>
-        <p className="text-lg text-(--text-muted) w-full text-center mb-10">
-          Esta é a nossa equipe de desenvolvedores que ajudaram nesse projeto
-        </p>
+        <div className="px-8">
+          <div className="flex items-baseline gap-4">
+            <span className="gb-heading text-4xl">03</span>
 
-        <div className="mx-8 flex flex-wrap justify-center gap-6">
-          {TEAM_MEMBERS.map(({ name, role }) => (
-            <div
-              key={name}
-              className="flex w-64 flex-col items-center rounded-xl border border-(--border-subtle) bg-(--surface-1) p-6 transition-all hover:-translate-y-1 hover:shadow-lg"
-            >
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-(--surface-2) text-2xl font-bold text-(--text-muted)">
-                {name.charAt(0)}
-              </div>
-              <p className="mt-4 font-semibold text-(--text-primary)">{name}</p>
-              <p className="mt-1 text-xs text-(--text-muted)">{role}</p>
+            <div>
+              <h2 className="gb-heading text-2xl">Quem somos</h2>
+
+              <p className="gb-kicker mt-1">The team</p>
             </div>
-          ))}
+          </div>
+
+          <div className="gb-rule-heavy my-6" />
+
+          <p className="gb-body max-w-2xl">
+            Esta é a nossa equipe de desenvolvedores que ajudaram nesse projeto
+          </p>
         </div>
+
+        <ul className="mx-8 mt-10 grid grid-cols-1 gap-x-8 gap-y-0 md:grid-cols-2 lg:grid-cols-3">
+          {TEAM_MEMBERS.map(({ name, role }) => (
+            <li key={name} className="border-b border-(--border-subtle) py-5">
+              <div className="flex items-baseline gap-4">
+                <span className="gb-heading text-xl">{name}</span>
+
+                <span className="gb-halftone ml-auto h-4 w-10 text-(--primary)" aria-hidden="true" />
+              </div>
+
+              <p className="gb-body mt-2 text-sm">{role}</p>
+            </li>
+          ))}
+        </ul>
       </section>
 
-      <footer className="border-t border-(--border-subtle) py-6">
-        <div className="flex flex-col items-center justify-between gap-2 px-8 text-sm text-(--text-muted) sm:flex-row">
-          <p>© {new Date().getFullYear()} DevLink</p>
-          <div className="flex gap-6">
-            <Link to="/project" className="hover:text-(--text-primary) transition-colors">Projetos</Link>
-            <Link to="/questionnaire" className="hover:text-(--text-primary) transition-colors">Questionário</Link>
-            <Link to="/profile" className="hover:text-(--text-primary) transition-colors">Perfil</Link>
-          </div>
+      {/* Colophon */}
+      <footer className="px-8 pb-10 pt-8">
+        <div className="gb-rule-heavy mb-6" />
+
+        <div className="flex flex-col items-start justify-between gap-4 text-sm text-(--text-muted) sm:flex-row sm:items-center">
+          <p className="flex items-center gap-4">
+            <span className="gb-register" aria-hidden="true" />
+
+            <span className="gb-kicker">© {new Date().getFullYear()} DevLink</span>
+          </p>
+
+          <nav className="flex flex-wrap gap-6">
+            <Link to="/project" className="gb-kicker hover:text-(--text-primary) transition-colors">Projetos</Link>
+            <Link to="/questionnaire" className="gb-kicker hover:text-(--text-primary) transition-colors">Questionário</Link>
+            <Link to="/profile" className="gb-kicker hover:text-(--text-primary) transition-colors">Perfil</Link>
+          </nav>
         </div>
       </footer>
     </main>
   );
-}
+}

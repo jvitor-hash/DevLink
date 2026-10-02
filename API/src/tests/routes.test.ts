@@ -1,10 +1,9 @@
 import { describe, expect, test, beforeAll, afterAll } from "bun:test";
 import { Elysia } from "elysia";
 import { ProjectsRouter } from "../routes/v1/projects";
-import { NotificationRouter } from "../routes/v1/notification";
-import { MessageRouter } from "../routes/v1/message";
+import { ProjectActionRouter } from "../routes/v1/project_action";
+import { EventsRouter } from "../routes/v1/events";
 import { UserPreferenceRouter } from "../routes/v1/user_preferences";
-import { SavedTicketRouter } from "../routes/v1/saved_ticket";
 import { ReviewRouter } from "../routes/v1/review";
 import { TodoRouter } from "../routes/v1/todo";
 import { TicketRouter } from "../routes/v1/ticket";
@@ -19,10 +18,9 @@ describe("API Routes Integration Tests", () => {
     app = new Elysia()
       .use(authPlugin)
       .use(ProjectsRouter)
-      .use(NotificationRouter)
-      .use(MessageRouter)
+      .use(ProjectActionRouter)
+      .use(EventsRouter)
       .use(UserPreferenceRouter)
-      .use(SavedTicketRouter)
       .use(ReviewRouter)
       .use(TodoRouter)
       .use(TicketRouter)
@@ -68,23 +66,34 @@ describe("API Routes Integration Tests", () => {
       expect(response.status).toBe(422);
     });
 
-    test("GET /api/v1/notification requires authentication (401)", async () => {
-      const response = await fetch(`http://localhost:${serverPort}/api/v1/notifications`);
+    test("POST /api/v1/project_action requires authentication (401)", async () => {
+      const response = await fetch(`http://localhost:${serverPort}/api/v1/project_action`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "SAVE_PROJECT", payload: { title: "Test" } }),
+      });
       expect(response.status).toBe(401);
     });
 
-    test("GET /api/v1/messages requires authentication (401)", async () => {
-      const response = await fetch(`http://localhost:${serverPort}/api/v1/messages`);
+    test("POST /api/v1/project_action rejects unknown actions (400)", async () => {
+      const response = await fetch(`http://localhost:${serverPort}/api/v1/project_action`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": "550e8400-e29b-41d4-a716-446655440001",
+        },
+        body: JSON.stringify({ action: "ARCHIVE_PROJECT", payload: {} }),
+      });
+      expect([400, 401]).toContain(response.status);
+    });
+
+    test("GET /api/v1/events/stream requires authentication (401)", async () => {
+      const response = await fetch(`http://localhost:${serverPort}/api/v1/events/stream`);
       expect(response.status).toBe(401);
     });
 
     test("GET /api/v1/user-preferences requires authentication (401)", async () => {
       const response = await fetch(`http://localhost:${serverPort}/api/v1/user-preferences`);
-      expect(response.status).toBe(401);
-    });
-
-    test("GET /api/v1/saved-tickets requires authentication (401)", async () => {
-      const response = await fetch(`http://localhost:${serverPort}/api/v1/saved-tickets`);
       expect(response.status).toBe(401);
     });
 
@@ -117,14 +126,12 @@ describe("API Routes Integration Tests", () => {
     test("All routers are properly mounted and respond to requests", async () => {
       const endpoints = [
         "/api/v1/projects",
-        "/api/v1/notifications",
-        "/api/v1/messages",
         "/api/v1/user-preferences",
-        "/api/v1/saved-tickets",
         "/api/v1/reviews",
         "/api/v1/todos",
         "/api/v1/tickets",
         "/api/v1/users",
+        "/api/v1/events/stream",
         "/api/v1/projects/counts/by-category",
       ];
 

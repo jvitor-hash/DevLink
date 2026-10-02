@@ -3,6 +3,15 @@ import MoneyInput from "@/components/form/money_input_component";
 import Select from "@/components/form/select_component";
 import TextArea from "@/components/form/textarea_component";
 import { categoryOptions, subCategoryOptions } from "../questionnaire.constants";
+import { hasBudgetError } from "../questionnaire.validation";
+import {
+  QUESTIONNAIRE_BUDGET_MAX_DIGITS,
+  QUESTIONNAIRE_TEXT_MAX,
+  QUESTIONNAIRE_TEXT_MIN,
+  QUESTIONNAIRE_TITLE_MAX,
+  QUESTIONNAIRE_TITLE_MIN,
+  isTextWithinLength,
+} from "../questionnaire.limits";
 import type { QuestionnaireDetailsStepProps } from "../questionnaire.types";
 
 export function DetailsStep({ form, setField, isBudgetInverted, showFieldErrors }: QuestionnaireDetailsStepProps) {
@@ -13,16 +22,20 @@ export function DetailsStep({ form, setField, isBudgetInverted, showFieldErrors 
       <Input
         label="Qual seria o titulo desse projeto?"
         name="title"
+        minLength={QUESTIONNAIRE_TITLE_MIN}
+        maxLength={QUESTIONNAIRE_TITLE_MAX}
         value={form.title}
         onChange={(e) => setField("title", e.target.value)}
-        error={showFieldErrors && form.title.trim() === ""}
+        error={showFieldErrors && !isTextWithinLength("title", form.title)}
       />
       <TextArea
         label="Descreva seu projeto em poucas palavras?"
         name="description"
         value={form.description}
+        minLength={QUESTIONNAIRE_TEXT_MIN}
+        maxLength={QUESTIONNAIRE_TEXT_MAX}
         onChange={(e) => setField("description", e.target.value)}
-        error={showFieldErrors && form.description.trim() === ""}
+        error={showFieldErrors && !isTextWithinLength("description", form.description)}
       />
 
       <div>
@@ -41,7 +54,7 @@ export function DetailsStep({ form, setField, isBudgetInverted, showFieldErrors 
       <div>
         <p>Qual a sub-categoria do projeto?</p>
         <Select
-          labels={subCategories !== null && subCategories}
+          labels={subCategories ?? {}}
           name="subCategory"
           value={form.subCategory}
           placeholder="Selecione uma categoria"
@@ -57,16 +70,18 @@ export function DetailsStep({ form, setField, isBudgetInverted, showFieldErrors 
           name="minBudget"
           value={form.minBudget}
           dataTestId="minBudget"
+          maxLength={QUESTIONNAIRE_BUDGET_MAX_DIGITS}
           onChange={(value) => setField("minBudget", value)}
-          error={showFieldErrors && form.minBudget === ""}
+          error={showFieldErrors && hasBudgetError(form, "minBudget")}
         />
         <MoneyInput
           label="Orçamento maximo (R$)"
           name="maxBudget"
           value={form.maxBudget}
           dataTestId="maxBudget"
+          maxLength={QUESTIONNAIRE_BUDGET_MAX_DIGITS}
           onChange={(value) => setField("maxBudget", value)}
-          error={showFieldErrors && form.maxBudget === ""}
+          error={showFieldErrors && hasBudgetError(form, "maxBudget")}
         />
       </div>
 

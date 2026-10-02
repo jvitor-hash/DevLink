@@ -1,0 +1,539 @@
+/*
+ * Neo-Brutalist Glass theme layer.
+ *
+ * Every `gb-*` class carries the current dark look as its base, and the brutalist
+ * treatment is a `[data-theme="glass-brutal"]` override on top. That keeps the
+ * theme fully reversible: removing the attribute from <html> restores the
+ * original appearance without touching a single component.
+ */
+
+/* ---------------------------------- Screen background ---------------------------------- */
+
+/* The hero shader paints a white-to-transparent wash that blows out a light backdrop. */
+[data-theme="glass-brutal"] .gb-hero-shader {
+  display: none;
+}
+
+.gb-backdrop,
+.gb-grain,
+.gb-blob {
+  display: none;
+}
+
+/* ---------------------------------- Glass frame ---------------------------------- */
+
+.gb-frame {
+  position: relative;
+}
+
+.gb-frame-shadow {
+  display: none;
+}
+
+.gb-glass {
+  background-color: var(--surface-1);
+  border-radius: 0.75rem;
+}
+
+/* ---------------------------------- Button ---------------------------------- */
+
+.gb-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 2rem;
+  border-radius: 9999px;
+  background-color: var(--gb-button-fill, color-mix(in srgb, var(--primary) 80%, black));
+  color: #FFFFFF;
+  cursor: pointer;
+}
+
+.gb-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Header and tab bar: glass with a thick bottom border. */
+[data-theme="glass-brutal"] .gb-tabbar {
+  border-bottom-width: var(--gb-border-width);
+}
+
+/* ---------------------------------- Select ---------------------------------- */
+
+.gb-select {
+  background-color: transparent;
+  color: inherit;
+}
+
+[data-theme="glass-brutal"] .gb-select {
+  border-width: var(--gb-border-width);
+  border-color: var(--gb-ink);
+  border-radius: var(--gb-radius);
+  background-color: var(--gb-glass-fallback);
+  color: var(--gb-ink);
+  font-weight: 700;
+}
+
+/* ---------------------------------- Chip ---------------------------------- */
+
+.gb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.gb-chip-inactive {
+  background-color: var(--surface-2);
+  color: var(--text-secondary);
+}
+
+.gb-chip-active {
+  background-color: var(--primary);
+  color: #FFFFFF;
+}
+
+/* ---------------------------------- Tag ---------------------------------- */
+
+.gb-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.125rem;
+}
+
+/* ================================================================================
+ * NEO-BRUTALIST GLASS
+ * ================================================================================ */
+
+[data-theme="glass-brutal"] {
+  /* Palette */
+  --gb-ink: #1E1D1B;
+  --gb-stone-50: #F2F0EC;
+  --gb-stone-200: #D9D6D1;
+  --gb-stone-400: #A9A59E;
+  --gb-stone-600: #6F6B65;
+  --gb-accent: #B4504A;
+  --gb-accent-deep: #8A3A36;
+
+  /* Surfaces */
+  --gb-glass-fill: rgba(255, 255, 255, 0.6);
+  --gb-glass-edge: rgba(255, 255, 255, 0.5);
+  --gb-glass-fallback: rgba(242, 240, 236, 0.92);
+
+  /* Metrics */
+  --gb-blur: 20px;
+  --gb-border-width: 2px;
+  --gb-radius: 0;
+  --gb-shadow-offset: 6px;
+  --gb-divider-width: 1.5px;
+
+  /* Typography */
+  --gb-font-heading: "Space Grotesk", "Archivo Black", ui-sans-serif, system-ui, sans-serif;
+  --gb-font-body: ui-sans-serif, system-ui, sans-serif;
+
+  /* Zine */
+  --gb-rule-heavy: 3px;
+  --gb-rule-hair: 1px;
+  --gb-dot: 6px;
+
+  /*
+   * Semantic remap: the app reads these tokens everywhere, so pointing them at
+   * the brutalist palette flips the whole surface without touching call sites.
+   */
+  --background: var(--gb-stone-50);
+  --surface-1: var(--gb-glass-fill);
+  --surface-2: var(--gb-stone-50);
+  --surface-3: var(--gb-stone-200);
+
+  --border: var(--gb-ink);
+  --border-subtle: var(--gb-stone-400);
+
+  --text-primary: var(--gb-ink);
+  --text-secondary: color-mix(in srgb, var(--gb-ink) 85%, transparent);
+  --text-muted: var(--gb-stone-600);
+  --text-disabled: var(--gb-stone-400);
+
+  --primary: var(--gb-accent);
+  --secondary: var(--gb-stone-600);
+
+  --success: var(--gb-accent-deep);
+  --warning: var(--gb-stone-600);
+  --error: var(--gb-accent-deep);
+  --info: var(--gb-stone-600);
+
+  font-family: var(--gb-font-body);
+}
+
+[data-theme="glass-brutal"] body {
+  background-color: var(--gb-stone-50);
+  color: var(--text-primary);
+  font-family: var(--gb-font-body);
+}
+
+/* ---------------------------------- Sharp corners ---------------------------------- */
+
+/*
+ * Brutalist: nothing rounds. These rules are unlayered, so they beat every
+ * Tailwind radius utility. The blurred backdrop blobs keep their own radius.
+ */
+[data-theme="glass-brutal"] .rounded,
+[data-theme="glass-brutal"] .rounded-none,
+[data-theme="glass-brutal"] .rounded-sm,
+[data-theme="glass-brutal"] .rounded-md,
+[data-theme="glass-brutal"] .rounded-lg,
+[data-theme="glass-brutal"] .rounded-xl,
+[data-theme="glass-brutal"] .rounded-2xl,
+[data-theme="glass-brutal"] .rounded-3xl,
+[data-theme="glass-brutal"] .rounded-full {
+  border-radius: var(--gb-radius);
+}
+
+/* Typography: heavy caps headings, wide-tracked small labels. */
+[data-theme="glass-brutal"] .gb-heading {
+  font-family: var(--gb-font-heading);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+[data-theme="glass-brutal"] .gb-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+[data-theme="glass-brutal"] .gb-body {
+  color: var(--text-secondary);
+}
+
+/* ---------------------------------- Glass frame ---------------------------------- */
+
+[data-theme="glass-brutal"] .gb-frame {
+  isolation: isolate;
+}
+
+/*
+ * Hard offset shadow on its own layer behind the panel: solid ink, zero blur,
+ * so it never shows through the frosted fill.
+ */
+[data-theme="glass-brutal"] .gb-frame-shadow {
+  display: block;
+  position: absolute;
+  inset: 0;
+  background-color: var(--gb-ink);
+  transform: translate(var(--gb-shadow-offset), var(--gb-shadow-offset));
+  z-index: -1;
+  pointer-events: none;
+}
+
+[data-theme="glass-brutal"] .gb-glass {
+  background-color: var(--gb-glass-fill);
+  border: var(--gb-border-width) solid var(--gb-ink);
+  border-radius: var(--gb-radius);
+  box-shadow: inset 0 0 0 1px var(--gb-glass-edge);
+}
+
+/* Soft shadows and the hover lift are replaced by the hard offset shadow. */
+[data-theme="glass-brutal"] .gb-glass:hover {
+  box-shadow: inset 0 0 0 1px var(--gb-glass-edge);
+  transform: none;
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  [data-theme="glass-brutal"] .gb-glass {
+    -webkit-backdrop-filter: blur(var(--gb-blur)) saturate(140%);
+    backdrop-filter: blur(var(--gb-blur)) saturate(140%);
+  }
+}
+
+/* Fallback: opaque stone-50 at 92%, same borders and shadows. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  [data-theme="glass-brutal"] .gb-glass {
+    background-color: var(--gb-glass-fallback);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  [data-theme="glass-brutal"] .gb-glass {
+    background-color: var(--gb-glass-fallback);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="glass-brutal"] .gb-button,
+  [data-theme="glass-brutal"] .gb-chip {
+    transition: none;
+  }
+}
+
+/*
+ * Navbar: a fully transparent panel that relies on the backdrop blur alone.
+ * These rules must stay after the .gb-glass block above -- same specificity,
+ * so source order is what makes the transparent fill and the stronger blur win.
+ */
+[data-theme="glass-brutal"] .gb-navbar {
+  background-color: transparent;
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  [data-theme="glass-brutal"] .gb-navbar {
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
+    backdrop-filter: blur(28px) saturate(160%);
+  }
+}
+
+/* Without blur there is nothing to frost with, so fall back to the opaque tint. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  [data-theme="glass-brutal"] .gb-navbar {
+    background-color: var(--gb-glass-fallback);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  [data-theme="glass-brutal"] .gb-navbar {
+    background-color: var(--gb-glass-fallback);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* ---------------------------------- Button ---------------------------------- */
+
+[data-theme="glass-brutal"] .gb-button {
+  padding: 0.5rem 1.5rem;
+  border: var(--gb-border-width) solid var(--gb-ink);
+  border-radius: var(--gb-radius);
+  background-color: var(--gb-accent);
+  color: #FFFFFF;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  box-shadow: var(--gb-shadow-offset) var(--gb-shadow-offset) 0 0 var(--gb-ink);
+  transition: transform 80ms ease-out, box-shadow 80ms ease-out, background-color 120ms ease-out;
+}
+
+[data-theme="glass-brutal"] .gb-button:hover {
+  background-color: var(--gb-accent-deep);
+}
+
+/* Pressed state collapses the shadow and shifts the element by the offset. */
+[data-theme="glass-brutal"] .gb-button:active {
+  transform: translate(var(--gb-shadow-offset), var(--gb-shadow-offset));
+  box-shadow: 0 0 0 0 var(--gb-ink);
+}
+
+[data-theme="glass-brutal"] .gb-button:disabled {
+  background-color: var(--gb-stone-400);
+  box-shadow: none;
+}
+
+[data-theme="glass-brutal"] .gb-button-ghost {
+  background-color: var(--gb-glass-fallback);
+  color: var(--gb-ink);
+}
+
+[data-theme="glass-brutal"] .gb-button-ghost:hover {
+  background-color: var(--gb-stone-200);
+}
+
+/* ---------------------------------- Chip ---------------------------------- */
+
+[data-theme="glass-brutal"] .gb-chip {
+  padding: 0.375rem 0.75rem;
+  border: var(--gb-border-width) solid var(--gb-ink);
+  border-radius: var(--gb-radius);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background-color: var(--gb-glass-fallback);
+  color: var(--gb-ink);
+  transition: transform 80ms ease-out, box-shadow 80ms ease-out, background-color 120ms ease-out;
+}
+
+[data-theme="glass-brutal"] .gb-chip-active {
+  background-color: var(--gb-accent);
+  color: #FFFFFF;
+  box-shadow: var(--gb-shadow-offset) var(--gb-shadow-offset) 0 0 var(--gb-ink);
+}
+
+[data-theme="glass-brutal"] .gb-chip-active:active {
+  transform: translate(var(--gb-shadow-offset), var(--gb-shadow-offset));
+  box-shadow: 0 0 0 0 var(--gb-ink);
+}
+
+[data-theme="glass-brutal"] .gb-chip-inactive:hover {
+  background-color: var(--gb-stone-200);
+}
+
+/* ---------------------------------- Tag ---------------------------------- */
+
+[data-theme="glass-brutal"] .gb-tag {
+  border-radius: var(--gb-radius);
+  background-color: var(--gb-accent);
+  color: #FFFFFF;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* ---------------------------------- Divider ---------------------------------- */
+
+.gb-divider {
+  height: 1px;
+  border: 0;
+  background-color: var(--border-subtle);
+}
+
+[data-theme="glass-brutal"] .gb-divider {
+  height: var(--gb-divider-width);
+  background-color: var(--gb-ink);
+}
+
+[data-theme="glass-brutal"] .gb-row {
+  border-bottom-width: var(--gb-divider-width);
+  border-bottom-color: var(--gb-ink);
+}
+
+/* ---------------------------------- Zine ---------------------------------- */
+
+/* Heavy rule and hairline, the spine of a zine layout. */
+.gb-rule-heavy {
+  height: var(--gb-rule-heavy, 3px);
+  border: 0;
+  background-color: var(--border-subtle);
+}
+
+[data-theme="glass-brutal"] .gb-rule-heavy {
+  background-color: var(--gb-ink);
+}
+
+.gb-rule-hair {
+  height: var(--gb-rule-hair, 1px);
+  border: 0;
+  background-color: var(--border-subtle);
+}
+
+[data-theme="glass-brutal"] .gb-rule-hair {
+  background-color: var(--gb-ink);
+}
+
+/* Screentone: the halftone dot field used behind headlines and sidebars. */
+.gb-halftone {
+  background-image: radial-gradient(circle, currentColor 1px, transparent 1.4px);
+  background-size: var(--gb-dot, 6px) var(--gb-dot, 6px);
+}
+
+/* Registration marks, the printer's target corners. */
+.gb-register {
+  position: relative;
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  color: var(--text-primary);
+}
+
+.gb-register::before,
+.gb-register::after {
+  content: "";
+  position: absolute;
+  background-color: currentColor;
+}
+
+.gb-register::before {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+}
+
+.gb-register::after {
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+}
+
+/* Heavy display lockup used for the wordmark and section numbers. */
+.gb-display {
+  font-family: var(--gb-font-heading, ui-sans-serif, system-ui, sans-serif);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+/* Section label: number, rule and kicker on one line. */
+.gb-kicker {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ---------------------------------- Screen background ---------------------------------- */
+
+[data-theme="glass-brutal"] .gb-backdrop {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  overflow: hidden;
+  background-color: var(--gb-stone-50);
+}
+
+[data-theme="glass-brutal"] .gb-blob {
+  display: block;
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+}
+
+[data-theme="glass-brutal"] .gb-blob-stone {
+  background-color: var(--gb-stone-200);
+  top: 18%;
+  left: 8%;
+  width: 30rem;
+  height: 30rem;
+  opacity: 0.55;
+}
+
+[data-theme="glass-brutal"] .gb-blob-cool {
+  background-color: var(--gb-stone-400);
+  bottom: -12%;
+  left: -8%;
+  width: 28rem;
+  height: 28rem;
+  opacity: 0.35;
+}
+
+/* Dusty red blob near the top-right. */
+[data-theme="glass-brutal"] .gb-blob-accent {
+  background-color: var(--gb-accent);
+  top: -8%;
+  right: -6%;
+  width: 34rem;
+  height: 34rem;
+  opacity: 0.28;
+}
+
+[data-theme="glass-brutal"] .gb-grain {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+}
+

@@ -1,5 +1,6 @@
 import { AuthService, type LoginCredentials, type RegisterCredentials, type Permissions } from "@/data/services/auth_service";
 import type { UserDTO } from "@/data/types/database";
+import { cache, CACHE_KEYS } from "@/utils/session_cache";
 
 type UserListener = () => void;
 
@@ -76,6 +77,20 @@ export class CachedUser {
     this.user = await this.authService.getCurrentUser();
 
     this.notify();
+  }
+
+  // Drops the local identity without calling the API: used when the server
+  // reports the session is no longer valid.
+  clearSession() : void {
+    cache.delete(CACHE_KEYS.CURRENT_USER);
+
+    this.user = null;
+
+    this.notify();
+  }
+
+  async requestPasswordReset(email: string) : Promise<void> {
+    await this.authService.resetPassword(email);
   }
 
   get isSignedIn() : boolean {

@@ -62,6 +62,20 @@ export const notificationTypeEnum = pgEnum("notification_type", [
   "SYSTEM",
 ]);
 
+export const outboxStatusEnum = pgEnum("outbox_event_status", [
+  "PENDING",
+  "PROCESSING",
+  "DISPATCHED",
+  "FAILED",
+  "DEAD_LETTER",
+]);
+
+export const projectActionEnum = pgEnum("project_action_type", [
+  "SAVE_PROJECT",
+  "UPDATE_PROJECT",
+  "DELETE_PROJECT",
+]);
+
 export const languagePreferenceEnum = pgEnum("language_preference", [
   "ALL",
   ...programmingLanguageEnum.enumValues,

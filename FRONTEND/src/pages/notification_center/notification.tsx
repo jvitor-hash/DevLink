@@ -1,164 +1,162 @@
-import { useMemo, useState } from "react";
-import { useLoaderData, useNavigate } from "react-router-dom";
-import { notificationService } from "@/data/services/notification_service";
-import { savedTicketService } from "@/data/services/saved_ticket_service";
-import { userSingleton } from "@/context/user";
+import { useCallback, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Button from "@/components/ui/button_component";
 import NotificationListItem from "@/components/ui/notification_list_item";
-import type { NotificationDTO } from "@/data/types/database";
+import { BrutalChip } from "@/components/ui/brutal_chip";
+import { GlassFrame } from "@/components/ui/glass_frame";
 import { formatRelativeTime } from "@/utils/time_formatting";
-import { useNotifications } from "@/hooks/use_notifications";
+import { eventToNotification } from "@/utils/notification_mapper";
+import { useProjectEvents } from "@/hooks/use_project_events";
+import { useCurrentUser } from "@/hooks/use_current_user";
+import { cache, CACHE_KEYS } from "@/utils/session_cache";
+import type { NotificationDTO, ProjectEvent } from "@/data/types/database";
 
 type Category = "RECENTS" | "SAVED" | "ARCHIVES" | "OLD";
 
-const CATEGORIES: Array<{ key: Category; label: string }> = [
+const CATEGORIES: ReadonlyArray<{ key: Category; label: string }> = [
   { key: "RECENTS", label: "Recentes" },
   { key: "SAVED", label: "Salvos" },
   { key: "ARCHIVES", label: "Arquivados" },
   { key: "OLD", label: "Antigos" },
 ];
 
+const OLD_AFTER_MS = 7 * 24 * 60 * 60 * 1000;
+
 const isOld = (createdAt: string | Date | null | undefined): boolean => {
   if (!createdAt) return false;
-  const date = new Date(createdAt);
-  if (Number.isNaN(date.getTime())) return false;
-  return Date.now() - date.getTime() > 30 * 86_400_000;
+
+  const received = new Date(createdAt).getTime();
+
+  return Number.isFinite(received) && Date.now() - received > OLD_AFTER_MS;
 };
 
-export async function NotificationLoader(): Promise<{
-  items: NotificationDTO[];
-  savedProjectIds: string[];
-}> {
-  const pageSize = 100;
-  const items: NotificationDTO[] = [];
+const matchesCategory = (notification: NotificationDTO, category: Category | null): boolean => {
+  if (category === null) return true;
+  if (category === "ARCHIVES") return notification.archived;
+  if (notification.archived) return false;
 
-  for (let offset = 0; ; offset += pageSize) {
-    const page = await notificationService.list({ limit: pageSize, offset });
-    if (!Array.isArray(page) || page.length === 0) break;
-    items.push(...page);
-    if (page.length < pageSize) break;
-  }
+  if (category === "SAVED") return notification.type === "TICKET_SAVED";
+  if (category === "OLD") return isOld(notification.createdAt);
 
-  const user = userSingleton.getCachedUser();
-  const savedProjectIds = user
-    ? (await savedTicketService.getSavedProjectIdsByUser(user.id)).savedProjectIds
-    : [];
+  return true;
+};
 
-  return { items, savedProjectIds };
-}
+const restoreIds = (key: string): Set<string> => new Set(cache.get<string[]>(key) ?? []);
+
+const persistIds = (key: string, ids: Set<string>): void => {
+  cache.set(key, [...ids]);
+};
 
 export default function NotificationPage() {
-  const loaderData = useLoaderData<typeof NotificationLoader>();
+  const [category, setCategory] = useState<Category | null>("RECENTS");
+  const [events, setEvents] = useState<ProjectEvent[]>([]);
+  const [readIds, setReadIds] = useState<Set<string>>(() => restoreIds(CACHE_KEYS.NOTIFICATION_READ_IDS));
+  const [archivedIds, setArchivedIds] = useState<Set<string>>(() => restoreIds(CACHE_KEYS.NOTIFICATION_ARCHIVED_IDS));
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // The hook is the single source of truth: loader rows seed it, the socket
-  // pushes live updates and REST refresh covers disconnect gaps.
-  const { notifications, unreadCount, isConnected, markAsRead, setArchived } =
-    useNotifications(100, loaderData.items);
+  // Live feed: every project event becomes a notification entry.
+  const handleEvent = useCallback((event: ProjectEvent): void => {
+    setEvents((current) => [event, ...current.filter((existing) => existing.id !== event.id)]);
+  }, []);
 
-  const [category, setCategory] = useState<Category>("RECENTS");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [savedIds, setSavedIds] = useState<string[]>(loaderData.savedProjectIds ?? []);
+  // The feed is scoped to the audience the API streams for the signed-in user,
+  // so every event they are entitled to arrives here regardless of project.
+  const user = useCurrentUser();
 
-  const markAllAsRead = async (): Promise<void> => {
-    const unread = notifications.filter(
-      (item) => !item.isRead && !isOld(item.createdAt),
-    );
+  useProjectEvents(null, { onEvent: handleEvent, scope: user ? "audience" : "inactive" });
 
-    if (!unread.length) return;
+  const notifications = useMemo<NotificationDTO[]>(
+    () => events.map((event) => eventToNotification(
+      event,
+      new Date().toISOString(),
+      readIds.has(event.id),
+      archivedIds.has(event.id),
+    )),
+    [events, readIds, archivedIds],
+  );
 
-    await Promise.allSettled(unread.map((item) => markAsRead(item.id)));
+  const filtered = useMemo(
+    () => notifications.filter((notification) => matchesCategory(notification, category)),
+    [notifications, category],
+  );
+
+  const selected = filtered.find((notification) => notification.id === selectedId) ?? null;
+  const selectedProjectId = selected?.projectId ?? null;
+
+  // Read and archived flags survive navigation and reloads: the API only
+  // streams live events, so the local ids are the source of truth here.
+  const markAsRead = (notification: NotificationDTO): void => {
+    setReadIds((current) => {
+      const next = new Set(current).add(notification.id);
+
+      persistIds(CACHE_KEYS.NOTIFICATION_READ_IDS, next);
+
+      return next;
+    });
   };
 
-  const archive = async (item: NotificationDTO): Promise<void> => {
-    await setArchived(item.id, true);
+  const archive = (notification: NotificationDTO): void => {
+    setArchivedIds((current) => {
+      const next = new Set(current).add(notification.id);
 
-    setSelectedId((prev) => (prev === item.id ? null : prev));
+      persistIds(CACHE_KEYS.NOTIFICATION_ARCHIVED_IDS, next);
+
+      return next;
+    });
   };
 
-  const unarchive = async (item: NotificationDTO): Promise<void> => {
-    await setArchived(item.id, false);
+  const unarchive = (notification: NotificationDTO): void => {
+    setArchivedIds((current) => {
+      const next = new Set(current);
+
+      next.delete(notification.id);
+
+      persistIds(CACHE_KEYS.NOTIFICATION_ARCHIVED_IDS, next);
+
+      return next;
+    });
   };
 
-  const saveProjectFromNotification = async (projectId: string): Promise<void> => {
-    if (savedIds.includes(projectId)) return;
-
-    // Saving is a programmer-only action; the API rejects everyone else.
-    if (userSingleton.getCachedUser()?.role !== "PROGRAMMER") return;
-
-    try {
-      await savedTicketService.create({ projectId });
-      setSavedIds((prev) => [...prev, projectId]);
-    } catch {
-      // Ignore save failures.
-    }
-  };
-
-  const filtered = useMemo((): NotificationDTO[] => {
-    switch (category) {
-      case "RECENTS":
-        return notifications.filter((item) => !item.isRead && !isOld(item.createdAt));
-      case "SAVED":
-        return notifications.filter((item) => item.projectId != null && savedIds.includes(item.projectId));
-      case "ARCHIVES":
-        return notifications.filter((item) => item.archived && !isOld(item.createdAt));
-      default:
-        return notifications.filter((item) => isOld(item.createdAt));
-    }
-  }, [notifications, category, savedIds]);
-
-  const selected = notifications.find((item) => item.id === selectedId) ?? null;
-  const selectedProjectId = selected ? selected.projectId : null;
-
-  const categoryCount = (key: Category): number => {
-    switch (key) {
-      case "RECENTS": return unreadCount;
-      case "SAVED": return notifications.filter((item) => item.projectId != null && savedIds.includes(item.projectId)).length;
-      case "ARCHIVES": return notifications.filter((item) => item.archived && !isOld(item.createdAt)).length;
-      default: return notifications.filter((item) => isOld(item.createdAt)).length;
-    }
-  };
+  const categoryCount = (key: Category): number =>
+    notifications.filter((notification) => matchesCategory(notification, key)).length;
 
   return (
-    <div className="mx-4 mt-4 grid min-h-[70vh] grid-cols-1 gap-4 lg:grid-cols-[240px_1fr_1fr]">
+    <div className="mx-auto w-full px-2 py-4 lg:px-6 lg:py-6">
+      <header className="mb-6">
+        <h1 className="gb-heading text-4xl tracking-tight">Notificações</h1>
+        <div className="gb-rule-heavy mt-2 h-[3px] bg-(--gb-ink) border-0" />
+      </header>
+
+      <div className="mx-0 grid min-h-[70vh] grid-cols-1 gap-4 lg:grid-cols-[240px_1fr_1fr]">
       {/* Category sidebar; horizontal chips on small screens */}
-      <aside className="rounded-md border border-(--border-subtle) bg-(--surface-1) p-4">
-        <h1 className="mb-4 text-xl">Notificações</h1>
+      <GlassFrame as="aside" panelClassName="p-4 shadow-[8px_8px_0px_#161212]">
+        <h1 className="gb-heading mb-4 text-xl">Notificações</h1>
         <nav className="flex flex-row gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
           {CATEGORIES.map(({ key, label }) => (
-            <button
+            <BrutalChip
               key={key}
-              type="button"
+              active={category === key}
               onClick={() => setCategory(key)}
-              className={`flex shrink-0 items-center justify-between rounded px-3 py-2 text-left text-sm transition-colors hover:cursor-pointer ${category === key ? "bg-(--primary) text-white" : "text-(--text-secondary) hover:bg-(--surface-2)"
-                }`}
+              className="w-full shrink-0 justify-between"
             >
               {label}
-              <span className="text-xs text-(--text-muted)">{categoryCount(key)}</span>
-            </button>
+              <span className={category === key ? "text-xs text-white" : "text-xs text-(--text-muted)"}>
+                {categoryCount(key)}
+              </span>
+            </BrutalChip>
           ))}
         </nav>
-      </aside>
+      </GlassFrame>
 
       {/* Notification list */}
-      <section className="rounded-md border border-(--border-subtle) bg-(--surface-1) p-4 overflow-y-auto">
+      <GlassFrame as="section" className="overflow-y-auto" panelClassName="p-4">
         <div className="mb-3 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg">{CATEGORIES.find((c) => c.key === category)?.label}</h2>
-            {!isConnected && <span className="text-xs text-(--text-muted)">reconectando…</span>}
-          </div>
-
-          <Button
-            label="Marcar todas lidas"
-            buttonType="button"
-            colorType="secondary"
-            disabled={unreadCount === 0}
-            onClick={markAllAsRead}
-          />
+          <h2 className="gb-heading text-xl">{CATEGORIES.find((c) => c.key === category)?.label}</h2>
         </div>
 
         {filtered.length === 0 ? (
-          <p className="text-(--text-muted) py-6 text-center">Nenhuma notificação nesta categoria.</p>
+          <p className="gb-label text-(--gb-stone-600) py-6 text-center">NENHUMA NOTIFICAÇÃO NESTA CATEGORIA.</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {filtered.map((item) => (
@@ -168,26 +166,26 @@ export default function NotificationPage() {
                   selected={selectedId === item.id}
                   onSelect={(selectedItem) => {
                     setSelectedId(selectedItem.id);
-                    if (!selectedItem.isRead) void markAsRead(selectedItem.id);
+                    if (!selectedItem.isRead) markAsRead(selectedItem);
                   }}
-                  onArchive={(archivedItem) => void archive(archivedItem)}
-                  onUnarchive={(unarchivedItem) => void unarchive(unarchivedItem)}
+                  onArchive={(archivedItem) => archive(archivedItem)}
+                  onUnarchive={(unarchivedItem) => unarchive(unarchivedItem)}
                 />
               </li>
             ))}
           </ul>
         )}
-      </section>
+      </GlassFrame>
 
       {/* Detail pane */}
-      <section className="rounded-md border border-(--border-subtle) bg-(--surface-1) p-4 overflow-y-auto">
+      <GlassFrame as="section" className="overflow-y-auto" panelClassName="p-4">
         {selected ? (
           <>
-            <h2 className="text-lg font-semibold">{selected.title}</h2>
-            <p className="mt-1 text-sm text-(--text-muted)">
+            <h2 className="gb-heading text-xl">{selected.title}</h2>
+            <p className="mt-1 text-sm text-(--gb-stone-600) tracking-wide">
               {formatRelativeTime(selected.createdAt) || String(selected.createdAt ?? "")}
             </p>
-            <div className="mt-4 rounded border border-(--border-subtle) bg-(--surface-2) p-4">
+            <div className="mt-4 gb-glass p-4 shadow-[6px_6px_0px_#161212] border-2 border-(--gb-ink)">
               <p className="whitespace-pre-wrap text-(--text-secondary)">{selected.message}</p>
             </div>
 
@@ -199,28 +197,22 @@ export default function NotificationPage() {
                   colorType="primary"
                   onClick={() => navigate(`/project/open/${encodeURIComponent(selectedProjectId)}`)}
                 />
-                {userSingleton.getCachedUser()?.role === "PROGRAMMER" && (
-                  <Button
-                    label={savedIds.includes(selectedProjectId) ? "Salvo" : "Salvar projeto"}
-                    buttonType="button"
-                    colorType="secondary"
-                    disabled={savedIds.includes(selectedProjectId)}
-                    onClick={() => saveProjectFromNotification(selectedProjectId)}
-                  />
-                )}
                 <Button
                   label={selected.archived ? "Desarquivar" : "Arquivar"}
                   buttonType="button"
                   colorType="secondary"
-                  onClick={() => (selected.archived ? void unarchive(selected) : void archive(selected))}
+                  onClick={() => (selected.archived ? unarchive(selected) : archive(selected))}
                 />
               </div>
             )}
           </>
         ) : (
-          <p className="text-(--text-muted)">Selecione uma notificação para ver os detalhes.</p>
+          <div className="py-6 text-center">
+            <p className="gb-label text-(--gb-stone-400)">SELECIONE UMA NOTIFICAÇÃO PARA VER OS DETALHES.</p>
+          </div>
         )}
-      </section>
+      </GlassFrame>
+    </div>
     </div>
   );
 }

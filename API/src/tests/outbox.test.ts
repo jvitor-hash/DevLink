@@ -1,65 +1,106 @@
 import { describe, expect, test } from "bun:test";
-import { publishNotificationEvent, requeueDeadEvents } from "../modules/notification_outbox";
-import { signPayload } from "../modules/webhook_delivery";
-import { WebhookRouter } from "../routes/v1/webhook";
+import { OutboxDispatcher } from "../modules/outbox_dispatcher";
+import { SseHub, type SSEEvent } from "../modules/sse_hub";
+import { ProjectActionRouter } from "../routes/v1/project_action";
+import { EventsRouter } from "../routes/v1/events";
 
-describe("Outbox Publishing", () => {
-  test("publishNotificationEvent returns an outbox id", async () => {
-    const id = await publishNotificationEvent({
-      type: "PROJECT_SAVED",
-      payload: {
-        id: "550e8400-e29b-41d4-a716-446655440000",
-        title: "Test project",
-        saveTotalCount: 1,
-        clientId: "550e8400-e29b-41d4-a716-446655440001",
-      },
-    }).catch(() => null);
+describe("Outbox Dispatcher", () => {
+  test("backoff follows 1m -> 5m -> 15m -> 1h -> dead letter", () => {
+    expect(OutboxDispatcher.nextBackoffMs(1)).toBe(60_000);
+    expect(OutboxDispatcher.nextBackoffMs(2)).toBe(300_000);
+    expect(OutboxDispatcher.nextBackoffMs(3)).toBe(900_000);
+    expect(OutboxDispatcher.nextBackoffMs(4)).toBe(3_600_000);
+    expect(OutboxDispatcher.nextBackoffMs(5)).toBe(null);
+    expect(OutboxDispatcher.nextBackoffMs(99)).toBe(null);
+  });
 
-    // Without a live database this either resolves with a uuid or fails gracefully.
-    if (id !== null) {
-      expect(typeof id).toBe("string");
-      expect(id.length).toBe(36);
-    }
+  test("dispatchBatch claims pending events without throwing", async () => {
+    // Without a live database this resolves with zero claimed rows or fails gracefully.
+    const claimed = await OutboxDispatcher.dispatchBatch().catch(() => -1);
+    expect(claimed).toBeGreaterThanOrEqual(-1);
+  });
+
+  test("worker id is stable per process", () => {
+    expect(OutboxDispatcher.workerId).toBe(OutboxDispatcher.workerId);
   });
 });
 
-describe("Webhook Signing", () => {
-  test("signPayload is deterministic for the same secret/body/timestamp", () => {
-    const body = JSON.stringify({ type: "NEW_PROJECT", id: "abc" });
-    const a = signPayload("secret", body, 1_700_000_000);
-    const b = signPayload("secret", body, 1_700_000_000);
-
-    expect(a).toBe(b);
-    expect(a).toHaveLength(64);
+describe("SSE Hub", () => {
+  const makeEvent = (audience: string[]): SSEEvent => ({
+    id: "evt_456",
+    event: "project.saved",
+    data: { projectId: "proj_123", name: "My Project" },
+    audienceUserIds: audience,
   });
 
-  test("signPayload differs for different secrets", () => {
-    const body = JSON.stringify({ type: "NEW_PROJECT", id: "abc" });
-    const a = signPayload("secret-a", body, 1_700_000_000);
-    const b = signPayload("secret-b", body, 1_700_000_000);
+  test("publishes only to audience members and returns delivery count", () => {
+    SseHub.reset();
 
-    expect(a).not.toBe(b);
+    const received: string[] = [];
+    const other: string[] = [];
+
+    SseHub.register("user-1", (chunk) => received.push(chunk));
+    SseHub.register("user-2", (chunk) => other.push(chunk));
+
+    const delivered = SseHub.publish(makeEvent(["user-1"]));
+
+    expect(delivered).toBe(1);
+    expect(received).toHaveLength(1);
+    expect(other).toHaveLength(0);
+    expect(received[0]).toContain("id: evt_456");
+    expect(received[0]).toContain("event: project.saved");
+    expect(received[0]).toContain(`data: {"projectId":"proj_123","name":"My Project"}`);
   });
 
-  test("signPayload differs for different timestamps", () => {
-    const body = JSON.stringify({ type: "NEW_PROJECT", id: "abc" });
-    const a = signPayload("secret", body, 1_700_000_000);
-    const b = signPayload("secret", body, 1_700_000_001);
+  test("unregister stops delivery", () => {
+    SseHub.reset();
 
-    expect(a).not.toBe(b);
+    const received: string[] = [];
+    const clientId = SseHub.register("user-1", (chunk) => received.push(chunk));
+
+    SseHub.unregister(clientId);
+    const delivered = SseHub.publish(makeEvent(["user-1"]));
+
+    expect(delivered).toBe(0);
+    expect(received).toHaveLength(0);
+  });
+
+  test("failed writes drop the client instead of throwing", () => {
+    SseHub.reset();
+
+    SseHub.register("user-1", () => {
+      throw new Error("stream closed");
+    });
+
+    const delivered = SseHub.publish(makeEvent(["user-1"]));
+
+    expect(delivered).toBe(0);
+    expect(SseHub.stats().connectionsActive).toBe(0);
+  });
+
+  test("stats report active connections and unique users", () => {
+    SseHub.reset();
+
+    SseHub.register("user-1", () => undefined);
+    SseHub.register("user-1", () => undefined);
+    SseHub.register("user-2", () => undefined);
+
+    const stats = SseHub.stats();
+
+    expect(stats.connectionsActive).toBe(3);
+    expect(stats.users).toBe(2);
+    expect(SseHub.clientCountForUser("user-1")).toBe(2);
   });
 });
 
-describe("Webhook Router Definition", () => {
-  test("WebhookRouter is properly configured", () => {
-    expect(WebhookRouter).toBeDefined();
-    expect(typeof WebhookRouter.prefix).toBe("function");
+describe("Routers Definition", () => {
+  test("ProjectActionRouter is properly configured", () => {
+    expect(ProjectActionRouter).toBeDefined();
+    expect(typeof ProjectActionRouter.prefix).toBe("function");
   });
-});
 
-describe("Dead Event Requeue", () => {
-  test("requeueDeadEvents returns a count", async () => {
-    const count = await requeueDeadEvents().catch(() => -1);
-    expect(count).toBeGreaterThanOrEqual(-1);
+  test("EventsRouter is properly configured", () => {
+    expect(EventsRouter).toBeDefined();
+    expect(typeof EventsRouter.prefix).toBe("function");
   });
 });

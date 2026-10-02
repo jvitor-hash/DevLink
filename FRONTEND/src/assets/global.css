@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./theme_glass_brutal.css";
 
 :root {
     --background: #1B1B1B;
@@ -15,7 +16,7 @@
     --text-muted: #999999;
     --text-disabled: #6F6F6F;
 
-    --primary: #B8322A;
+    --primary: #D6212B;
     --secondary: #505050;
 
     --success: #4A7561;
@@ -105,3 +106,43 @@ dialog.animated-dialog:not([open]) {
 .checkbox-input:checked::before {
   animation: checkbox-pop 180ms ease-out;
 }
+
+/* Manga Zine Neo-Brutalist Utilities */
+.manga-grid-bg {
+  background-color: #F3EEE2;
+  background-image: 
+    linear-gradient(to right, rgba(22, 18, 18, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(22, 18, 18, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.manga-speedlines {
+  background: repeating-conic-gradient(
+    from 215deg at 100% 0%,
+    rgba(22, 18, 18, 0.04) 0deg 2deg,
+    transparent 2deg 7deg
+  );
+}
+
+.manga-halftone {
+  background-image: radial-gradient(rgba(22, 18, 18, 0.25) 22%, transparent 22%);
+  background-size: 5px 5px;
+}
+
+.manga-font-display {
+  font-family: 'Bebas Neue', 'Space Grotesk', sans-serif;
+  letter-spacing: 0.03em;
+}
+
+.manga-font-body {
+  font-family: 'Merriweather', serif;
+}
+
+.manga-shadow {
+  box-shadow: 8px 8px 0px #161212;
+}
+
+.manga-shadow-sm {
+  box-shadow: 4px 4px 0px #161212;
+}
+

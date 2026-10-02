@@ -4,9 +4,9 @@ import { ChevronRight, Menu, Settings } from "react-feather";
 
 import Button from "@/components/ui/button_component";
 import Drawer from "@/components/ui/drawer_layout";
-import LoginModal from "@/components/ui/login_modal";
-import NotificationBell from "@/components/ui/notification_bell";
 import SavedTicketsMenu from "@/components/ui/saved_tickets_menu";
+import NotificationBell from "@/components/ui/notification_bell";
+import { GlassFrame } from "@/components/ui/glass_frame";
 import { userSingleton } from "@/context/user";
 import { useCurrentUser } from "@/hooks/use_current_user";
 
@@ -16,8 +16,9 @@ const MENU_LINKS: ReadonlyArray<{ to: string; label: string }> = [
   { to: "/profile", label: "Perfil" },
 ];
 
-export function NavbarLayout() : React.ReactElement {
-  const [openLogin, setOpenLogin] = useState<boolean>(false);
+type NavbarLayoutProps = { onOpenLogin: () => void };
+
+export function NavbarLayout({ onOpenLogin } : NavbarLayoutProps) : React.ReactElement {
   const [openDrawer, setOpenDrawer] = useState<boolean>(false);
 
   // Re-renders on login, register and logout through the singleton subscription.
@@ -32,46 +33,45 @@ export function NavbarLayout() : React.ReactElement {
 
   return (
     <>
-      <header className="sticky top-0 z-40 grid grid-cols-[1fr_auto_1fr] items-center p-4">
-        <div>
-          <button className="hover:cursor-pointer" onClick={() => setOpenDrawer(true)}>
-            <Menu size={18}/>
-          </button>
-        </div>
-
-        <div>
-          <Link to="/" className="text-xl">DevLink</Link>
-        </div>
-
-        <div className="justify-self-end">
-        {user ? (
-          <div className="flex items-center gap-3">
-            <NotificationBell />
-
-            <SavedTicketsMenu />
-
-            <Link to="/settings" className="flex items-center">
-              <Settings size={18}/>
-            </Link>
-
-            <span className="text-white font-medium" data-testid="navbar-username">{user.name}</span>
-
-            <Button label="Log-out" buttonType="button" colorType="primary" onClick={handleSignOut}/>
+      <header className="sticky top-0 z-40 p-4 pb-6">
+        <GlassFrame panelClassName="gb-navbar gb-tabbar grid grid-cols-[1fr_auto_1fr] items-center px-4 py-2">
+          <div>
+            <button className="hover:cursor-pointer" onClick={() => setOpenDrawer(true)}>
+              <Menu size={18}/>
+            </button>
           </div>
-        ) : (
-          <Button
-            label="Login"
-            buttonType="button"
-            colorType="primary"
-            dataTestId='login-btn'
-            onClick={() => setOpenLogin(true)}
-          />
-        )}
-      </div>
 
+          <div>
+            <Link to="/" className="gb-heading text-xl">DevLink</Link>
+          </div>
+
+          <div className="justify-self-end">
+            {user ? (
+              <div className="flex items-center gap-3">
+                <NotificationBell />
+
+                <SavedTicketsMenu />
+
+                <Link to="/settings" className="flex items-center">
+                  <Settings size={18}/>
+                </Link>
+
+                <span className="text-(--text-primary) font-medium" data-testid="navbar-username">{user.name}</span>
+
+                <Button label="Log-out" buttonType="button" colorType="primary" onClick={handleSignOut}/>
+              </div>
+            ) : (
+              <Button
+                label="Login"
+                buttonType="button"
+                colorType="primary"
+                dataTestId='login-btn'
+                onClick={onOpenLogin}
+              />
+            )}
+          </div>
+        </GlassFrame>
       </header>
-
-      <LoginModal show={openLogin} onClose={() => setOpenLogin(false)} />
 
       <Drawer open={openDrawer} onClose={() => setOpenDrawer(false)}>
         {MENU_LINKS.map((link) => (

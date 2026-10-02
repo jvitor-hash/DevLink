@@ -3,7 +3,7 @@ import type { UserDTO } from "@/data/types/database";
 
 type SettingsProfileProps = {
     user: UserDTO
-    onChange: (e) => void
+    onChange: (data: Partial<Pick<UserDTO, "name" | "bio">>) => void
 }
 
 export default function SettingsProfile({ user, onChange }: SettingsProfileProps) {
@@ -45,27 +45,12 @@ export default function SettingsProfile({ user, onChange }: SettingsProfileProps
                         </div>
                     </div>
 
-                    <div className="flex flex-col items-center gap-3">
-                        {user.image ? (
-                            <img
-                                src={user.image}
-                                alt="Avatar"
-                                className="h-20 w-20 rounded-full border border-(--border-subtle) object-cover"
-                            />
-                        ) : (
-                            <div className="flex h-20 w-20 items-center justify-center rounded-full border border-(--border-subtle) bg-(--surface-2) text-2xl font-bold text-(--text-muted)">
-                                {user.name.charAt(0).toUpperCase()}
-                            </div>
-                        )}
+                    <div className="flex flex-col items-center justify-center gap-2">
+                        <div className="flex h-20 w-20 items-center justify-center rounded-full border border-(--border-subtle) bg-(--surface-2) text-2xl font-bold text-(--text-muted)">
+                            {user.name.charAt(0).toUpperCase()}
+                        </div>
 
-                        <Input
-                            label=""
-                            name="settings-image"
-                            inputType="text"
-                            placeholder="URL da foto"
-                            value={user.image ?? ""}
-                            onChange={(e) => onChange({ image: e.target.value })}
-                        />
+                        <p className="text-xs text-(--text-muted)">Iniciais da conta</p>
                     </div>
                 </div>
             </section>

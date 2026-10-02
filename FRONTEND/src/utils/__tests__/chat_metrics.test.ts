@@ -1,74 +1,69 @@
 import { describe, expect, test } from "bun:test";
+import { acceptEvent, isProjectEventType, type RawProjectEvent } from "@/hooks/use_project_events";
 
-import { countUnseenOffers, countUnseenOffersBySender } from "@/utils/chat_metrics";
-import type { ChatMessage } from "@/hooks/use_project_chat";
-
-const offer = (
-  id: string,
-  senderId: string,
-  offerStatus: "PENDING" | "ACCEPTED" | "REJECTED" | null,
-  isRead = false,
-): ChatMessage => ({
-  id,
-  senderId,
-  content: "proposta",
-  isRead,
-  offerDeadline: offerStatus ? "2026-12-31T00:00:00.000Z" : null,
-  offerStatus,
-  createdAt: "2026-09-30T12:00:00.000Z",
-  pending: false,
+const makeEvent = (overrides: Partial<RawProjectEvent> = {}): RawProjectEvent => ({
+  id: "evt_456",
+  type: "project.saved",
+  aggregateType: "project",
+  aggregateId: "proj_123",
+  payload: { title: "My Project" },
+  ...overrides,
 });
 
-const plain = (id: string, senderId: string, isRead = false): ChatMessage => ({
-  id,
-  senderId,
-  content: "mensagem",
-  isRead,
-  offerDeadline: null,
-  offerStatus: null,
-  createdAt: "2026-09-30T12:00:00.000Z",
-  pending: false,
+describe("Project Event Type Guard", () => {
+  test("accepts the three streamed event types", () => {
+    expect(isProjectEventType("project.saved")).toBe(true);
+    expect(isProjectEventType("project.updated")).toBe(true);
+    expect(isProjectEventType("project.deleted")).toBe(true);
+  });
+
+  test("rejects unknown or malformed types", () => {
+    expect(isProjectEventType("project.archived")).toBe(false);
+    expect(isProjectEventType(42)).toBe(false);
+    expect(isProjectEventType(undefined)).toBe(false);
+  });
 });
 
-describe("Chat Metrics", () => {
-  test("counts only pending and unread offers", () => {
-    const messages = [
-      plain("m1", "p1"),
-      offer("m2", "p1", "PENDING"),
-      offer("m3", "p2", "PENDING", true),
-      offer("m4", "p2", "ACCEPTED"),
-      offer("m5", "p3", "REJECTED", true),
-      offer("m6", "p4", "PENDING"),
-    ];
+describe("Event Dedupe And Filtering", () => {
+  test("accepts a new event and normalizes it", () => {
+    const seen = new Set<string>();
+    const event = acceptEvent(seen, makeEvent(), null);
 
-    expect(countUnseenOffers(messages)).toBe(2);
+    expect(event).not.toBeNull();
+    expect(event?.id).toBe("evt_456");
+    expect(event?.type).toBe("project.saved");
+    expect(event?.aggregateId).toBe("proj_123");
   });
 
-  test("returns zero for conversations without unseen offers", () => {
-    expect(countUnseenOffers([plain("m1", "p1"), offer("m2", "p2", "PENDING", true)])).toBe(0);
-    expect(countUnseenOffers([])).toBe(0);
+  test("dedupes repeated event ids", () => {
+    const seen = new Set<string>();
+
+    expect(acceptEvent(seen, makeEvent(), null)).not.toBeNull();
+    expect(acceptEvent(seen, makeEvent(), null)).toBeNull();
   });
 
-  test("groups unseen pending offers per sender", () => {
-    const messages = [
-      offer("m1", "p1", "PENDING"),
-      offer("m2", "p1", "PENDING"),
-      offer("m3", "p1", "PENDING", true),
-      offer("m4", "p2", "PENDING"),
-      offer("m5", "p2", "ACCEPTED"),
-    ];
+  test("drops events for other projects", () => {
+    const seen = new Set<string>();
 
-    const counts = countUnseenOffersBySender(messages);
-
-    expect(counts.get("p1")).toBe(2);
-    expect(counts.get("p2")).toBe(1);
-    expect(counts.has("p3")).toBe(false);
+    expect(acceptEvent(seen, makeEvent({ aggregateId: "proj_other" }), "proj_123")).toBeNull();
+    expect(acceptEvent(seen, makeEvent(), "proj_123")).not.toBeNull();
   });
 
-  test("seen offers leave the count even while still pending", () => {
-    const messages = [offer("m1", "p1", "PENDING"), offer("m2", "p1", "PENDING", true)];
+  test("drops malformed frames", () => {
+    const seen = new Set<string>();
 
-    expect(countUnseenOffers(messages)).toBe(1);
-    expect(countUnseenOffersBySender(messages).get("p1")).toBe(1);
+    expect(acceptEvent(seen, makeEvent({ id: undefined }), null)).toBeNull();
+    expect(acceptEvent(seen, makeEvent({ type: "weird" }), null)).toBeNull();
+    expect(acceptEvent(seen, makeEvent({ aggregateId: "" }), null)).toBeNull();
+  });
+
+  test("caps the seen set to bound memory", () => {
+    const seen = new Set<string>();
+
+    for (let i = 0; i < 600; i++) {
+      acceptEvent(seen, makeEvent({ id: `evt_${i}` }), null);
+    }
+
+    expect(seen.size).toBeLessThanOrEqual(500);
   });
 });

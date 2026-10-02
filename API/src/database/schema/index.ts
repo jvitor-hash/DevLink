@@ -3,15 +3,14 @@ import { message } from "./message_schema";
 import { notification } from "./notification_schema";
 import { project } from "./project_schema";
 import { review } from "./review_schemas";
-import { savedTicket } from "./saved_ticket_schema";
 import { session } from "./session_schema";
 import { ticket } from "./ticket_schema";
 import { todo } from "./todo_schema";
-import { userPreference } from "./user_preferences_schema";
 import { user } from "./user_schema";
+import { userPreference } from "./user_preferences_schema";
 import { verification } from "./verification_schema";
-import { outbox, webhookSubscription } from "./outbox_schema";
-import { chatSessionKey } from "./chat_session_key_schema";
+import { outboxEvents } from "./outbox_events_schema";
+import { projectActions } from "./project_actions_audit_schema";
 
 export const schemas = {
   user,
@@ -22,11 +21,9 @@ export const schemas = {
   review,
   notification,
   userPreference,
-  outbox,
-  webhookSubscription,
-  chatSessionKey,
+  outboxEvents,
+  projectActions,
   message,
-  savedTicket,
-  todo,
   ticket,
+  todo,
 };

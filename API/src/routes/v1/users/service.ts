@@ -1,5 +1,5 @@
 import { schemas } from "@/database/schema";
-import { and, desc, eq, ilike, inArray, sql, type SQL } from "drizzle-orm";
+import { and, desc, eq, ilike, sql, type SQL } from "drizzle-orm";
 import { db } from "@/client";
 
 export const UserService = {
@@ -53,48 +53,6 @@ export const UserService = {
       .limit(1);
 
     return rows[0];
-  },
-
-  /** Base64 SPKI ECDH public keys stored per chat session. */
-  listChatSessionKeys: async (userId: string) => {
-    const rows = await db
-      .select({ publicKey: schemas.chatSessionKey.publicKey })
-      .from(schemas.chatSessionKey)
-      .where(eq(schemas.chatSessionKey.userId, userId))
-      .orderBy(desc(schemas.chatSessionKey.createdAt));
-
-    return rows.map((row) => row.publicKey);
-  },
-
-  // Newest-first key ring for several users in one query.
-  listChatSessionKeysByUsers: async (userIds: string[]) => {
-    if (!userIds.length) return new Map<string, string[]>();
-
-    const rows = await db
-      .select({ userId: schemas.chatSessionKey.userId, publicKey: schemas.chatSessionKey.publicKey })
-      .from(schemas.chatSessionKey)
-      .where(inArray(schemas.chatSessionKey.userId, userIds))
-      .orderBy(desc(schemas.chatSessionKey.createdAt));
-
-    const keys = new Map<string, string[]>();
-    for (const row of rows) {
-      const existing = keys.get(row.userId) ?? [];
-      existing.push(row.publicKey);
-      keys.set(row.userId, existing);
-    }
-
-    return keys;
-  },
-
-  // Idempotent: re-joining with the same session key keeps a single row.
-  addChatSessionKey: async (userId: string, publicKey: string) => {
-    const inserted = await db
-      .insert(schemas.chatSessionKey)
-      .values({ userId, publicKey })
-      .onConflictDoNothing()
-      .returning({ id: schemas.chatSessionKey.id });
-
-    return inserted.length > 0;
   },
 
   /** Legacy single public key kept for backward compatibility. */

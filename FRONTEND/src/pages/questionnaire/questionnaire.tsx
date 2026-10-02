@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Banner from "@/components/ui/banner_component";
-import { projectService } from "@/data/services/project_service";
+import { projectService, projectActions } from "@/data/services/project_service";
+import { projectActionsEnabled } from "@/utils/feature_flags";
 import { QUESTIONNAIRE_MAX_STEPS } from "./questionnaire.constants";
 import { toProjectCreatePayload } from "./questionnaire.mappers";
 import { validateQuestionnaire, validateStep } from "./questionnaire.validation";
@@ -83,11 +84,22 @@ export default function Questionnaire() {
 
     setSubmitting(true);
 
+    const payload = toProjectCreatePayload(form);
+
     try {
-      await projectService.create(toProjectCreatePayload(form));
-      resetForm();
-      setStep(1);
-      showFeedback("success", "Projeto publicado com sucesso!");
+      // Flag on: the action router accepts the request (202) and the SSE
+      // stream confirms with a project.saved event. Flag off: plain create.
+      if (projectActionsEnabled()) {
+        await projectActions.saveProject(payload);
+        resetForm();
+        setStep(1);
+        showFeedback("success", "Projeto enviado! Confirmação em instantes...");
+      } else {
+        await projectService.create(payload);
+        resetForm();
+        setStep(1);
+        showFeedback("success", "Projeto publicado com sucesso!");
+      }
     } catch (submitError) {
       showFeedback(
         "error",
@@ -101,7 +113,7 @@ export default function Questionnaire() {
   if (allowed === null) return null;
 
   return (
-    <section className="relative">
+    <section className="relative mx-auto w-full px-2 sm:px-4 lg:px-8">
       {feedback && (
         <Banner
           key={feedback.key}
@@ -109,7 +121,7 @@ export default function Questionnaire() {
           message={feedback.message}
           variantDurations={{ success: SUCCESS_REDIRECT_DELAY }}
           duration={ERROR_BANNER_DURATION}
-          className="absolute left-1/2 top-2 w-[95%] -translate-x-1/2"
+          className="absolute left-1/2 top-2 w-[95%] -translate-x-1/2 z-20"
           onDismiss={
             feedback.variant === "success"
               ? () => navigate("/project")
@@ -118,42 +130,52 @@ export default function Questionnaire() {
         />
       )}
 
-      <div className="relative mx-4 mt-2 min-w-auto bg-(--surface-1) p-4 rounded-sm border border-(--border)">
-        <div className="mt-4">
-          <h2 className="text-2xl w-full text-center">Criação de projetos</h2>
-          <p className="text-base text-(--text-muted) text-center">
-            Descreva suas ideas aqui e publique para possiveis programadores
+      <div className="gb-glass relative m-2 p-4 shadow-[8px_8px_0px_#161212] sm:m-4 sm:p-6">
+        <div className="mb-4 border-b-2 border-(--gb-ink) pb-3 sm:mb-6 sm:pb-4">
+          <h2 className="gb-heading text-2xl tracking-tight sm:text-3xl">Criação de projetos</h2>
+          <p className="gb-label text-(--gb-stone-600) mt-2 tracking-wide">
+            DESCREVA SUAS IDEIAS E PUBLIQUE PARA PROGRAMADORES
           </p>
         </div>
 
+        <div className="mb-2">
+          <p className="text-sm text-(--text-secondary) leading-relaxed">
+            Descreva suas ideias aqui e publique para possíveis programadores
+          </p>
+        </div>
+
+        <div className="gb-rule-heavy my-4 h-[3px] bg-(--gb-ink) border-0" />
+
         <QuestionnaireProgress currentStep={step} />
 
-        {step === 1 && <ProblemStep form={form} setField={setField} showFieldErrors={showFieldErrors} />}
-        {step === 2 && <AudienceStep form={form} setField={setField} showFieldErrors={showFieldErrors} />}
-        {step === 3 && (
-          <SolutionStep
-            form={form}
-            setField={setField}
-            togglePlatform={togglePlatform}
-            showFieldErrors={showFieldErrors}
-          />
-        )}
-        {step === 4 && (
-          <DetailsStep
-            form={form}
-            setField={setField}
-            isBudgetInverted={isBudgetInverted}
-            showFieldErrors={showFieldErrors}
-          />
-        )}
+        <div className="mt-6">
+          {step === 1 && <ProblemStep form={form} setField={setField} showFieldErrors={showFieldErrors} />}
+          {step === 2 && <AudienceStep form={form} setField={setField} showFieldErrors={showFieldErrors} />}
+          {step === 3 && (
+            <SolutionStep
+              form={form}
+              setField={setField}
+              togglePlatform={togglePlatform}
+              showFieldErrors={showFieldErrors}
+            />
+          )}
+          {step === 4 && (
+            <DetailsStep
+              form={form}
+              setField={setField}
+              isBudgetInverted={isBudgetInverted}
+              showFieldErrors={showFieldErrors}
+            />
+          )}
 
-        <QuestionnaireNavigation
-          currentStep={step}
-          isSubmitting={submitting}
-          onBack={goBack}
-          onNext={goNext}
-          onSubmit={handleSubmit}
-        />
+          <QuestionnaireNavigation
+            currentStep={step}
+            isSubmitting={submitting}
+            onBack={goBack}
+            onNext={goNext}
+            onSubmit={handleSubmit}
+          />
+        </div>
       </div>
     </section>
   );

@@ -22,7 +22,7 @@ export default function WaveEffect() {
   }, []);
 
   return (
-    <div>
+    <div className="gb-hero-shader">
       <ShaderCanvas
         fragmentShader={WATER_DITHER_SHADER}
         uniforms={{ u_resolution: resolution }}

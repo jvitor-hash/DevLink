@@ -6,6 +6,8 @@ import { userService } from "@/data/services/user_service";
 import type { ProjectDTO, PublicUserDTO } from "@/data/types/database";
 import { formatRelativeTime } from "@/utils/time_formatting";
 import Badge from "@/components/ui/badge_component";
+import { BrutalChip } from "@/components/ui/brutal_chip";
+import { GlassFrame } from "@/components/ui/glass_frame";
 import { projectService } from "@/data/services/project_service";
 import { HIDDEN_PROJECT_STATUSES } from "@/data/types/project_filters";
 
@@ -38,6 +40,8 @@ export async function ProfileSelfLoader(): Promise<ProfileLoaderData> {
 }
 
 export async function ProfileOtherLoader({ params }: LoaderFunctionArgs): Promise<ProfileLoaderData> {
+  if (!params.userId) throw new Error("Usuario nao encontrado");
+
   const user = await userService.getById(params.userId);
   if (!user) throw new Error("Usuario nao encontrado");
 
@@ -55,10 +59,10 @@ export async function ProfileOtherLoader({ params }: LoaderFunctionArgs): Promis
 }
 
 export default function ProfilePage() {
-  const { user, projects } = useLoaderData<typeof ProfileLoaderData>();
-  const [profileUser] = useState<PublicUserDTO | null>(user ?? null);
-  const [openProjects] = useState<ProjectDTO[]>(projects ?? []);
-  const [activeTab, setActiveTab] = useState<string | null>(FEED_TABS["keys"][0] ?? null);
+  const loaderData = useLoaderData() as unknown as ProfileLoaderData;
+  const [profileUser] = useState<PublicUserDTO | null>(loaderData.user ?? null);
+  const [openProjects] = useState<ProjectDTO[]>(loaderData.projects ?? []);
+  const [activeTab, setActiveTab] = useState<string | null>(FEED_TABS[0]?.key ?? null);
   const navigate = useNavigate();
 
   if (!profileUser) return null;
@@ -69,23 +73,15 @@ export default function ProfilePage() {
     <div className="p-8 flex flex-col gap-6">
       {/* Full-width profile header */}
       <section className="flex flex-col gap-6 rounded-md border border-(--border-subtle) bg-(--surface-1) p-6 sm:flex-row sm:items-center">
-        {profileUser.image ? (
-          <img
-            src={profileUser.image}
-            alt={profileUser.name}
-            className="h-18 w-18 shrink-0 rounded-full border border-(--border-subtle) object-cover"
-          />
-        ) : (
-          <div className="flex h-18 w-18 shrink-0 items-center justify-center rounded-full border border-(--border-subtle) bg-(--surface-2) text-2xl font-bold text-(--text-muted)">
-            {profileUser.name.charAt(0).toUpperCase()}
-          </div>
-        )}
+        <div className="flex h-18 w-18 shrink-0 items-center justify-center rounded-full border border-(--border-subtle) bg-(--surface-2) text-2xl font-bold text-(--text-muted)">
+          {profileUser.name.charAt(0).toUpperCase()}
+        </div>
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-2xl font-bold text-(--text-primary)">{profileUser.name}</h1>
             {/* badge type needs a mapping based on the user's role. */}
-            <Badge label={profileUser?.role} badgeType={"primary"} />
+            <Badge label={profileUser?.role ?? ""} badgeType={"primary"} />
           </div>
 
           {profileUser.bio ? (
@@ -106,22 +102,15 @@ export default function ProfilePage() {
       </section>
 
       {/* Feed tabs */}
-      <nav className="flex gap-2">
-        {FEED_TABS.map(({ key, label }) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setActiveTab(key)}
-            className={`rounded-md border px-4 py-1.5 text-sm transition-colors hover:cursor-pointer ${
-              activeTab === key
-                ? "border-(--primary) bg-(--primary) text-white"
-                : "border-(--border-subtle) bg-(--surface-1) text-(--text-secondary) hover:border-gray-400"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </nav>
+      <GlassFrame as="nav" className="w-fit" panelClassName="gb-tabbar px-4 py-2">
+        <div className="flex gap-2">
+          {FEED_TABS.map(({ key, label }) => (
+            <BrutalChip key={key} active={activeTab === key} onClick={() => setActiveTab(key)}>
+              {label}
+            </BrutalChip>
+          ))}
+        </div>
+      </GlassFrame>
 
       {/* Main 2-col: feed + sidebar */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">

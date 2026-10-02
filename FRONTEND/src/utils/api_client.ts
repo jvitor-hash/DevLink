@@ -12,6 +12,24 @@ export class ApiRequestError extends Error {
   }
 }
 
+type UnauthorizedHandler = () => void;
+
+let unauthorizedHandler: UnauthorizedHandler | null = null;
+
+// Signed-out visitors legitimately get 401 from the auth endpoints, so those
+// paths never trigger the session-expired flow.
+const SILENT_UNAUTHORIZED_PREFIXES = ["/api/auth/"];
+
+// Registered once by the app shell: an expired session must clear the cached
+// user and ask for credentials again instead of failing every call quietly.
+export const registerUnauthorizedHandler = (handler: UnauthorizedHandler) : (() => void) => {
+  unauthorizedHandler = handler;
+
+  return () => {
+    unauthorizedHandler = null;
+  };
+};
+
 type QueryValue = string | number | boolean | null | undefined | string[];
 
 const buildQuery = (params: Record<string, QueryValue> = {}): string => {
@@ -106,12 +124,12 @@ class ApiClient {
     return this.request<T>(`${path}${buildQuery(params)}`);
   }
 
-  post<T>(path: string, body: unknown): Promise<T> {
-    return this.request<T>(path, { method: "POST", body: JSON.stringify(body) });
+  post<T>(path: string, body: unknown, headers?: Record<string, string>): Promise<T> {
+    return this.request<T>(path, { method: "POST", body: JSON.stringify(body), headers });
   }
 
-  put<T>(path: string, body: unknown): Promise<T> {
-    return this.request<T>(path, { method: "PUT", body: JSON.stringify(body) });
+  put<T>(path: string, body: unknown, headers?: Record<string, string>): Promise<T> {
+    return this.request<T>(path, { method: "PUT", body: JSON.stringify(body), headers });
   }
 
   delete<T>(path: string): Promise<T> {
@@ -130,6 +148,11 @@ class ApiClient {
 
     if (!response.ok) {
       const data = (await response.json().catch(() => undefined)) as unknown;
+
+      if (response.status === 401 && !SILENT_UNAUTHORIZED_PREFIXES.some((prefix) => path.startsWith(prefix))) {
+        unauthorizedHandler?.();
+      }
+
       throw new ApiRequestError({
         status: response.status,
         message: toReadableMessage(data, `Nao foi possivel concluir a solicitacao (${response.status})`),

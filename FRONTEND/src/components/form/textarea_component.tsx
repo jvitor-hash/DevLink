@@ -3,6 +3,8 @@ import { useState } from "react";
 type TextAreaComponentProps = {
   name: string
   value?: string
+  minLength?: number
+  maxLength?: number
   label?: string
   dataTestId?: string
   placeholder?: string
@@ -12,17 +14,7 @@ type TextAreaComponentProps = {
   onChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
 };
 
-export default function TextArea({
-  name,
-  value,
-  label,
-  dataTestId,
-  placeholder,
-  validInput,
-  disabled,
-  error,
-  onChange,
-}: TextAreaComponentProps) {
+export default function TextArea({ name, value, minLength, maxLength, label, dataTestId, placeholder, validInput, disabled, error, onChange }: TextAreaComponentProps) {
   const [isFocused, setFocused] = useState<boolean>(false);
   return (
     <>
@@ -37,6 +29,8 @@ export default function TextArea({
           placeholder={placeholder}
           name={name}
           value={value}
+          minLength={minLength}
+          maxLength={maxLength}
           onChange={onChange}
           disabled={disabled}
           required={validInput}

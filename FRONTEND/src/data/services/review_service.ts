@@ -16,7 +16,7 @@ export const reviewService = {
   listReceivedByUser: (userId: string, params?: Pick<PaginationParams, "limit" | "offset">) =>
     apiClient.get<Array<{
       review: ReviewDTO;
-      reviewer: { id: string; name: string; image?: string | null };
+      reviewer: { id: string; name: string };
       project: { id: string; title: string };
     }>>(`${endpoint}/by-user/${userId}`, params),
 };

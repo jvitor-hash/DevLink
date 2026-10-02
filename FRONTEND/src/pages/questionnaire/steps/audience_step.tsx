@@ -1,6 +1,10 @@
 import Select from "@/components/form/select_component";
 import TextArea from "@/components/form/textarea_component";
 import { audienceOptions } from "../questionnaire.constants";
+import {
+  QUESTIONNAIRE_TEXT_MAX,
+  QUESTIONNAIRE_TEXT_MIN,
+} from "../questionnaire.limits";
 import type { QuestionnaireStepProps } from "../questionnaire.types";
 import type { Audience } from "@/data/types/database";
 
@@ -22,6 +26,8 @@ export function AudienceStep({ form, setField, showFieldErrors }: QuestionnaireS
         label="Quais são os objetivos e os pontos de dor deles?"
         name="audiencePainPoints"
         value={form.audiencePainPoints}
+        minLength={QUESTIONNAIRE_TEXT_MIN}
+        maxLength={QUESTIONNAIRE_TEXT_MAX}
         onChange={(e) => setField("audiencePainPoints", e.target.value)}
         error={showFieldErrors && form.audiencePainPoints.trim() === ""}
       />
@@ -29,6 +35,8 @@ export function AudienceStep({ form, setField, showFieldErrors }: QuestionnaireS
         label="Que suposições estamos fazendo sobre eles?"
         name="audienceAssumptions"
         value={form.audienceAssumptions}
+        minLength={QUESTIONNAIRE_TEXT_MIN}
+        maxLength={QUESTIONNAIRE_TEXT_MAX}
         onChange={(e) => setField("audienceAssumptions", e.target.value)}
         error={showFieldErrors && form.audienceAssumptions.trim() === ""}
       />
@@ -36,6 +44,8 @@ export function AudienceStep({ form, setField, showFieldErrors }: QuestionnaireS
         label="Quem não é o usuário-alvo?"
         name="notAudience"
         value={form.notAudience}
+        minLength={QUESTIONNAIRE_TEXT_MIN}
+        maxLength={QUESTIONNAIRE_TEXT_MAX}
         onChange={(e) => setField("notAudience", e.target.value)}
         error={showFieldErrors && form.notAudience.trim() === ""}
       />

@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bookmark } from "react-feather";
-import { savedTicketService } from "@/data/services/saved_ticket_service";
-import { projectService } from "@/data/services/project_service";
 import { userSingleton } from "@/context/user";
+import { projectService } from "@/data/services/project_service";
+import { reportError } from "@/utils/report_error";
 import type { ProjectDTO } from "@/data/types/database";
-
-const POLL_INTERVAL_MS = 15_000;
 
 type SavedTicketsMenuProps = {
   onOpenChange?: (open: boolean) => void;
@@ -28,60 +26,13 @@ const ProjectRow = ({ project, onClick }: { project: ProjectDTO; onClick: () => 
 );
 
 /**
- * Navbar dropdown listing the user's saved projects with a live
- * saved-count badge.
+ * Navbar dropdown listing the signed-in user's projects.
  */
 export default function SavedTicketsMenu({ onOpenChange }: SavedTicketsMenuProps) {
   const [open, setOpen] = useState<boolean>(false);
   const [projects, setProjects] = useState<ProjectDTO[]>([]);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const load = async (): Promise<void> => {
-      const user = userSingleton.getCachedUser();
-
-      if (!user) return;
-
-      try {
-        const { savedProjectIds } = await savedTicketService.getSavedProjectIdsByUser(user.id);
-
-        if (!savedProjectIds.length) {
-          if (!cancelled) setProjects([]);
-          return;
-        }
-
-        const details = await Promise.all(
-          savedProjectIds.map(async (id): Promise<ProjectDTO | null> => {
-            try {
-              return await projectService.getById(id);
-            } catch {
-              return null;
-            }
-          }),
-        );
-
-        if (!cancelled) {
-          setProjects(details.filter((project): project is ProjectDTO => project !== null));
-        }
-      } catch {
-        // Keep the current list on failure.
-      }
-    };
-
-    void load();
-
-    const poll = setInterval(() => {
-      void load();
-    }, POLL_INTERVAL_MS);
-
-    return () => {
-      cancelled = true;
-      clearInterval(poll);
-    };
-  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent): void => {
@@ -93,6 +44,25 @@ export default function SavedTicketsMenu({ onOpenChange }: SavedTicketsMenuProps
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Load the user's projects each time the dropdown opens; keep the last
+  // list around so the count badge is visible before the first open.
+  useEffect(() => {
+    if (!userSingleton.isSignedIn) return;
+
+    let cancelled = false;
+
+    projectService
+      .list({ clientId: userSingleton.id ?? "", limit: 20 })
+      .then((rows) => {
+        if (!cancelled) setProjects(rows);
+      })
+      .catch((error: unknown) => reportError("saved_tickets_menu: carregar projetos", error));
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, userSingleton.isSignedIn]);
 
   const toggleMenu = (): void => {
     const next = !open;
@@ -114,7 +84,7 @@ export default function SavedTicketsMenu({ onOpenChange }: SavedTicketsMenuProps
         <Bookmark size={18} />
         {projects.length > 0 && (
           <span
-            className="absolute -top-1.5 -right-2 min-w-4 rounded-full bg-(--primary) px-1 text-center text-[10px] leading-4 text-white"
+            className="gb-tag absolute -top-1.5 -right-2 min-w-4 px-1 text-center text-[10px] leading-4"
             data-testid="saved-tickets-count"
           >
             {projects.length}
@@ -128,12 +98,12 @@ export default function SavedTicketsMenu({ onOpenChange }: SavedTicketsMenuProps
         }`}
       >
         <div className="px-4 py-3 border-b border-(--border-subtle)">
-          <p className="font-semibold">Projetos salvos</p>
+          <p className="font-semibold">Meus projetos</p>
         </div>
 
         <ul className="max-h-80 overflow-y-auto p-2">
           {projects.length === 0 ? (
-            <li className="px-4 py-6 text-center text-(--text-muted)">Nenhum projeto salvo</li>
+            <li className="px-4 py-6 text-center text-(--text-muted)">Nenhum projeto encontrado</li>
           ) : (
             projects.map((project) => (
               <ProjectRow

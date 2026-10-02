@@ -4,7 +4,6 @@ import {
   MessageUpdateSchema,
   MessageSchema,
 } from "../database/data-transfer-object/message_dto";
-import { MessageRouter } from "../routes/v1/message";
 
 describe("Message Schema Validation", () => {
   test("MessageCreateSchema should validate message payload", () => {
@@ -123,9 +122,3 @@ describe("Message Schema Validation", () => {
   });
 });
 
-describe("Message Route Definition", () => {
-  test("MessageRouter is properly configured", () => {
-    expect(MessageRouter).toBeDefined();
-    expect(typeof MessageRouter.prefix).toBe("function");
-  });
-});

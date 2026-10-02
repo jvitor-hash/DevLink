@@ -19,7 +19,6 @@ export const ProjectService = {
       category?: string;
       sub_category?: string;
       clientId?: string;
-      savedOnly?: boolean;
     },
     limit = 10,
     offset = 0,
@@ -80,14 +79,6 @@ export const ProjectService = {
 
     if (filters.maxBudget != null && filters.maxBudget >= 0) {
       conditions.push(lte(schemas.project.maxBudget, filters.maxBudget));
-    }
-
-    if (filters.savedOnly && userId) {
-      const savedIds = await SavedTicketService.findSavedProjectIdsByUser(userId);
-      if (!savedIds.length) {
-        return [];
-      }
-      conditions.push(inArray(schemas.project.id, savedIds));
     }
 
     const where = conditions.length ? and(...conditions) : undefined;
@@ -154,4 +145,3 @@ export const ProjectService = {
 };
 
 import { db } from "@/client";
-import { SavedTicketService } from "../saved_ticket/service";

@@ -16,6 +16,8 @@ type InputComponentProps = {
   label: string;
   name?: string;
   value?: string | number
+  minLength?: number
+  maxLength?: number
   placeholder?: string
   className?: string
   dataTestId?: string
@@ -24,7 +26,7 @@ type InputComponentProps = {
   autocomplete?: string
 };
 
-export default function Input({ icon, inputType = "text", label, name, value, dataTestId, className, placeholder, autocomplete, error, onChange }: InputComponentProps) {
+export default function Input({ icon, inputType = "text", label, name, value, minLength, maxLength, dataTestId, className, placeholder, autocomplete, error, onChange }: InputComponentProps) {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isFocused, setFocus] = useState<boolean>(false);
   const isPassword = inputType === "password";
@@ -48,13 +50,15 @@ export default function Input({ icon, inputType = "text", label, name, value, da
 
         <input
           id={name ?? label.toLowerCase()}
-          className={`outline-none w-full rounded-md border text-white p-3 invalid:border-(--primary) transition-colors
+          className={`outline-none w-full rounded-md border text-(--text-primary) p-3 invalid:border-(--primary) transition-colors
           ${error ? "border-(--error)" : isFocused ? "border-gray-400" : "border-(--border-subtle)"} ${isFocused === false && !error ? "hover:border-gray-400" : ""}
           ${IconComponent ? "pl-10" : "pl-3"} ${isPassword ? "pr-10" : "pr-3"} placeholder:text-(--text-muted) ${className}`}
           name={name ?? label.toLowerCase()}
           type={isPassword && showPassword ? "text" : inputType}
           placeholder={placeholder}
           value={value}
+          minLength={minLength}
+          maxLength={maxLength}
           onChange={onChange}
           aria-invalid={error || undefined}
           data-testid={dataTestId}

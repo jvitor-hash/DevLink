@@ -1,7 +1,6 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { eq } from "drizzle-orm";
 import { UserService } from "../routes/v1/users/service";
-import { Websocket_Chat } from "../modules/websocket";
 import { db } from "../client";
 import { schemas } from "../database/schema";
 
@@ -58,9 +57,3 @@ describe("Public Key Persistence", () => {
   });
 });
 
-describe("Websocket Chat Module", () => {
-  test("Websocket_Chat is properly configured", () => {
-    expect(Websocket_Chat).toBeDefined();
-    expect(typeof Websocket_Chat.ws).toBe("function");
-  });
-});

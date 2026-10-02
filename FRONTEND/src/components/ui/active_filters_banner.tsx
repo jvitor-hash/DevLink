@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import type { ProjectFilters } from "@/data/types/project_filters";
+import { BrutalChip } from "@/components/ui/brutal_chip";
 
 type ActiveFiltersBannerProps = {
   filters: ProjectFilters;
@@ -34,9 +35,15 @@ export function ActiveFiltersBanner({ filters }: ActiveFiltersBannerProps) {
     <div className="flex flex-wrap items-center gap-2 mb-4 mt-5" data-testid="active-filters-banner">
       <span className="text-sm text-(--text-muted)">Filtros ativos:</span>
       {activeFilters.map(([key, value]) => (
-        <button key={key} type="button" className="inline-flex items-center gap-2 rounded-full bg-(--primary) px-3 py-1 text-sm text-white hover:cursor-pointer" onClick={() => removeFilter(key)} data-testid={`clear-${key}-filter`}>
+        <BrutalChip
+          key={key}
+          active
+          onClick={() => removeFilter(key)}
+          dataTestId={`clear-${key}-filter`}
+          ariaLabel={`Remover filtro ${key}`}
+        >
           {key}: {value} <span aria-hidden="true">×</span>
-        </button>
+        </BrutalChip>
       ))}
       <button type="button" className="px-2 py-1 text-xs text-(--text-muted) underline hover:cursor-pointer" onClick={() => navigate("/project", { replace: true })}>
         Limpar tudo

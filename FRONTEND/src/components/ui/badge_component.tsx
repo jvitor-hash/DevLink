@@ -14,7 +14,7 @@ export default function Badge({ className, badgeType = "primary", label }: Badge
     "error": "bg-(--error)"
   }
   return (
-    <span className={`p-1 px-2 rounded-sm ${colors[badgeType]} ${className}`} >
+    <span className={`gb-tag ${colors[badgeType]} ${className}`}>
       {label}
     </span>
   )

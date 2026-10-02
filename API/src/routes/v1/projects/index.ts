@@ -7,7 +7,6 @@ import { schemas } from "@/database/schema";
 import { and, eq, type SQL } from "drizzle-orm";
 import { authPlugin } from "@/modules/auth_plugin";
 import { logError } from "@/modules/logger";
-import { publishNotificationEvent, type NotificationEvent } from "@/modules/notification_outbox";
 
 export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
   .use(authPlugin)
@@ -18,23 +17,6 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
         ...data,
         clientId: user.id,
       });
-
-      try {
-        await publishNotificationEvent({
-          type: "NEW_PROJECT",
-          payload: {
-            id: newProject.id,
-            title: newProject.title,
-            minBudget: newProject.minBudget,
-            maxBudget: newProject.maxBudget,
-            deadline: newProject.deadline ? new Date(newProject.deadline) : null,
-            primaryLanguage: newProject.primaryLanguage,
-            platforms: newProject.platforms,
-          },
-        });
-      } catch {
-        // Notification fan-out must never block project creation.
-      }
 
       set.status = 201;
       return newProject;
@@ -74,7 +56,6 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
         category: query.category,
         sub_category: query.sub_category,
         clientId: query.clientId,
-        savedOnly: query.savedOnly === "true",
       };
 
       return await ProjectService.findFiltered(user?.id ?? null, filters, query.limit, query.offset);
@@ -98,7 +79,6 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
       category: z.string().optional(),
       sub_category: z.string().optional(),
       clientId: z.string().uuid().optional(),
-      savedOnly: z.string().optional(),
     }),
     response: {
       200: z.array(ProjectDTOSchema),

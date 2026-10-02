@@ -1,38 +1,38 @@
 import SearchFiltersLayout from "@/components/ui/search_filters";
-import {
-  EMPTY_FILTERS,
-  HIDDEN_PROJECT_STATUSES,
-  type ProjectFilters,
-} from "@/data/types/project_filters";
+import { EMPTY_FILTERS, HIDDEN_PROJECT_STATUSES, type ProjectFilters } from "@/data/types/project_filters";
 import Input from "@/components/form/input_component";
 import ProjectPreview from "@/components/ui/project_ticket_component";
-import { useEffect, useMemo, useState } from "react";
-import {
-  useLoaderData,
-  useNavigate,
-  useSearchParams,
-  type LoaderFunctionArgs,
-} from "react-router-dom";
+import { useMemo, useState } from "react";
+import { useLoaderData, useNavigate, useSearchParams, type LoaderFunctionArgs } from "react-router-dom";
 import { ChevronRight } from "react-feather";
 import { type ProjectDTO, type ListParams } from "@/data/types/database";
 import { projectService } from "@/data/services/project_service";
-import { useSavedTickets } from "@/hooks/use_saved_tickets";
 import { ActiveFiltersBanner } from "@/components/ui/active_filters_banner";
 import Button from "@/components/ui/button_component";
+import { BrutalButton } from "@/components/ui/brutal_button";
 
 const PAGE_SIZE = 10;
+
+type ProjectListData = {
+  projects: ProjectDTO[];
+  page: number;
+  hasNextPage: boolean;
+};
+
+const readPage = (searchParams: URLSearchParams): number => {
+  const raw = Number(searchParams.get("page") ?? "1");
+
+  return Number.isInteger(raw) && raw > 0 ? raw : 1;
+};
 
 const filtersFromUrl = (searchParams: URLSearchParams): ProjectFilters => ({
   ...EMPTY_FILTERS,
   category: searchParams.get("category") ?? "ALL",
   sub_category: searchParams.get("sub_category") ?? "ALL",
   q: searchParams.get("q") ?? "",
-  audience: (searchParams.get("audience") ??
-    "ALL") as ProjectFilters["audience"],
-  platforms: (searchParams.get("platforms") ??
-    "ALL") as ProjectFilters["platforms"],
-  primaryLanguage: (searchParams.get("primaryLanguage") ??
-    "ALL") as ProjectFilters["primaryLanguage"],
+  audience: (searchParams.get("audience") ?? "ALL") as ProjectFilters["audience"],
+  platforms: (searchParams.get("platforms") ?? "ALL") as ProjectFilters["platforms"],
+  primaryLanguage: (searchParams.get("primaryLanguage") ?? "ALL") as ProjectFilters["primaryLanguage"],
   status: (searchParams.get("status") ?? "ALL") as ProjectFilters["status"],
   minBudget: searchParams.get("minBudget") ?? "",
   maxBudget: searchParams.get("maxBudget") ?? "",
@@ -87,14 +87,23 @@ const buildListParams = (filters: ProjectFilters): ListParams => {
   return params;
 };
 
-export async function ProjectLoader({ request }: LoaderFunctionArgs): Promise<ProjectDTO[]> {
-  const filters = filtersFromUrl(new URL(request.url).searchParams);
+export async function ProjectLoader({ request }: LoaderFunctionArgs): Promise<ProjectListData> {
+  const searchParams = new URL(request.url).searchParams;
+  const filters = filtersFromUrl(searchParams);
+  const page = readPage(searchParams);
 
-  return projectService.list({ limit: PAGE_SIZE, ...buildListParams(filters) });
+  const projects = await projectService.list({
+    limit: PAGE_SIZE,
+    offset: (page - 1) * PAGE_SIZE,
+    ...buildListParams(filters),
+  });
+
+  // The API returns a bare array, so a full page is the only next-page hint.
+  return { projects, page, hasNextPage: projects.length === PAGE_SIZE };
 }
 
 export default function ProjectPage() {
-  const projects = useLoaderData<typeof ProjectLoader>();
+  const { projects, page, hasNextPage } = useLoaderData<typeof ProjectLoader>();
   const [filters, setFilters] = useState<ProjectFilters>(EMPTY_FILTERS);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -116,14 +125,6 @@ export default function ProjectPage() {
     setAppliedFilters(urlFilters);
   }
 
-  const { saveCounts, isSaved, toggleSaved, setSaveCountsFromProjects } =
-    useSavedTickets();
-
-  // Re-seed save counts whenever the loader returns a fresh project list.
-  useEffect(() => {
-    setSaveCountsFromProjects(projects);
-  }, [projects, setSaveCountsFromProjects]);
-
   const currentFilters: ProjectFilters = {
     ...filters,
     category: urlFilters.category,
@@ -141,6 +142,18 @@ export default function ProjectPage() {
     navigate(query ? `/project?${query}` : "/project");
   };
 
+  // Pagination lives in the URL so pages stay shareable and back/forward works.
+  const goToPage = (nextPage: number): void => {
+    const params = new URLSearchParams(searchParams);
+
+    if (nextPage <= 1) params.delete("page");
+    else params.set("page", String(nextPage));
+
+    const query = params.toString();
+
+    navigate(query ? `/project?${query}` : "/project");
+  };
+
   // Filter edits stay on standby in local state; only "Pesquisar" applies them.
   const handleFilterChange = (next: ProjectFilters): void => {
     setFilters({
@@ -152,9 +165,14 @@ export default function ProjectPage() {
 
   return (
     <>
-      <section>
+      <section className="mx-auto w-full px-2 py-4 lg:px-6 lg:py-8">
+        <header className="mb-6">
+          <h1 className="gb-heading text-4xl tracking-tight">Projetos</h1>
+          <div className="gb-rule-heavy mt-2 h-[3px] bg-(--gb-ink) border-0" />
+        </header>
+
         <form
-          className="relative mx-25 max-h-fit"
+          className="relative mx-auto max-h-fit"
           onSubmit={(e) => {
             e.preventDefault();
             handleSearch();
@@ -173,14 +191,13 @@ export default function ProjectPage() {
           />
           <div className="absolute right-2 top-8 -translate-y-1/2 flex gap-2">
             {hasPendingFilters && (
-              <button
-                type="button"
-                data-testid="pending-filters-indicator"
-                className="self-center rounded-full bg-(--warning) px-3 py-1 text-xs text-white hover:cursor-pointer"
+              <BrutalButton
+                className="self-center px-3 py-1 text-xs"
+                dataTestId="pending-filters-indicator"
                 onClick={handleSearch}
               >
                 Filtros não aplicados
-              </button>
+              </BrutalButton>
             )}
             <Button label="Pesquisar" buttonType="submit" />
           </div>
@@ -192,24 +209,23 @@ export default function ProjectPage() {
         </form>
       </section>
 
-      <section className="mx-25">
+      <section className="mx-auto w-full px-2 lg:px-6">
         <ActiveFiltersBanner filters={urlFilters} />
 
         <div className="mb-5 mt-5">
-          <div className="flex justify-between">
-            <h1 className="text-2xl text-(--text-primary) mb-3">
-              <span className="text-white text-3xl">*</span>Highlights desta
-              semana:
-            </h1>
-            <button className="group flex items-center hover:cursor-pointer">
-              Ver mais
+          <div className="flex justify-between items-center">
+            <h2 className="gb-heading text-2xl tracking-tight">
+              <span className="text-(--gb-accent) text-3xl">*</span> Highlights desta semana
+            </h2>
+            <button className="group flex items-center hover:cursor-pointer hover:text-(--primary) transition-colors">
+              <span className="gb-label">VER MAIS</span>
               <ChevronRight className="inline transition-all group-hover:mx-2" />
             </button>
           </div>
-          <div className="border-b border-b-(--error)"></div>
+          <div className="gb-rule-heavy mt-2 h-[3px] bg-(--gb-ink) border-0" />
         </div>
 
-        <div className="grid">
+        <div className="grid grid-cols-5 grid-rows-4 gap-4">
           {projects.length ? (
             projects.map((project) => (
               <ProjectPreview
@@ -230,17 +246,36 @@ export default function ProjectPage() {
                 status={project.status}
                 maxBudget={project.maxBudget}
                 minBudget={project.minBudget}
-                saved={isSaved(project.id)}
-                saveCount={
-                  saveCounts[project.id] ?? project.saveTotalCount ?? 0
-                }
-                onToggleSaved={() => toggleSaved(project.id)}
               />
             ))
           ) : (
-            <p className="text-(--text-muted)">Nenhum projeto encontrado.</p>
+            <div className="py-12 text-center">
+              <p className="gb-label text-(--gb-stone-400)">NENHUM PROJETO ENCONTRADO.</p>
+            </div>
           )}
         </div>
+
+        <nav aria-label="Paginação de projetos" className="mt-6 flex items-center justify-center gap-4">
+          <Button
+            label="Anterior"
+            buttonType="button"
+            colorType="secondary"
+            dataTestId="projects-prev-page"
+            disabled={page <= 1}
+            onClick={() => goToPage(page - 1)}
+          />
+
+          <span className="gb-label text-(--gb-stone-600)" data-testid="projects-page-label">PÁGINA {page}</span>
+
+          <Button
+            label="Próxima"
+            buttonType="button"
+            colorType="primary"
+            dataTestId="projects-next-page"
+            disabled={!hasNextPage}
+            onClick={() => goToPage(page + 1)}
+          />
+        </nav>
       </section>
     </>
   );

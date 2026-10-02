@@ -23,7 +23,7 @@ export type ProjectStatus =
   | "COMPLETED"
   | "CANCELLED";
 
-export type TicketStatus = "BACKLOG" | "IN_PROGRESS" | "BLOCKED" | "REVIEW" | "DONE";
+export type TicketStatus = "BACKLOG" | "IN_PROGRESS" | "REVIEW" | "DONE";
 
 export type OfferStatus = "PENDING" | "ACCEPTED" | "REJECTED";
 
@@ -78,7 +78,6 @@ export interface UserDTO {
   email: string;
   emailVerified: boolean;
   bio?: string | null;
-  image?: string | null;
   role?: UserRole | string | null;
   banned?: boolean | null;
   banReason?: string | null;
@@ -384,12 +383,29 @@ export interface UserPreferenceUpdate {
   maxBudget?: number;
 }
 
+// Project Action Models (outbox + SSE flow)
+export type ProjectActionType = "SAVE_PROJECT" | "UPDATE_PROJECT" | "DELETE_PROJECT";
+export type ProjectEventType = "project.saved" | "project.updated" | "project.deleted";
+
+export interface ProjectActionAccepted {
+  actionId: string;
+  eventId: string;
+  status: "PENDING";
+}
+
+export interface ProjectEvent {
+  id: string;
+  type: ProjectEventType;
+  aggregateType: string;
+  aggregateId: string;
+  payload: Record<string, unknown>;
+}
+
 // Public User Models
 export interface PublicUserDTO {
   id: string;
   name: string;
   bio?: string | null;
-  image?: string | null;
   role?: string | null;
 }
 

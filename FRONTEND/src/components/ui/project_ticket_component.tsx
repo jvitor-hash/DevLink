@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Card3D } from "./3d_card_component";
+import { GlassFrame } from "./glass_frame";
 import Badge from "./badge_component";
 import Button from "./button_component";
 import { userSingleton } from "@/context/user";
@@ -38,12 +39,9 @@ export default function ProjectPreview({ item, title, category, deadline, proble
   };
 
   return (
-    <Card3D className="w-full max-w-90 shadow-sm hover:shadow-lg" onClick={openProject}>
-      <div
-        className="overflow-hidden rounded-xl border border-(--border-subtle) bg-(--surface-1)"
-        style={{ boxShadow: "0 0.25rem 0.75rem rgba(0, 0, 0, 0.25)" }}
-      >
-        <div className="p-6">
+    <Card3D className="w-full max-w-90" onClick={openProject}>
+      <GlassFrame className="w-full" panelClassName="p-6">
+        <div>
           {/* Header */}
           <div className="mb-3 flex items-center justify-between gap-3">
             <Badge label={translate(category)} badgeType="primary" />
@@ -51,10 +49,10 @@ export default function ProjectPreview({ item, title, category, deadline, proble
           </div>
 
           {/* Title */}
-          <h5 id="preview-title" className="mb-4 text-xl font-bold text-(--text-primary)">{title}</h5>
+          <h5 id="preview-title" className="mb-4 text-xl font-bold text-(--text-primary) truncate">{title}</h5>
 
           {/* Problem */}
-          <p id="preview-problem" className="mb-4 leading-relaxed text-(--text-secondary)">
+          <p id="preview-problem" className="mb-4 leading-relaxed text-(--text-secondary) overflow-hidden text-ellipsis whitespace-nowrap">
             <em>
               {problem}
             </em>
@@ -62,37 +60,29 @@ export default function ProjectPreview({ item, title, category, deadline, proble
 
           {/* Project Information */}
           <ul className="mb-4 list-none p-0 text-sm">
-            <li className="flex justify-between gap-4 border-b py-2.5 border-b-(--border-subtle)">
+            <li className="gb-row flex justify-between gap-4 border-b py-2.5 border-b-(--border-subtle)">
               <span className="text-(--text-muted)">Público-alvo:</span>
-              <span id="preview-public" className="text-right font-semibold text-(--text-primary)">
-                {translate(audience)}
-              </span>
+              <span id="preview-public" className="text-right font-semibold text-(--text-primary) truncate block">{translate(audience)}</span>
             </li>
 
-            <li className="flex justify-between gap-4 border-b py-2.5 border-b-(--border-subtle)">
+            <li className="gb-row flex justify-between gap-4 border-b py-2.5 border-b-(--border-subtle)">
               <span className="text-(--text-muted)">Plataformas:</span>
-              <span id="preview-platforms" className="text-right font-semibold text-(--text-primary)">
-                {platforms.map(translate).join(", ")}
-              </span>
+              <span id="preview-platforms" className="text-right font-semibold text-(--text-primary) truncate block">{platforms.map(translate).join(", ")}</span>
             </li>
 
-            <li className="flex justify-between gap-4 border-b py-2.5 border-b-(--border-subtle)">
+            <li className="gb-row flex justify-between gap-4 border-b py-2.5 border-b-(--border-subtle)">
               <span className="text-(--text-muted)">Linguagem:</span>
-              <span id="preview-language" className="text-right font-semibold text-(--text-primary)">
-                {translate(programming_language)}
-              </span>
+              <span id="preview-language" className="text-right font-semibold text-(--text-primary) truncate block">{translate(programming_language)}</span>
             </li>
 
-            <li className="flex justify-between gap-4 border-b py-2.5 border-b-(--border-subtle)">
+            <li className="gb-row flex justify-between gap-4 border-b py-2.5 border-b-(--border-subtle)">
               <span className="text-(--text-muted)">Status:</span>
-              <span id="preview-status" className="text-right font-semibold text-(--text-primary)">
-                {translate(status)}
-              </span>
+              <span id="preview-status" className="text-right font-semibold text-(--text-primary) truncate block">{translate(status)}</span>
             </li>
 
             <li className="flex justify-between gap-4 py-2.5">
               <span className="text-(--text-muted)">Orçamento:</span>
-              <span id="preview-budget" className="text-right font-semibold text-(--success)">
+              <span id="preview-budget" className="text-right font-semibold text-(--success) truncate block">
                 R$ {minBudget} - {maxBudget}
               </span>
             </li>
@@ -104,9 +94,7 @@ export default function ProjectPreview({ item, title, category, deadline, proble
               Ações requeridas do usuário:
             </div>
 
-            <div id="preview-actions text-(--text-secondary)">
-              {actions}
-            </div>
+            <div id="preview-actions text-(--text-secondary) truncate block">{actions}</div>
           </div>
 
           {/* Saved toggle with save count (programmers only) */}
@@ -120,7 +108,7 @@ export default function ProjectPreview({ item, title, category, deadline, proble
             )}
           </div>
         </div>
-      </div>
+      </GlassFrame>
     </Card3D>
   );
 }

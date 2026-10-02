@@ -5,6 +5,8 @@ type MoneyInputProps = {
   name: string;
   value?: string;
   placeholder?: string;
+  /** Maximum number of digits accepted. */
+  maxLength?: number;
   dataTestId?: string;
   error?: boolean;
   onChange?: (value: string) => void;
@@ -21,7 +23,7 @@ const formatCurrency = (value: string): string => {
  * Currency input based on the Input component: accepts digits only, formats
  * the value as BRL while focused and keeps the raw numeric string on change.
  */
-export default function MoneyInput({ label, name, value, placeholder, dataTestId, error, onChange }: MoneyInputProps) {
+export default function MoneyInput({ label, name, value, maxLength, placeholder, dataTestId, error, onChange }: MoneyInputProps) {
   const [isFocused, setFocused] = useState<boolean>(false);
   const [internalValue, setInternalValue] = useState<string>(value ?? "");
 
@@ -29,7 +31,7 @@ export default function MoneyInput({ label, name, value, placeholder, dataTestId
   const currentValue = isControlled ? value : internalValue;
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    const digits = event.target.value.replace(/\D/g, "");
+    const digits = event.target.value.replace(/\D/g, "").slice(0, maxLength);
 
     if (!isControlled) setInternalValue(digits);
     onChange?.(digits);
@@ -49,7 +51,7 @@ export default function MoneyInput({ label, name, value, placeholder, dataTestId
         <input
           id={name}
           name={name}
-          className={`outline-none w-full rounded-md border text-white p-3 pl-10 pr-3 placeholder:text-(--text-muted) ${error ? "border-(--error)" : "border-(--border-subtle)"}`}
+          className={`outline-none w-full rounded-md border text-(--text-primary) p-3 pl-10 pr-3 placeholder:text-(--text-muted) ${error ? "border-(--error)" : "border-(--border-subtle)"}`}
           inputMode="numeric"
           placeholder={placeholder}
           value={displayValue}

@@ -1,4 +1,8 @@
 import TextArea from "@/components/form/textarea_component";
+import {
+  QUESTIONNAIRE_TEXT_MAX,
+  QUESTIONNAIRE_TEXT_MIN,
+} from "../questionnaire.limits";
 import type { QuestionnaireStepProps } from "../questionnaire.types";
 
 type ProblemStepProps = QuestionnaireStepProps;
@@ -11,6 +15,8 @@ export function ProblemStep({ form, setField, showFieldErrors }: ProblemStepProp
         label="Qual é o problema a ser resolvido?"
         name="problem"
         value={form.problem}
+        minLength={QUESTIONNAIRE_TEXT_MIN}
+        maxLength={QUESTIONNAIRE_TEXT_MAX}
         onChange={(e) => setField("problem", e.target.value)}
         placeholder="Digite suas ideas sobre a resolusão de seu projeto..."
         error={showFieldErrors && form.problem.trim() === ""}
@@ -19,6 +25,8 @@ export function ProblemStep({ form, setField, showFieldErrors }: ProblemStepProp
         label="Quem é mais afetado por esse problema?"
         name="affected"
         value={form.affectedUsers}
+        minLength={QUESTIONNAIRE_TEXT_MIN}
+        maxLength={QUESTIONNAIRE_TEXT_MAX}
         onChange={(e) => setField("affectedUsers", e.target.value)}
         placeholder="Escreva sobre quem é mais afetado com esse problema..."
         error={showFieldErrors && form.affectedUsers.trim() === ""}
@@ -27,6 +35,8 @@ export function ProblemStep({ form, setField, showFieldErrors }: ProblemStepProp
         label="Qual é a questão norte do projeto?"
         name="northQuestion"
         value={form.northQuestion}
+        minLength={QUESTIONNAIRE_TEXT_MIN}
+        maxLength={QUESTIONNAIRE_TEXT_MAX}
         onChange={(e) => setField("northQuestion", e.target.value)}
         placeholder="Ex: “Como podemos reduzir o desperdício de água na escola por meio de ações de conscientização e mudanças de hábitos?”"
         error={showFieldErrors && form.northQuestion.trim() === ""}
@@ -35,6 +45,8 @@ export function ProblemStep({ form, setField, showFieldErrors }: ProblemStepProp
         label="Qual seriá a sua hipótese sobre o problema?"
         name="hypothesis"
         value={form.hypothesis}
+        minLength={QUESTIONNAIRE_TEXT_MIN}
+        maxLength={QUESTIONNAIRE_TEXT_MAX}
         onChange={(e) => setField("hypothesis", e.target.value)}
         placeholder="Escreva sobre affirmações testáveis do problema"
         error={showFieldErrors && form.hypothesis.trim() === ""}

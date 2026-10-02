@@ -6,7 +6,6 @@ export const userRelations = relations(schemas.user, ({ many, one }) => ({
   accounts: many(schemas.account),
   message: many(schemas.message),
   notifications: many(schemas.notification),
-  savedTickets: many(schemas.savedTicket),
   preferences: one(schemas.userPreference),
 
   projectsAsClient: many(schemas.project, {

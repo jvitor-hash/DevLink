@@ -36,6 +36,14 @@ await mock.module("@/utils/session_cache", () => ({
 }));
 
 await mock.module("@/utils/api_client", () => ({
+  ApiRequestError: class ApiRequestError extends Error {
+    readonly status: number;
+
+    constructor({ status, message }: { status: number; message: string }) {
+      super(message);
+      this.status = status;
+    }
+  },
   apiClient: {
     get: async () => ({ user: sessionUser }),
     post: async (path: string, body: unknown) => {

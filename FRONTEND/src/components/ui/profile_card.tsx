@@ -23,7 +23,7 @@ export default function ProfileCard({
     >
       {/* Content */}
       <div className="relative px-6 pb-6 pt-6">
-        {/* Avatar */}
+        {/* Initials */}
         <div className="w-25 h-25 rounded-full bg-(--surface-2) border border-(--border-subtle) flex items-center justify-center text-2xl font-bold text-(--text-muted)">
           {name.charAt(0).toUpperCase()}
         </div>
