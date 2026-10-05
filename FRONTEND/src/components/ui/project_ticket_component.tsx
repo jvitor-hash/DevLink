@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import { Card3D } from "./3d_card_component";
-import { GlassFrame } from "./glass_frame";
 import Badge from "./badge_component";
 import Button from "./button_component";
 import { userSingleton } from "@/context/user";
@@ -40,7 +39,7 @@ export default function ProjectPreview({ item, title, category, deadline, proble
 
   return (
     <Card3D className="w-full max-w-90" onClick={openProject}>
-      <GlassFrame className="w-full" panelClassName="p-6">
+      <div className="bg-(--surface-1) border border-(--border-subtle) w-full p-6">
         <div>
           {/* Header */}
           <div className="mb-3 flex items-center justify-between gap-3">
@@ -108,7 +107,7 @@ export default function ProjectPreview({ item, title, category, deadline, proble
             )}
           </div>
         </div>
-      </GlassFrame>
+      </div>
     </Card3D>
   );
 }

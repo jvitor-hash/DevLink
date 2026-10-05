@@ -5,7 +5,6 @@ import type { TicketDTO, TicketStatus } from "@/data/types/database";
 import Button from "@/components/ui/button_component";
 import Input from "@/components/form/input_component";
 import TextArea from "@/components/form/textarea_component";
-import { SegmentedButton } from "@/components/form/segmented_button_component";
 import {
   COLUMNS,
   DEFAULT_PRIORITY,
@@ -16,6 +15,7 @@ import {
   type TicketMeta,
   type TicketPriority,
 } from "./ticket_board";
+import Select from "@/components/form/select_component";
 
 const MAX_TITLE_LENGTH = 200;
 
@@ -121,7 +121,7 @@ export default function TicketModal({
           </p>
         </div>
 
-        <button type="button" onClick={onClose} aria-label="Fechar" className="rounded p-1 hover:bg-(--surface-2)">
+        <button type="button" onClick={onClose} aria-label="Fechar" className="rounded p-1 hover:bg-(--surface-2) hover:cursor-pointer">
           <X size={16} />
         </button>
       </div>
@@ -190,22 +190,32 @@ export default function TicketModal({
         <div>
           <p className="mb-2 text-sm">Prioridade</p>
 
-          <SegmentedButton
+          <Select
             name="ticket-priority"
-            items={Object.fromEntries(PRIORITIES.map((item) => [item.value, item.label]))}
+            className="w-full"
+            labels={
+              Object.fromEntries(PRIORITIES.map((item) => 
+                [ item.label, item.value ]
+              ))
+            }
             value={priority}
-            onChange={(value) => setPriority(value as TicketPriority)}
+            onChange={(event) => setPriority(event.target?.value as TicketPriority)}
           />
         </div>
 
         <div>
           <p className="mb-2 text-sm">Coluna</p>
 
-          <SegmentedButton
+          <Select
             name="ticket-status"
-            items={Object.fromEntries(COLUMNS.map((column) => [column.status, column.label]))}
+            className="w-full"
+            labels={Object.fromEntries(
+              COLUMNS.map((column) => 
+                [column.label, column.status]
+              ))
+            }
             value={status}
-            onChange={(value) => setStatus(value as TicketStatus)}
+            onChange={(event) => setStatus(event.target?.value as TicketStatus)}
           />
         </div>
 

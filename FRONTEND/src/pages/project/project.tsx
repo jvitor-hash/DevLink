@@ -4,12 +4,10 @@ import Input from "@/components/form/input_component";
 import ProjectPreview from "@/components/ui/project_ticket_component";
 import { useMemo, useState } from "react";
 import { useLoaderData, useNavigate, useSearchParams, type LoaderFunctionArgs } from "react-router-dom";
-import { ChevronRight } from "react-feather";
 import { type ProjectDTO, type ListParams } from "@/data/types/database";
 import { projectService } from "@/data/services/project_service";
 import { ActiveFiltersBanner } from "@/components/ui/active_filters_banner";
 import Button from "@/components/ui/button_component";
-import { BrutalButton } from "@/components/ui/brutal_button";
 
 const PAGE_SIZE = 10;
 
@@ -107,11 +105,10 @@ export default function ProjectPage() {
   const [filters, setFilters] = useState<ProjectFilters>(EMPTY_FILTERS);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const urlQuery = searchParams.toString();
 
   // URL is the source of truth for category/sub_category deep links; the
   // rest of the filters stay user-managed state.
-  const urlFilters = useMemo(() => filtersFromUrl(searchParams), [urlQuery]);
+  const urlFilters = useMemo(() => filtersFromUrl(searchParams), [searchParams]);
 
   // Snapshot of the filters behind the currently displayed results.
   const [appliedFilters, setAppliedFilters] =
@@ -166,11 +163,6 @@ export default function ProjectPage() {
   return (
     <>
       <section className="mx-auto w-full px-2 py-4 lg:px-6 lg:py-8">
-        <header className="mb-6">
-          <h1 className="gb-heading text-4xl tracking-tight">Projetos</h1>
-          <div className="gb-rule-heavy mt-2 h-[3px] bg-(--gb-ink) border-0" />
-        </header>
-
         <form
           className="relative mx-auto max-h-fit"
           onSubmit={(e) => {
@@ -191,13 +183,12 @@ export default function ProjectPage() {
           />
           <div className="absolute right-2 top-8 -translate-y-1/2 flex gap-2">
             {hasPendingFilters && (
-              <BrutalButton
+              <Button
                 className="self-center px-3 py-1 text-xs"
                 dataTestId="pending-filters-indicator"
                 onClick={handleSearch}
-              >
-                Filtros não aplicados
-              </BrutalButton>
+                label="Filtros não aplicados"
+              />
             )}
             <Button label="Pesquisar" buttonType="submit" />
           </div>
@@ -217,12 +208,8 @@ export default function ProjectPage() {
             <h2 className="gb-heading text-2xl tracking-tight">
               <span className="text-(--gb-accent) text-3xl">*</span> Highlights desta semana
             </h2>
-            <button className="group flex items-center hover:cursor-pointer hover:text-(--primary) transition-colors">
-              <span className="gb-label">VER MAIS</span>
-              <ChevronRight className="inline transition-all group-hover:mx-2" />
-            </button>
           </div>
-          <div className="gb-rule-heavy mt-2 h-[3px] bg-(--gb-ink) border-0" />
+          <div className="mt-2 h-[3px] bg-(--primary) border-0" />
         </div>
 
         <div className="grid grid-cols-5 grid-rows-4 gap-4">

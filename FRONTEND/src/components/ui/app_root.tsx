@@ -7,7 +7,6 @@ import LoadingScreen from "@/pages/loading";
 import Toaster from "@/components/ui/toaster_component";
 import ProjectEventsToaster from "@/components/ui/project_events_toaster";
 import LoginModal from "@/components/ui/login_modal";
-import { ThemeBackdrop } from "@/components/ui/theme_backdrop";
 import { registerUnauthorizedHandler } from "@/utils/api_client";
 import { toastStore } from "@/utils/toast_store";
 import { userSingleton } from "@/context/user";
@@ -32,8 +31,6 @@ export function RootApp() : React.ReactElement {
 
   return (
     <>
-      <ThemeBackdrop />
-
       {isLoading && <LoadingScreen />}
       <NavbarLayout onOpenLogin={() => setIsLoginModalOpen(true)} />
       <SmoothScroll />

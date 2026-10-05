@@ -3,8 +3,6 @@ import Button from "@/components/ui/button_component";
 import WaveEffect from "@/components/ui/wave_shader_component";
 import { scrollToY } from "@/utils/scroll_bus";
 import { CategoryCards } from "@/components/ui/category_cards";
-import { GlassFrame } from "@/components/ui/glass_frame";
-import { TagLabel } from "@/components/ui/tag_label";
 
 const HOW_IT_WORKS = [
   {
@@ -41,25 +39,6 @@ export default function Home() {
 
   return (
     <main>
-      {/* Masthead: the zine cover strip */}
-      <div className="flex flex-wrap items-end justify-between gap-4 px-8 pt-6">
-        <div className="flex items-center gap-4">
-          <span className="gb-register" aria-hidden="true" />
-
-          <span className="gb-display text-3xl">DEVLINK</span>
-
-          <TagLabel label="Nova Edição" />
-        </div>
-
-        <div className="text-right">
-          <span className="gb-kicker block">Technical Zine</span>
-
-          <span className="gb-kicker">Nº 001 — {new Date().getFullYear()}</span>
-        </div>
-      </div>
-
-      <div className="gb-rule-heavy mt-4" />
-
       {/* Cover: headline plus a vertical Japanese column */}
       <section className="w-full overflow-hidden">
         <WaveEffect />
@@ -82,10 +61,6 @@ export default function Home() {
               <Button label="Questionário" colorType="primary" buttonType="button" href="/questionnaire" />
               <Button label="Como funciona?" colorType="secondary" buttonType="button" onClick={scrollToHowItWorks} />
             </div>
-          </div>
-
-          <div className="hidden items-start gap-6 md:flex">
-            <div className="gb-halftone h-48 w-24 text-(--primary)" aria-hidden="true" />
           </div>
         </div>
       </section>
@@ -133,17 +108,15 @@ export default function Home() {
 
         <div className="mx-8 grid grid-cols-1 gap-6 md:grid-cols-3">
           {HOW_IT_WORKS.map(({ step, title, body }) => (
-            <GlassFrame key={step} panelClassName="p-6">
+            <div key={step} className="bg-(--surface-1) border border-(--border-subtle) p-6">
               <div className="mb-4 flex items-baseline gap-3">
                 <span className="gb-heading text-4xl text-(--primary)">{step}</span>
-
                 <h3 className="gb-heading text-lg">{title}</h3>
               </div>
 
-              <div className="gb-rule-hair my-4" />
-
+              <div className="border border-(--border) my-4" />
               <p className="gb-body text-sm">{body}</p>
-            </GlassFrame>
+            </div>
           ))}
         </div>
       </section>
@@ -170,14 +143,13 @@ export default function Home() {
 
         <ul className="mx-8 mt-10 grid grid-cols-1 gap-x-8 gap-y-0 md:grid-cols-2 lg:grid-cols-3">
           {TEAM_MEMBERS.map(({ name, role }) => (
-            <li key={name} className="border-b border-(--border-subtle) py-5">
-              <div className="flex items-baseline gap-4">
-                <span className="gb-heading text-xl">{name}</span>
+            <li key={name} className="border-b border-(--border-subtle) py-5 relative">
+              <div className="flex flex-col">
+                <span className="gb-heading text-xl z-10">{name}</span>
+                <p className="gb-body mt-2 text-sm z-10">{role}</p>
 
-                <span className="gb-halftone ml-auto h-4 w-10 text-(--primary)" aria-hidden="true" />
+                <span className="absolute mask-[linear-gradient(to_left,white_35%,transparent_100%)] gb-halftone h-[70%] w-full text-(--primary) z-0" aria-hidden="true" />
               </div>
-
-              <p className="gb-body mt-2 text-sm">{role}</p>
             </li>
           ))}
         </ul>
@@ -189,8 +161,6 @@ export default function Home() {
 
         <div className="flex flex-col items-start justify-between gap-4 text-sm text-(--text-muted) sm:flex-row sm:items-center">
           <p className="flex items-center gap-4">
-            <span className="gb-register" aria-hidden="true" />
-
             <span className="gb-kicker">© {new Date().getFullYear()} DevLink</span>
           </p>
 
@@ -203,4 +173,4 @@ export default function Home() {
       </footer>
     </main>
   );
-}
+}

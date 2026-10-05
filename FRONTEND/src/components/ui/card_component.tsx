@@ -1,7 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
 
-import { GlassFrame } from "@/components/ui/glass_frame";
-
 type CardProps = {
   children: ReactNode,
   onClick?: () => void,
@@ -13,14 +11,12 @@ export default function Card({ children, onClick, className = "", style }: CardP
   const clickable = onClick !== undefined;
 
   return (
-    <GlassFrame
-      as="div"
+    <div
       onClick={onClick}
-      className={className}
+      className={`p-5 border border-(--border-subtle) transition-all hover:shadow-lg ${clickable ? "hover:cursor-pointer hover:-translate-y-1" : ""} ${className}`}
       style={style}
-      panelClassName={`p-5 border border-(--border-subtle) transition-all hover:shadow-lg ${clickable ? "hover:cursor-pointer hover:-translate-y-1" : ""}`}
     >
       {children}
-    </GlassFrame>
+    </div>
   );
-}
+}

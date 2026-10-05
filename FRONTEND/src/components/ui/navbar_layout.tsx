@@ -6,7 +6,6 @@ import Button from "@/components/ui/button_component";
 import Drawer from "@/components/ui/drawer_layout";
 import SavedTicketsMenu from "@/components/ui/saved_tickets_menu";
 import NotificationBell from "@/components/ui/notification_bell";
-import { GlassFrame } from "@/components/ui/glass_frame";
 import { userSingleton } from "@/context/user";
 import { useCurrentUser } from "@/hooks/use_current_user";
 
@@ -34,7 +33,7 @@ export function NavbarLayout({ onOpenLogin } : NavbarLayoutProps) : React.ReactE
   return (
     <>
       <header className="sticky top-0 z-40 p-4 pb-6">
-        <GlassFrame panelClassName="gb-navbar gb-tabbar grid grid-cols-[1fr_auto_1fr] items-center px-4 py-2">
+        <div className="backdrop-blur-sm grid grid-cols-[1fr_auto_1fr] items-center px-4 py-2">
           <div>
             <button className="hover:cursor-pointer" onClick={() => setOpenDrawer(true)}>
               <Menu size={18}/>
@@ -70,7 +69,7 @@ export function NavbarLayout({ onOpenLogin } : NavbarLayoutProps) : React.ReactE
               />
             )}
           </div>
-        </GlassFrame>
+        </div>
       </header>
 
       <Drawer open={openDrawer} onClose={() => setOpenDrawer(false)}>

@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react";
 import ProjectInfoPanel from "./project_info_panel";
 import ProjectWorkPanel from "./project_work_panel";
-import ProjectChatPanel from "./project_chat_panel";
 import { projectService } from "@/data/services/project_service";
 import type { ProjectDTO, ProjectEvent } from "@/data/types/database";
 import { useLoaderData, type LoaderFunctionArgs } from "react-router-dom";
@@ -45,11 +44,6 @@ export default function ProjectOpenPage() {
 
   return (
     <section className="mx-auto w-full px-2 py-4 lg:px-6 lg:py-6">
-      <header className="mb-4">
-        <h1 className="gb-heading text-3xl tracking-tight">Projeto</h1>
-        <div className="gb-rule-heavy mt-2 h-[3px] bg-(--gb-ink) border-0" />
-      </header>
-
       <div className="flex flex-col gap-3">
         <div className="flex flex-col items-stretch gap-3 lg:flex-row">
           <div className="flex min-w-0 flex-1 flex-col">
@@ -58,8 +52,6 @@ export default function ProjectOpenPage() {
               onProjectUpdated={handleProjectUpdated}
             />
           </div>
-
-          <ProjectChatPanel />
         </div>
 
         {/* Keyed per project so board and checklist state never leak across projects. */}

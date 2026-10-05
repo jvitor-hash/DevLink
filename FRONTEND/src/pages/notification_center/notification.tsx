@@ -2,8 +2,6 @@ import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "@/components/ui/button_component";
 import NotificationListItem from "@/components/ui/notification_list_item";
-import { BrutalChip } from "@/components/ui/brutal_chip";
-import { GlassFrame } from "@/components/ui/glass_frame";
 import { formatRelativeTime } from "@/utils/time_formatting";
 import { eventToNotification } from "@/utils/notification_mapper";
 import { useProjectEvents } from "@/hooks/use_project_events";
@@ -123,40 +121,25 @@ export default function NotificationPage() {
 
   return (
     <div className="mx-auto w-full px-2 py-4 lg:px-6 lg:py-6">
-      <header className="mb-6">
-        <h1 className="gb-heading text-4xl tracking-tight">Notificações</h1>
-        <div className="gb-rule-heavy mt-2 h-[3px] bg-(--gb-ink) border-0" />
-      </header>
-
       <div className="mx-0 grid min-h-[70vh] grid-cols-1 gap-4 lg:grid-cols-[240px_1fr_1fr]">
       {/* Category sidebar; horizontal chips on small screens */}
-      <GlassFrame as="aside" panelClassName="p-4 shadow-[8px_8px_0px_#161212]">
-        <h1 className="gb-heading mb-4 text-xl">Notificações</h1>
+      <div className="p-4 bg-(--surface-1) border border-(--border-subtle)">
+        <h1 className="mb-4 text-xl">Notificações</h1>
         <nav className="flex flex-row gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
           {CATEGORIES.map(({ key, label }) => (
-            <BrutalChip
-              key={key}
-              active={category === key}
-              onClick={() => setCategory(key)}
-              className="w-full shrink-0 justify-between"
-            >
-              {label}
-              <span className={category === key ? "text-xs text-white" : "text-xs text-(--text-muted)"}>
-                {categoryCount(key)}
-              </span>
-            </BrutalChip>
+            <Button key={key} label={label} buttonType="button" colorType="primary"/>
           ))}
         </nav>
-      </GlassFrame>
+      </div>
 
       {/* Notification list */}
-      <GlassFrame as="section" className="overflow-y-auto" panelClassName="p-4">
+      <div className="overflow-y-auto p-4 bg-(--surface-1) border border-(--border-subtle)">
         <div className="mb-3 flex items-center justify-between gap-2">
           <h2 className="gb-heading text-xl">{CATEGORIES.find((c) => c.key === category)?.label}</h2>
         </div>
 
         {filtered.length === 0 ? (
-          <p className="gb-label text-(--gb-stone-600) py-6 text-center">NENHUMA NOTIFICAÇÃO NESTA CATEGORIA.</p>
+          <p className="gb-label text-(--gb-stone-600) py-6 text-center">Nenhuma notificação nesta categoria.</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {filtered.map((item) => (
@@ -175,10 +158,10 @@ export default function NotificationPage() {
             ))}
           </ul>
         )}
-      </GlassFrame>
+      </div>
 
       {/* Detail pane */}
-      <GlassFrame as="section" className="overflow-y-auto" panelClassName="p-4">
+      <div className="overflow-y-auto p-4">
         {selected ? (
           <>
             <h2 className="gb-heading text-xl">{selected.title}</h2>
@@ -208,10 +191,10 @@ export default function NotificationPage() {
           </>
         ) : (
           <div className="py-6 text-center">
-            <p className="gb-label text-(--gb-stone-400)">SELECIONE UMA NOTIFICAÇÃO PARA VER OS DETALHES.</p>
+            <p className="gb-label text-(--gb-stone-400)">Selecione uma notificação para ver os detalhes.</p>
           </div>
         )}
-      </GlassFrame>
+      </div>
     </div>
     </div>
   );

@@ -8,7 +8,6 @@ import ErrorPage from "@/pages/error";
 
 // Every page and its loader are code-split: they load on demand.
 const HomePage = lazy(() => import("@/pages/home/home"));
-const MangaStorePage = lazy(() => import("@/pages/manga_store/manga_store"));
 const ProjectPage = lazy(() => import("@/pages/project/project"));
 const ProjectOpenPage = lazy(() => import("@/pages/project_open/project_open"));
 const ProfilePage = lazy(() => import("@/pages/profile/profile"));
@@ -27,7 +26,6 @@ export const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       { index: true, element: deferred(<HomePage />) },
-      { path: "store", element: deferred(<MangaStorePage />) },
       {
         path: "project",
         loader: (args: LoaderFunctionArgs) => import("@/pages/project/project").then((module) => module.ProjectLoader(args)),

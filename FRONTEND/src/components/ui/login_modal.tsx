@@ -100,7 +100,7 @@ export default function LoginModal({ show, onClose }: LoginModalProps) {
   return (
     <>
       <div onClick={close} className={`fixed inset-0 z-40 bg-black/50 backdrop-blur-md transition-opacity ${show ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"}`} />
-      <dialog ref={dialogRef} onCancel={close} className="animated-dialog gb-glass m-auto text-(--text-primary) p-6">
+      <dialog ref={dialogRef} onCancel={close} className="animated-dialog bg-(--surface-1) border border-(--border-subtle) m-auto text-(--text-primary) p-6">
         {mode === "login" ? (
           <>
             <div className="flex justify-between"><p className="text-2xl">Login</p><button type="button" onClick={close} aria-label="Fechar"><X /></button></div>
@@ -122,7 +122,7 @@ export default function LoginModal({ show, onClose }: LoginModalProps) {
         ) : mode === "reset" ? (
           <>
             <div className="flex justify-between"><p className="text-2xl">Recuperar senha</p><button type="button" onClick={close} aria-label="Fechar"><X /></button></div>
-            <p className="mt-2">Informe seu e-mail e enviaremos o link para redefinir a senha. <button type="button" className="text-(--info) hover:cursor-pointer" data-testid="back-to-login-link" onClick={() => changeMode("login")}>Voltar ao login</button></p>
+            <p className="mt-2">Informe seu e-mail e enviaremos o link para redefinir a senha.</p>
             {error && <p role="alert" className="mt-3 text-(--error)">{error}</p>}
             {notice && <p role="status" className="mt-3 text-(--success)">{notice}</p>}
             <form className="mt-5 flex flex-col gap-3" onSubmit={requestPasswordReset}>

@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import Card from "@/components/ui/card_component";
-import { BrutalChip } from "@/components/ui/brutal_chip";
 import { homeCategories } from "@/data/home_categories";
 
 /**
@@ -29,20 +28,21 @@ export function CategoryCards() {
           onClick={() => goToProjects({ category: category.value })}
         >
           <div>
-            <h3 className="text-lg font-bold text-(--text-primary)">{category.label}</h3>
+            <h3 className="text-lg text-(--text-primary)">{category.label}</h3>
 
             <ul className="flex flex-col items-start gap-2 mt-2">
               {category.subCategories.map((subCategory) => (
                 <li key={subCategory.value}>
-                  <BrutalChip
+                  <button
                     onClick={(e) => {
                       e.stopPropagation();
                       goToProjects({ category: category.value, sub_category: subCategory.value });
                     }}
-                    ariaLabel={`Filtrar por ${subCategory.label}`}
+                    className="bg-(--surface-2) px-2 py-1 hover:cursor-pointer"
+                    aria-label={`Filtrar por ${subCategory.label}`}
                   >
                     {subCategory.label}
-                  </BrutalChip>
+                  </button>
                 </li>
               ))}
             </ul>

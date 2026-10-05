@@ -130,21 +130,13 @@ export default function Questionnaire() {
         />
       )}
 
-      <div className="gb-glass relative m-2 p-4 shadow-[8px_8px_0px_#161212] sm:m-4 sm:p-6">
-        <div className="mb-4 border-b-2 border-(--gb-ink) pb-3 sm:mb-6 sm:pb-4">
-          <h2 className="gb-heading text-2xl tracking-tight sm:text-3xl">Criação de projetos</h2>
-          <p className="gb-label text-(--gb-stone-600) mt-2 tracking-wide">
+      <div className="bg-(--surface-1) border border-(--border-subtle) relative m-2 p-4 sm:m-4 sm:p-6">
+        <div className="mb-4 border-b-2 border-(--primary) pb-3 sm:mb-6 sm:pb-4">
+          <h2 className="gb-heading text-2xl sm:text-3xl">Criação de projetos</h2>
+          <p className="gb-label text-(--gb-stone-600)">
             DESCREVA SUAS IDEIAS E PUBLIQUE PARA PROGRAMADORES
           </p>
         </div>
-
-        <div className="mb-2">
-          <p className="text-sm text-(--text-secondary) leading-relaxed">
-            Descreva suas ideias aqui e publique para possíveis programadores
-          </p>
-        </div>
-
-        <div className="gb-rule-heavy my-4 h-[3px] bg-(--gb-ink) border-0" />
 
         <QuestionnaireProgress currentStep={step} />
 

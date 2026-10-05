@@ -177,7 +177,7 @@ export default function ProjectWorkPanel({ projectId }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-4 bg-transparent p-4 lg:flex-row">
+    <div className="flex flex-col gap-4 bg-(--surface-1) border border-(--border-subtle) p-4 lg:flex-row">
       <section className="flex shrink-0 flex-col border-(--border) pr-0 lg:w-64 lg:border-r lg:pr-4" aria-label="Checklist">
         <header className="mb-3 flex items-center gap-2">
           <CheckCircle size={16} /> Checklist

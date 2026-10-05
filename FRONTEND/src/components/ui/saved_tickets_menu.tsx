@@ -84,7 +84,7 @@ export default function SavedTicketsMenu({ onOpenChange }: SavedTicketsMenuProps
         <Bookmark size={18} />
         {projects.length > 0 && (
           <span
-            className="gb-tag absolute -top-1.5 -right-2 min-w-4 px-1 text-center text-[10px] leading-4"
+            className="bg-(--primary) rounded-full absolute -top-1.5 -right-2 min-w-4 px-1 text-center text-[10px] leading-4"
             data-testid="saved-tickets-count"
           >
             {projects.length}
@@ -93,7 +93,7 @@ export default function SavedTicketsMenu({ onOpenChange }: SavedTicketsMenuProps
       </button>
 
       <div
-        className={`absolute right-0 mt-3 w-80 rounded-md border border-(--border-subtle) bg-(--surface-1) shadow-lg z-50 transition-opacity ${
+        className={`absolute right-0 mt-3 w-80 border border-(--border-subtle) bg-(--surface-1) shadow-lg z-50 transition-opacity ${
           open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
       >
