@@ -135,11 +135,11 @@ export default function NotificationPage() {
       {/* Notification list */}
       <div className="overflow-y-auto p-4 bg-(--surface-1) border border-(--border-subtle)">
         <div className="mb-3 flex items-center justify-between gap-2">
-          <h2 className="gb-heading text-xl">{CATEGORIES.find((c) => c.key === category)?.label}</h2>
+          <h2 className="text-xl">{CATEGORIES.find((c) => c.key === category)?.label}</h2>
         </div>
 
         {filtered.length === 0 ? (
-          <p className="gb-label text-(--gb-stone-600) py-6 text-center">Nenhuma notificação nesta categoria.</p>
+          <p className="text-(--text-muted) py-6 text-center">Nenhuma notificação nesta categoria.</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {filtered.map((item) => (

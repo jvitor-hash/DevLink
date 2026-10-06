@@ -20,11 +20,11 @@ export default function NotificationBell() {
 
   return (
     <Link to="/notification" aria-label="Notificações" data-testid="notification-bell" className="relative block">
-      <Bell size={18} />
+      <Bell size={18} color="var(--primary)"/>
 
       {count > 0 && (
         <span
-          className="gb-tag absolute -top-1.5 -right-2 min-w-4 px-1 text-center text-[10px] leading-4"
+          className="absolute -top-1.5 -right-2 min-w-4 px-1 text-center text-[10px] leading-4"
           data-testid="notification-count"
         >
           {count > 9 ? "9+" : count}

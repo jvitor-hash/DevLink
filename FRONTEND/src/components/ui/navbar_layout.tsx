@@ -8,6 +8,7 @@ import SavedTicketsMenu from "@/components/ui/saved_tickets_menu";
 import NotificationBell from "@/components/ui/notification_bell";
 import { userSingleton } from "@/context/user";
 import { useCurrentUser } from "@/hooks/use_current_user";
+import { ThemeToggle } from "./theme_toggle_component";
 
 const MENU_LINKS: ReadonlyArray<{ to: string; label: string }> = [
   { to: "/questionnaire", label: "Criação de projetos" },
@@ -36,24 +37,26 @@ export function NavbarLayout({ onOpenLogin } : NavbarLayoutProps) : React.ReactE
         <div className="backdrop-blur-sm grid grid-cols-[1fr_auto_1fr] items-center px-4 py-2">
           <div>
             <button className="hover:cursor-pointer" onClick={() => setOpenDrawer(true)}>
-              <Menu size={18}/>
+              <Menu size={18} />
             </button>
           </div>
 
           <div>
-            <Link to="/" className="gb-heading text-xl">DevLink</Link>
+            <h2>
+              <Link to="/" className="text-xl">DevLink</Link>
+            </h2>
           </div>
 
-          <div className="justify-self-end">
+          <div className="justify-self-end flex items-center gap-3">
             {user ? (
               <div className="flex items-center gap-3">
-                <NotificationBell />
+                {/*<NotificationBell />
 
                 <SavedTicketsMenu />
 
                 <Link to="/settings" className="flex items-center">
-                  <Settings size={18}/>
-                </Link>
+                  <Settings size={18} color="var(--primary)"/>
+                </Link>*/}
 
                 <span className="text-(--text-primary) font-medium" data-testid="navbar-username">{user.name}</span>
 
@@ -68,6 +71,8 @@ export function NavbarLayout({ onOpenLogin } : NavbarLayoutProps) : React.ReactE
                 onClick={onOpenLogin}
               />
             )}
+
+            {/*<ThemeToggle/>*/}
           </div>
         </div>
       </header>

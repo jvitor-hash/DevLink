@@ -16,7 +16,8 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-feather": "^2.0.10",
-    "react-router-dom": "^7.18.3"
+    "react-router-dom": "^7.18.3",
+    "shaders": "^4.0.0"
   },
   "devDependencies": {
     "@cypress/code-coverage": "^4.0.3",

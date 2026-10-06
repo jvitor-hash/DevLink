@@ -134,7 +134,7 @@ export default function Questionnaire() {
         <div className="mb-4 border-b-2 border-(--primary) pb-3 sm:mb-6 sm:pb-4">
           <h2 className="gb-heading text-2xl sm:text-3xl">Criação de projetos</h2>
           <p className="gb-label text-(--gb-stone-600)">
-            DESCREVA SUAS IDEIAS E PUBLIQUE PARA PROGRAMADORES
+            Descreva suas ideias e publique para programadores
           </p>
         </div>
 

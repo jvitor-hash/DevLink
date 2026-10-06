@@ -15,7 +15,7 @@ const ProjectRow = ({ project, onClick }: { project: ProjectDTO; onClick: () => 
     <button
       type="button"
       onClick={onClick}
-      className="w-full rounded px-2 py-2 text-left transition-colors hover:bg-(--surface-2)"
+      className="w-full rounded px-2 py-2 text-left transition-colors hover:bg-(--surface-2) hover:cursor-pointer"
     >
       <p className="truncate text-sm font-medium text-(--text-primary)">{project.title}</p>
       <p className="text-xs text-(--text-muted)">
@@ -81,10 +81,10 @@ export default function SavedTicketsMenu({ onOpenChange }: SavedTicketsMenuProps
         aria-label="Projetos salvos"
         data-testid="saved-tickets-btn"
       >
-        <Bookmark size={18} />
+        <Bookmark size={18} color="var(--primary)"/>
         {projects.length > 0 && (
           <span
-            className="bg-(--primary) rounded-full absolute -top-1.5 -right-2 min-w-4 px-1 text-center text-[10px] leading-4"
+            className="bg-(--primary) rounded-full absolute -top-1.5 -right-2 min-w-4 px-1 text-center text-[10px] text-white leading-4"
             data-testid="saved-tickets-count"
           >
             {projects.length}
@@ -98,7 +98,7 @@ export default function SavedTicketsMenu({ onOpenChange }: SavedTicketsMenuProps
         }`}
       >
         <div className="px-4 py-3 border-b border-(--border-subtle)">
-          <p className="font-semibold">Meus projetos</p>
+          <h5 className="text-lg">Meus projetos</h5>
         </div>
 
         <ul className="max-h-80 overflow-y-auto p-2">

@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 import Button from "@/components/ui/button_component";
-import WaveEffect from "@/components/ui/wave_shader_component";
 import { scrollToY } from "@/utils/scroll_bus";
 import { CategoryCards } from "@/components/ui/category_cards";
+import { Blob, Circle, DotGrid, FlowField, FlutedGlass, Shader, TiltShift } from "shaders/react";
 
 const HOW_IT_WORKS = [
   {
@@ -23,11 +23,11 @@ const HOW_IT_WORKS = [
 ] as const;
 
 const TEAM_MEMBERS = [
-  { name: "Dev 1", role: "Desenvolvedor Full-Stack" },
-  { name: "Dev 2", role: "Desenvolvedor Front-End" },
-  { name: "Dev 3", role: "Desenvolvedor Back-End" },
-  { name: "Dev 4", role: "Desenvolvedor Mobile" },
-  { name: "Dev 5", role: "Desenvolvedor DevOps" },
+  { name: "João Vitor Alves da Silva", role: "Desenvolvedor Full-Stack" },
+  { name: "Henrick ", role: "Desenvolvedor Front-End" },
+  { name: "Eduardo Reis", role: "Desenvolvedor Back-End" },
+  { name: "Fabricio Sacramento", role: "Banco de dados" },
+  { name: "Nicolas Motas", role: "Desenvolvedor DevOps" },
 ] as const;
 
 export default function Home() {
@@ -39,21 +39,30 @@ export default function Home() {
 
   return (
     <main>
-      {/* Cover: headline plus a vertical Japanese column */}
-      <section className="w-full overflow-hidden">
-        <WaveEffect />
+      <section className="w-full overflow-hidden relative">
+        <div className="absolute inset-0">
+          <div className="absolute w-full h-full top-0 left-0 z-[-1] opacity-50">
+            <Shader >
+              <FlutedGlass softness={0} highlight={1} lightAngle={45} angle={-45} frequency={15} edges="transparent">
+                <TiltShift intensity={200} angle={-45}>
+                  <Blob colorA="#FF0000" colorB="#FF0000" softness={0} highlightIntensity={0} speed={0.25} deformation={0.25} />
+                </TiltShift>
+              </FlutedGlass>
+            </Shader>
+          </div>
+        </div>
 
         <div className="relative grid min-h-[calc(100vh-8rem)] grid-cols-1 items-center gap-8 px-8 py-12 md:grid-cols-[1fr_auto]">
           <div className="max-w-2xl">
-            <p className="gb-kicker mb-4">transforming ideas into specs</p>
+            <p className="mb-4 text-(--text-muted)">transforming ideas into specs</p>
 
-            <h1 className="gb-heading text-5xl leading-[0.95] mb-6 md:text-6xl">
+            <h1 className="text-5xl leading-[0.95] mb-6 md:text-6xl">
               Transforme<br />
               suas ideias<br />
               em especificações
             </h1>
 
-            <p className="gb-body text-lg mb-8 max-w-xl">
+            <p className="text-lg mb-8 max-w-xl">
               Tire suas ideias do papel e transforme-as em planos técnicos objetivos.
             </p>
 
@@ -69,18 +78,18 @@ export default function Home() {
       <section className="w-full py-16">
         <div className="px-8">
           <div className="flex items-baseline gap-4">
-            <span className="gb-heading text-4xl">01</span>
+            <h4 className="text-3xl">01</h4>
 
             <div>
-              <h2 className="gb-heading text-2xl">Categorias</h2>
+              <h2 className="text-2xl">Categorias</h2>
 
-              <p className="gb-kicker mt-1">Browse by category</p>
+              <p className="mt-1 text-(--text-muted)">Browse by category</p>
             </div>
           </div>
 
-          <div className="gb-rule-heavy my-6" />
+          <div className="border border-(--border-subtle) my-6" />
 
-          <p className="gb-body mb-8 max-w-2xl">
+          <p className="mb-8 max-w-2xl">
             Pesquise por categoria e encontre o projeto que procura.
           </p>
         </div>
@@ -94,49 +103,45 @@ export default function Home() {
       <section id="como-funciona" className="w-full scroll-mt-16 py-16">
         <div className="px-8">
           <div className="flex items-baseline gap-4">
-            <span className="gb-heading text-4xl">02</span>
+            <h4 className="text-3xl">02</h4>
 
             <div>
-              <h2 className="gb-heading text-2xl">Como funciona</h2>
+              <h2 className="text-2xl">Como funciona</h2>
 
-              <p className="gb-kicker mt-1">How it works</p>
+              <p className="mt-1 text-(--text-muted)">How it works</p>
             </div>
           </div>
 
-          <div className="gb-rule-heavy my-6" />
+          <div className="border border-(--border-subtle) my-6" />
         </div>
 
         <div className="mx-8 grid grid-cols-1 gap-6 md:grid-cols-3">
           {HOW_IT_WORKS.map(({ step, title, body }) => (
-            <div key={step} className="bg-(--surface-1) border border-(--border-subtle) p-6">
+            <div key={step} className="p-6">
               <div className="mb-4 flex items-baseline gap-3">
-                <span className="gb-heading text-4xl text-(--primary)">{step}</span>
-                <h3 className="gb-heading text-lg">{title}</h3>
+                <h6 className="text-3xl text-(--primary)">{step}</h6>
+                <h3 className="text-xl">{title}</h3>
               </div>
-
               <div className="border border-(--border) my-4" />
-              <p className="gb-body text-sm">{body}</p>
+              <p className="text-sm">{body}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* 03 Roster */}
+      {/* 03 Team */}
       <section className="w-full min-h-[60vh] py-16">
         <div className="px-8">
           <div className="flex items-baseline gap-4">
-            <span className="gb-heading text-4xl">03</span>
-
+            <h4 className="text-3xl">03</h4>
             <div>
-              <h2 className="gb-heading text-2xl">Quem somos</h2>
-
-              <p className="gb-kicker mt-1">The team</p>
+              <h2 className="text-2xl">Quem somos</h2>
+              <p className="mt-1 text-(--text-muted)">The team</p>
             </div>
           </div>
 
-          <div className="gb-rule-heavy my-6" />
-
-          <p className="gb-body max-w-2xl">
+          <div className="border border-(--border-subtle) my-4" />
+          <p>
             Esta é a nossa equipe de desenvolvedores que ajudaram nesse projeto
           </p>
         </div>
@@ -145,29 +150,28 @@ export default function Home() {
           {TEAM_MEMBERS.map(({ name, role }) => (
             <li key={name} className="border-b border-(--border-subtle) py-5 relative">
               <div className="flex flex-col">
-                <span className="gb-heading text-xl z-10">{name}</span>
-                <p className="gb-body mt-2 text-sm z-10">{role}</p>
+                <h4 className="text-lg z-10">{name}</h4>
+                <p className="mt-2 text-sm z-10">{role}</p>
 
-                <span className="absolute mask-[linear-gradient(to_left,white_35%,transparent_100%)] gb-halftone h-[70%] w-full text-(--primary) z-0" aria-hidden="true" />
+                <span className="absolute mask-[linear-gradient(to_left,white_35%,transparent_100%)] halftone h-[70%] w-full text-(--primary) z-0" aria-hidden="true" />
               </div>
             </li>
           ))}
         </ul>
       </section>
 
-      {/* Colophon */}
       <footer className="px-8 pb-10 pt-8">
-        <div className="gb-rule-heavy mb-6" />
+        <div className="border border-(--border-subtle) mb-6" />
 
         <div className="flex flex-col items-start justify-between gap-4 text-sm text-(--text-muted) sm:flex-row sm:items-center">
           <p className="flex items-center gap-4">
-            <span className="gb-kicker">© {new Date().getFullYear()} DevLink</span>
+            <span>© {new Date().getFullYear()} DevLink</span>
           </p>
 
           <nav className="flex flex-wrap gap-6">
-            <Link to="/project" className="gb-kicker hover:text-(--text-primary) transition-colors">Projetos</Link>
-            <Link to="/questionnaire" className="gb-kicker hover:text-(--text-primary) transition-colors">Questionário</Link>
-            <Link to="/profile" className="gb-kicker hover:text-(--text-primary) transition-colors">Perfil</Link>
+            <Link to="/project" className="hover:text-(--text-primary) transition-colors">Projetos</Link>
+            <Link to="/questionnaire" className="hover:text-(--text-primary) transition-colors">Questionário</Link>
+            <Link to="/profile" className="hover:text-(--text-primary) transition-colors">Perfil</Link>
           </nav>
         </div>
       </footer>

@@ -6,8 +6,6 @@ import { userService } from "@/data/services/user_service";
 import type { ProjectDTO, PublicUserDTO } from "@/data/types/database";
 import { formatRelativeTime } from "@/utils/time_formatting";
 import Badge from "@/components/ui/badge_component";
-import { BrutalChip } from "@/components/ui/brutal_chip";
-import { GlassFrame } from "@/components/ui/glass_frame";
 import { projectService } from "@/data/services/project_service";
 import { HIDDEN_PROJECT_STATUSES } from "@/data/types/project_filters";
 
@@ -102,15 +100,15 @@ export default function ProfilePage() {
       </section>
 
       {/* Feed tabs */}
-      <GlassFrame as="nav" className="w-fit" panelClassName="gb-tabbar px-4 py-2">
+      <div className="w-fit px-4 py-2">
         <div className="flex gap-2">
           {FEED_TABS.map(({ key, label }) => (
-            <BrutalChip key={key} active={activeTab === key} onClick={() => setActiveTab(key)}>
+            <button key={key} className={activeTab === key ? "bg-(--primary) text-(--text-primary)" : "text-(--text-secondary)"} onClick={() => setActiveTab(key)}>
               {label}
-            </BrutalChip>
+            </button>
           ))}
         </div>
-      </GlassFrame>
+      </div>
 
       {/* Main 2-col: feed + sidebar */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">

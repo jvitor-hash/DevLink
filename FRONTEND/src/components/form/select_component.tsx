@@ -21,7 +21,7 @@ export default function Select({ labels, name, value, defaultValue, placeholder,
       name={name}
       {...(isControlled ? { value } : { defaultValue })}
       aria-invalid={error || undefined}
-      className={`gb-select border py-2 px-4 rounded-sm ${error ? "border-(--error)" : "border-(--border-subtle)"} ${className}`}
+      className={`border py-2 px-4 rounded-sm ${error ? "border-(--error)" : "border-(--border-subtle)"} ${className}`}
       data-testid={dataTestId}
     >
       {placeholder !== undefined && (

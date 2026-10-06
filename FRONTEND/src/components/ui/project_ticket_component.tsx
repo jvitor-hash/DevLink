@@ -59,22 +59,22 @@ export default function ProjectPreview({ item, title, category, deadline, proble
 
           {/* Project Information */}
           <ul className="mb-4 list-none p-0 text-sm">
-            <li className="gb-row flex justify-between gap-4 border-b py-2.5 border-b-(--border-subtle)">
+            <li className="flex justify-between gap-4 border-b py-2.5 border-b-(--border-subtle)">
               <span className="text-(--text-muted)">Público-alvo:</span>
               <span id="preview-public" className="text-right font-semibold text-(--text-primary) truncate block">{translate(audience)}</span>
             </li>
 
-            <li className="gb-row flex justify-between gap-4 border-b py-2.5 border-b-(--border-subtle)">
+            <li className="flex justify-between gap-4 border-b py-2.5 border-b-(--border-subtle)">
               <span className="text-(--text-muted)">Plataformas:</span>
               <span id="preview-platforms" className="text-right font-semibold text-(--text-primary) truncate block">{platforms.map(translate).join(", ")}</span>
             </li>
 
-            <li className="gb-row flex justify-between gap-4 border-b py-2.5 border-b-(--border-subtle)">
+            <li className="flex justify-between gap-4 border-b py-2.5 border-b-(--border-subtle)">
               <span className="text-(--text-muted)">Linguagem:</span>
               <span id="preview-language" className="text-right font-semibold text-(--text-primary) truncate block">{translate(programming_language)}</span>
             </li>
 
-            <li className="gb-row flex justify-between gap-4 border-b py-2.5 border-b-(--border-subtle)">
+            <li className="flex justify-between gap-4 border-b py-2.5 border-b-(--border-subtle)">
               <span className="text-(--text-muted)">Status:</span>
               <span id="preview-status" className="text-right font-semibold text-(--text-primary) truncate block">{translate(status)}</span>
             </li>

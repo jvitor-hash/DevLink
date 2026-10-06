@@ -46,7 +46,7 @@ export default function Drawer({ open, onClose, children }: DrawerProps) {
           </button>
         </div>
 
-        <hr className="gb-divider"/>
+        <hr/>
 
         {/* Content */}
         <div className="flex flex-col gap-4 p-4 text-(--text-primary)">
