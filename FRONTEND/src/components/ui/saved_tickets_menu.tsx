@@ -15,7 +15,7 @@ const ProjectRow = ({ project, onClick }: { project: ProjectDTO; onClick: () => 
     <button
       type="button"
       onClick={onClick}
-      className="w-full rounded px-2 py-2 text-left transition-colors hover:bg-(--surface-2) hover:cursor-pointer"
+      className="w-full rounded px-2 py-2 text-left transition-colors hover:bg-(--surface-2) cursor-pointer"
     >
       <p className="truncate text-sm font-medium text-(--text-primary)">{project.title}</p>
       <p className="text-xs text-(--text-muted)">
@@ -76,7 +76,7 @@ export default function SavedTicketsMenu({ onOpenChange }: SavedTicketsMenuProps
     <div className="relative" ref={containerRef}>
       <button
         type="button"
-        className="relative hover:cursor-pointer"
+        className="relative cursor-pointer"
         onClick={toggleMenu}
         aria-label="Projetos salvos"
         data-testid="saved-tickets-btn"

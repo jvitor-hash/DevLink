@@ -44,7 +44,7 @@ export default function ProjectInfoPanel({ project }: ProjectInfoPanelProps) {
             aria-label="Histórico de conversa"
             onClick={() => setShowChat(true)}
             className="border rounded-md border-(--border-subtle) px-2 py-2
-            hover:cursor-pointer hover:bg-(--surface-2) transition-colors hover:border-(--text-primary)"
+            cursor-pointer hover:bg-(--surface-2) transition-colors hover:border-(--text-primary)"
           >
             <MessageCircle size={16} color="var(--text-primary)" />
           </button>
@@ -54,7 +54,7 @@ export default function ProjectInfoPanel({ project }: ProjectInfoPanelProps) {
             aria-label="Salvar projeto"
             onClick={() => {}}
             className="border rounded-md border-(--border-subtle) px-2 py-2
-            hover:cursor-pointer hover:bg-(--surface-2) transition-colors hover:border-(--text-primary)"
+            cursor-pointer hover:bg-(--surface-2) transition-colors hover:border-(--text-primary)"
           >
             <Bookmark size={16} color="var(--text-primary)" />
           </button>
@@ -63,7 +63,7 @@ export default function ProjectInfoPanel({ project }: ProjectInfoPanelProps) {
             type="button"
             aria-label="Mais opções"
             className="border rounded-md border-(--border-subtle) px-2 py-2
-            hover:cursor-pointer hover:bg-(--surface-2) transition-colors hover:border-(--text-primary)"
+            cursor-pointer hover:bg-(--surface-2) transition-colors hover:border-(--text-primary)"
           >
             <MoreVertical size={16} color="var(--text-primary)" />
           </button>

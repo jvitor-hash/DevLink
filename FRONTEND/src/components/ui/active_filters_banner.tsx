@@ -34,11 +34,11 @@ export function ActiveFiltersBanner({ filters }: ActiveFiltersBannerProps) {
     <div className="flex flex-wrap items-center gap-2 mb-4 mt-5" data-testid="active-filters-banner">
       <span className="text-sm text-(--text-muted)">Filtros ativos:</span>
       {activeFilters.map(([key, value]) => (
-        <button key={key} type="button" className="inline-flex items-center gap-2 rounded-sm bg-(--primary)/25 border border-(--primary) px-3 py-1 text-sm text-white hover:cursor-pointer" onClick={() => removeFilter(key)} data-testid={`clear-${key}-filter`}>
+        <button key={key} type="button" className="inline-flex items-center gap-2 rounded-sm bg-(--primary)/25 border border-(--primary) px-3 py-1 text-sm text-white cursor-pointer" onClick={() => removeFilter(key)} data-testid={`clear-${key}-filter`}>
           {key}: {value} <span aria-hidden="true">×</span>
         </button>
       ))}
-      <button type="button" className="px-2 py-1 text-xs text-(--text-muted) underline hover:cursor-pointer" onClick={() => navigate("/project", { replace: true })}>
+      <button type="button" className="px-2 py-1 text-xs text-(--text-muted) underline cursor-pointer" onClick={() => navigate("/project", { replace: true })}>
         Limpar tudo
       </button>
     </div>

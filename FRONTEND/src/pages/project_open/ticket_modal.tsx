@@ -121,7 +121,7 @@ export default function TicketModal({
           </p>
         </div>
 
-        <button type="button" onClick={onClose} aria-label="Fechar" className="rounded p-1 hover:bg-(--surface-2) hover:cursor-pointer">
+        <button type="button" onClick={onClose} aria-label="Fechar" className="rounded p-1 hover:bg-(--surface-2) cursor-pointer">
           <X size={16} />
         </button>
       </div>
@@ -176,7 +176,7 @@ export default function TicketModal({
                       type="button"
                       aria-label={`Remover tag ${tag}`}
                       onClick={() => setTags((current) => current.filter((item) => item !== tag))}
-                      className="hover:cursor-pointer hover:text-(--text-primary)"
+                      className="cursor-pointer hover:text-(--text-primary)"
                     >
                       <X size={10} />
                     </button>

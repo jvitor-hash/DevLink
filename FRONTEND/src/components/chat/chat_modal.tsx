@@ -41,7 +41,7 @@ export default function ChatModal({ show, onClose }: ChatModalProps) {
           <div className="flex-2 border-r border-(--border-subtle)">
             <header className="flex p-3 justify-between items-center border-b border-(--border-subtle)">
               <p className="text-(--text-primary) text-base">Chat Conversations</p>
-              <button className="border-none hover:cursor-pointer hover:bg-(--surface-3)/95 p-1 transition-colors" onClick={close}>
+              <button className="border-none cursor-pointer hover:bg-(--surface-3)/95 p-1 transition-colors" onClick={close}>
                 <X size={16} color="var(--text-primary)" />
               </button>
             </header>
@@ -61,13 +61,13 @@ export default function ChatModal({ show, onClose }: ChatModalProps) {
               <header className="flex flex-col border-b border-(--border-subtle) p-3">
                 <div className="flex justify-between">
                   <div className="flex items-center gap-2">
-                    <button className="border-none hover:cursor-pointer hover:bg-(--surface-3)/95 p-1 transition-colors">
+                    <button className="border-none cursor-pointer hover:bg-(--surface-3)/95 p-1 transition-colors">
                       <ChevronLeft size={16} color="var(--text-primary)" />
                     </button>
                     <p className="text-(--text-primary) text-base">{selectedConversation}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button className={`border-none hover:cursor-pointer ${toggledSearch ? 'bg-(--surface-3)/95' : 'hover:bg-(--surface-3)/95'} p-1 transition-colors`} onClick={toggleSearch}>
+                    <button className={`border-none cursor-pointer ${toggledSearch ? 'bg-(--surface-3)/95' : 'hover:bg-(--surface-3)/95'} p-1 transition-colors`} onClick={toggleSearch}>
                       <Search size={16} color="var(--text-primary)" />
                     </button>
                   </div>
@@ -100,16 +100,16 @@ export default function ChatModal({ show, onClose }: ChatModalProps) {
 
               <footer className="flex items-center gap-2 border-t border-(--border-subtle) p-3">
                 <input className="outline-none border border-(--border-subtle) p-2 rounded-sm text-(--text-secondary) w-full" placeholder="Digite sua mensagem..." />
-                <button className="hover:cursor-pointer hover:bg-(--surface-3)/95 p-2 transition-colors">
+                <button className="cursor-pointer hover:bg-(--surface-3)/95 p-2 transition-colors">
                   <Smile size={16} color="var(--text-primary)" />
                 </button>
-                <button className="hover:cursor-pointer hover:bg-(--surface-3)/95 p-2 transition-colors">
+                <button className="cursor-pointer hover:bg-(--surface-3)/95 p-2 transition-colors">
                   <Paperclip size={16} color="var(--text-primary)" />
                 </button>
-                <button className="hover:cursor-pointer bg-(--primary) rounded-sm p-2">
+                <button className="cursor-pointer bg-(--primary) rounded-sm p-2">
                   <DollarSign size={16} color="white"/>
                 </button>
-                <button className="hover:cursor-pointer bg-(--primary) rounded-sm p-2">
+                <button className="cursor-pointer bg-(--primary) rounded-sm p-2">
                   <Send size={16} color="white" />
                 </button>
               </footer>

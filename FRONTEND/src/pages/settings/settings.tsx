@@ -1,6 +1,4 @@
 import Button from "@/components/ui/button_component";
-import { BrutalChip } from "@/components/ui/brutal_chip";
-import { GlassFrame } from "@/components/ui/glass_frame";
 import { useState } from "react";
 import SettingsProfile from "./settings_profile";
 import { userSingleton } from "@/context/user";
@@ -93,20 +91,20 @@ export default function SettingsPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[240px_1fr]">
         {/* Section nav */}
-        <GlassFrame as="aside" className="h-fit" panelClassName="p-4">
+        <div className="h-fit p-4">
           <nav className="flex flex-row gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
             {SECTIONS.map(({ key, label }) => (
-              <BrutalChip
+              <button
                 key={key}
-                active={section === key}
+                // active={section === key}
                 onClick={() => setSection(key)}
                 className="shrink-0 justify-start"
               >
                 {label}
-              </BrutalChip>
+              </button>
             ))}
           </nav>
-        </GlassFrame>
+        </div>
 
         {/* Active section panel */}
         <div className="flex flex-col gap-6">
@@ -135,15 +133,15 @@ export default function SettingsPage() {
           {section === "ACCOUNT" && <SettingsAccount user={user} />}
 
           {/* Sticky save bar */}
-          <div className="sticky bottom-4 flex items-center justify-between gap-4 gb-glass p-4 shadow-[8px_8px_0px_#161212] border-2 border-(--gb-ink)">
+          <div className="sticky bottom-4 flex items-center justify-between gap-4 p-4 border border-(--border-subtle)">
             <p
-              className={`text-sm font-bold tracking-wide ${saveFeedback ? (saveFeedback.ok ? "text-(--success)" : "text-(--error)") : unsaved ? "text-(--warning)" : "text-(--gb-stone-400)"}`}
+              className={`text-sm ${saveFeedback ? (saveFeedback.ok ? "text-(--success)" : "text-(--error)") : unsaved ? "text-(--warning)" : "text-(--gb-stone-400)"}`}
             >
               {saveFeedback
                 ? saveFeedback.message
                 : unsaved
-                  ? "ALTERAÇÕES NÃO SALVAS"
-                  : "TUDO SALVO"}
+                  ? "Alterações não salvas"
+                  : "Tudo salvo"}
             </p>
 
             <Button

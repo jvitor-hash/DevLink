@@ -24,7 +24,7 @@ export default function StarRating({ value, onChange, disabled = false }: StarRa
           role="radio"
           aria-checked={value === index + 1}
           disabled={!isInteractive}
-          className={`${isInteractive ? "hover:cursor-pointer hover:scale-110" : "cursor-default"} transition-transform`}
+          className={`${isInteractive ? "cursor-pointer hover:scale-110" : "cursor-default"} transition-transform`}
           onMouseEnter={() => isInteractive && setHovered(index + 1)}
           onMouseLeave={() => isInteractive && setHovered(null)}
           onClick={() => isInteractive && onChange(index + 1)}

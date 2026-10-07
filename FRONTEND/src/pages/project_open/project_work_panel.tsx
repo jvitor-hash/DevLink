@@ -205,7 +205,7 @@ export default function ProjectWorkPanel({ projectId }: Props) {
               <button
                 type="button"
                 onClick={() => void toggleTodo(todo)}
-                className={`flex flex-1 items-center gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors hover:cursor-pointer hover:bg-(--surface-2) ${todo.isDone ? "text-(--text-muted) line-through" : "text-(--text-primary)"}`}
+                className={`flex flex-1 items-center gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors cursor-pointer hover:bg-(--surface-2) ${todo.isDone ? "text-(--text-muted) line-through" : "text-(--text-primary)"}`}
               >
                 <span
                   className={`h-3.5 w-3.5 shrink-0 rounded-sm border ${todo.isDone ? "border-(--success) bg-(--success)" : "border-(--border-subtle)"}`}
@@ -217,7 +217,7 @@ export default function ProjectWorkPanel({ projectId }: Props) {
                 type="button"
                 aria-label={`Excluir item ${todo.title}`}
                 onClick={() => void removeTodo(todo)}
-                className="rounded p-1 text-(--text-muted) opacity-0 transition-opacity hover:cursor-pointer hover:text-(--error) focus:opacity-100 group-hover:opacity-100"
+                className="rounded p-1 text-(--text-muted) opacity-0 transition-opacity cursor-pointer hover:text-(--error) focus:opacity-100 group-hover:opacity-100"
               >
                 <Trash2 size={12} />
               </button>

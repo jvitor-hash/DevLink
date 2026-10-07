@@ -38,7 +38,7 @@ export function CategoryCards() {
                       e.stopPropagation();
                       goToProjects({ category: category.value, sub_category: subCategory.value });
                     }}
-                    className="bg-(--surface-2) px-2 py-1 hover:cursor-pointer"
+                    className="bg-(--surface-2) px-2 py-1 cursor-pointer"
                     aria-label={`Filtrar por ${subCategory.label}`}
                   >
                     {subCategory.label}

@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import Button from "@/components/ui/button_component";
 import { scrollToY } from "@/utils/scroll_bus";
 import { CategoryCards } from "@/components/ui/category_cards";
-import { Blob, Circle, DotGrid, FlowField, FlutedGlass, Shader, TiltShift } from "shaders/react";
+import { Blob, FlutedGlass, Shader } from "shaders/react";
 
 const HOW_IT_WORKS = [
   {
@@ -39,19 +39,17 @@ export default function Home() {
 
   return (
     <main>
-      <section className="w-full overflow-hidden relative">
-        <div className="absolute inset-0">
-          <div className="absolute w-full h-full top-0 left-0 z-[-1] opacity-50">
-            <Shader >
-              <FlutedGlass softness={0} highlight={1} lightAngle={45} angle={-45} frequency={15} edges="transparent">
-                <TiltShift intensity={200} angle={-45}>
-                  <Blob colorA="#FF0000" colorB="#FF0000" softness={0} highlightIntensity={0} speed={0.25} deformation={0.25} />
-                </TiltShift>
-              </FlutedGlass>
-            </Shader>
-          </div>
+      <div className="absolute inset-0">
+        <div className="absolute w-full h-full top-0 left-0 z-[-1] opacity-50">
+          <Shader >
+            <FlutedGlass softness={0} highlight={1} lightAngle={45} angle={-45} frequency={15} edges="transparent">
+              <Blob colorA="#FF0000" colorB="#FF0000" softness={0.2} highlightIntensity={0} speed={0.35} deformation={0.35} />
+            </FlutedGlass>
+          </Shader>
         </div>
+      </div>
 
+      <section className="w-full overflow-hidden relative">
         <div className="relative grid min-h-[calc(100vh-8rem)] grid-cols-1 items-center gap-8 px-8 py-12 md:grid-cols-[1fr_auto]">
           <div className="max-w-2xl">
             <p className="mb-4 text-(--text-muted)">transforming ideas into specs</p>

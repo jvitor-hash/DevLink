@@ -159,7 +159,7 @@ export default function KanbanBoard({
                     type="button"
                     aria-pressed={isSelected}
                     onClick={() => toggleTag(tag)}
-                    className={`rounded border px-1.5 py-0.5 text-[10px] transition-colors hover:cursor-pointer ${tagChipClass(tag)} ${isSelected ? "ring-1 ring-(--primary)" : "opacity-70"}`}
+                    className={`rounded border px-1.5 py-0.5 text-[10px] transition-colors cursor-pointer ${tagChipClass(tag)} ${isSelected ? "ring-1 ring-(--primary)" : "opacity-70"}`}
                   >
                     {tag}
                   </button>
@@ -176,7 +176,7 @@ export default function KanbanBoard({
               setQuery("");
               setSelectedTags([]);
             }}
-            className="flex items-center gap-1 text-xs text-(--text-muted) hover:cursor-pointer hover:text-(--text-primary)"
+            className="flex items-center gap-1 text-xs text-(--text-muted) cursor-pointer hover:text-(--text-primary)"
           >
             <X size={12} /> Limpar
           </button>

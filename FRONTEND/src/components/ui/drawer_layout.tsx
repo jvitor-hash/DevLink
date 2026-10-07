@@ -41,7 +41,7 @@ export default function Drawer({ open, onClose, children }: DrawerProps) {
                    "-translate-x-full"}`}>
         {/* Header */}
         <div className="flex items-center justify-end p-4">
-          <button className="hover:cursor-pointer" onClick={onClose}>
+          <button className="cursor-pointer" onClick={onClose}>
             <X size={24}/>
           </button>
         </div>

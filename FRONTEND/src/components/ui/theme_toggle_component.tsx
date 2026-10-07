@@ -37,7 +37,7 @@ export function ThemeToggle() {
       onClick={toggleTheme}
       aria-label={dark ? "Switch to light theme" : "Switch to dark theme"}
       aria-pressed={dark}
-      className="hover:cursor-pointer hover:bg-(--surface-3)/95 p-2 transition-colors"
+      className="cursor-pointer hover:bg-(--surface-3)/95 p-2 transition-colors"
     >
       <Icon size={18} color="var(--primary)" />
     </button>

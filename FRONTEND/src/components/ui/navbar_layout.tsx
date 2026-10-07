@@ -1,14 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ChevronRight, Menu, Settings } from "react-feather";
+import { ChevronRight, LogOut, Menu } from "react-feather";
 
 import Button from "@/components/ui/button_component";
 import Drawer from "@/components/ui/drawer_layout";
-import SavedTicketsMenu from "@/components/ui/saved_tickets_menu";
-import NotificationBell from "@/components/ui/notification_bell";
 import { userSingleton } from "@/context/user";
 import { useCurrentUser } from "@/hooks/use_current_user";
-import { ThemeToggle } from "./theme_toggle_component";
 
 const MENU_LINKS: ReadonlyArray<{ to: string; label: string }> = [
   { to: "/questionnaire", label: "Criação de projetos" },
@@ -36,7 +33,7 @@ export function NavbarLayout({ onOpenLogin } : NavbarLayoutProps) : React.ReactE
       <header className="sticky top-0 z-40 p-4 pb-6">
         <div className="backdrop-blur-sm grid grid-cols-[1fr_auto_1fr] items-center px-4 py-2">
           <div>
-            <button className="hover:cursor-pointer" onClick={() => setOpenDrawer(true)}>
+            <button className="cursor-pointer" onClick={() => setOpenDrawer(true)}>
               <Menu size={18} />
             </button>
           </div>
@@ -50,17 +47,19 @@ export function NavbarLayout({ onOpenLogin } : NavbarLayoutProps) : React.ReactE
           <div className="justify-self-end flex items-center gap-3">
             {user ? (
               <div className="flex items-center gap-3">
-                {/*<NotificationBell />
+                <button className="group relative text-(--text-primary) cursor-pointer" data-testid="navbar-username">
+                  <h6>{user.name}</h6>
+                  <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-current transition-all duration-300 group-hover:w-full" />
+                </button>
 
-                <SavedTicketsMenu />
-
-                <Link to="/settings" className="flex items-center">
-                  <Settings size={18} color="var(--primary)"/>
-                </Link>*/}
-
-                <span className="text-(--text-primary) font-medium" data-testid="navbar-username">{user.name}</span>
-
-                <Button label="Log-out" buttonType="button" colorType="primary" onClick={handleSignOut}/>
+                <button 
+                  type="button" 
+                  aria-label="Log-out" 
+                  onClick={handleSignOut} 
+                  className="p-1 cursor-pointer hover:bg-(--surface-3)/95 transition-colors"
+                >
+                  <LogOut size={16}/>
+                </button>
               </div>
             ) : (
               <Button
@@ -71,8 +70,6 @@ export function NavbarLayout({ onOpenLogin } : NavbarLayoutProps) : React.ReactE
                 onClick={onOpenLogin}
               />
             )}
-
-            {/*<ThemeToggle/>*/}
           </div>
         </div>
       </header>

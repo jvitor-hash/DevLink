@@ -159,7 +159,7 @@ export default function ProfilePage() {
                     <button
                       type="button"
                       onClick={() => navigate(`/project/open/${encodeURIComponent(project.id)}`)}
-                      className="w-full rounded border border-(--border-subtle) bg-(--surface-2) p-3 text-left transition-colors hover:border-gray-400 hover:cursor-pointer"
+                      className="w-full rounded border border-(--border-subtle) bg-(--surface-2) p-3 text-left transition-colors hover:border-gray-400 cursor-pointer"
                     >
                       <p className="truncate text-sm font-medium">{project.title}</p>
                       <p className="mt-1 text-xs text-(--text-muted)">

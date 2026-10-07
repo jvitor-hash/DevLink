@@ -24,7 +24,7 @@ export default function Toaster() {
           key={toast.id}
           type="button"
           onClick={() => toastStore.dismiss(toast.id)}
-          className={`rounded-md border-l-4 bg-(--surface-2) px-4 py-3 text-left text-sm shadow-lg transition-opacity hover:cursor-pointer ${VARIANT_STYLES[toast.variant]}`}
+          className={`rounded-md border-l-4 bg-(--surface-2) px-4 py-3 text-left text-sm shadow-lg transition-opacity cursor-pointer ${VARIANT_STYLES[toast.variant]}`}
           data-testid={`toast-${toast.variant}`}
         >
           {toast.message}

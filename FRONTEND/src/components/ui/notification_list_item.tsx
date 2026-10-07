@@ -21,7 +21,7 @@ export default function NotificationListItem({ notification, selected = false, o
       <button
         type="button"
         onClick={() => onSelect(notification)}
-        className="min-w-0 flex-1 text-left hover:cursor-pointer"
+        className="min-w-0 flex-1 text-left cursor-pointer"
       >
         <div className="flex items-center justify-between gap-2">
           <p className={`flex items-center gap-2 text-sm ${isRead ? "text-(--text-muted)" : "font-semibold text-(--text-primary)"}`}>
@@ -41,7 +41,7 @@ export default function NotificationListItem({ notification, selected = false, o
           aria-label="Arquivar"
           title="Arquivar"
           onClick={() => onArchive(notification)}
-          className="shrink-0 rounded p-1 text-(--text-muted) transition-colors hover:bg-(--surface-1) hover:text-(--text-secondary) hover:cursor-pointer"
+          className="shrink-0 rounded p-1 text-(--text-muted) transition-colors hover:bg-(--surface-1) hover:text-(--text-secondary) cursor-pointer"
         >
           <Archive size={14} />
         </button>
@@ -53,7 +53,7 @@ export default function NotificationListItem({ notification, selected = false, o
           aria-label="Desarquivar"
           title="Desarquivar"
           onClick={() => onUnarchive(notification)}
-          className="shrink-0 rounded p-1 text-(--text-muted) transition-colors hover:bg-(--surface-1) hover:text-(--text-secondary) hover:cursor-pointer"
+          className="shrink-0 rounded p-1 text-(--text-muted) transition-colors hover:bg-(--surface-1) hover:text-(--text-secondary) cursor-pointer"
         >
           <RotateCcw size={14} />
         </button>
