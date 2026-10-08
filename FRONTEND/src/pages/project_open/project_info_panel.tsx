@@ -122,7 +122,7 @@ export default function ProjectInfoPanel({ project }: ProjectInfoPanelProps) {
         </div>
       )}
 
-      {showChat && <ChatModal show={showChat} onClose={() => setShowChat(false)} />}
+      {showChat && <ChatModal show={showChat} onClose={() => setShowChat(false)} project={project} />}
     </article>
   );
 }

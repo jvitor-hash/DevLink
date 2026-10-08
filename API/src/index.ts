@@ -12,6 +12,8 @@ import { TicketRouter } from "@/routes/v1/ticket";
 import { UsersRouter } from "@/routes/v1/users";
 import { ProjectActionRouter } from "@/routes/v1/project_action";
 import { EventsRouter } from "@/routes/v1/events";
+import { MessageRouter } from "@/routes/v1/messages";
+import { ConversationRouter } from "@/routes/v1/conversation";
 import { ClientAuthRouter } from "./routes/v1/client";
 import { ProgrammerAuthRouter } from "./routes/v1/programmer";
 import { logger, loggerPlugin } from "./modules/logger";
@@ -74,6 +76,8 @@ const app = new Elysia()
   .use(UsersRouter)
   .use(ProjectActionRouter)
   .use(EventsRouter)
+  .use(MessageRouter)
+  .use(ConversationRouter)
   .get("/health", () => ({ OK: true }), {
     detail: {
       summary: "/health",

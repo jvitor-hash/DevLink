@@ -39,7 +39,7 @@ export function ThemeToggle() {
       aria-pressed={dark}
       className="cursor-pointer hover:bg-(--surface-3)/95 p-2 transition-colors"
     >
-      <Icon size={18} color="var(--primary)" />
+      <Icon size={18} />
     </button>
   );
 }

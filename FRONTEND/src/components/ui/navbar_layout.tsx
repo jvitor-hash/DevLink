@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ChevronRight, LogOut, Menu } from "react-feather";
+import { ChevronRight, LogOut, Menu, Settings } from "react-feather";
 
 import Button from "@/components/ui/button_component";
 import Drawer from "@/components/ui/drawer_layout";
 import { userSingleton } from "@/context/user";
 import { useCurrentUser } from "@/hooks/use_current_user";
+import { ThemeToggle } from "./theme_toggle_component";
+import SavedTicketsMenu from "./saved_tickets_menu";
+import NotificationBell from "./notification_bell";
 
 const MENU_LINKS: ReadonlyArray<{ to: string; label: string }> = [
   { to: "/questionnaire", label: "Criação de projetos" },
@@ -17,6 +20,8 @@ type NavbarLayoutProps = { onOpenLogin: () => void };
 
 export function NavbarLayout({ onOpenLogin } : NavbarLayoutProps) : React.ReactElement {
   const [openDrawer, setOpenDrawer] = useState<boolean>(false);
+  const [userMenu, setUserMenu] = useState<boolean>(false);
+  const menuRef = useRef(null);
 
   // Re-renders on login, register and logout through the singleton subscription.
   const user = useCurrentUser();
@@ -27,6 +32,20 @@ export function NavbarLayout({ onOpenLogin } : NavbarLayoutProps) : React.ReactE
     await userSingleton.logout();
     navigate("/", { replace: true });
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setUserMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <>
@@ -40,17 +59,38 @@ export function NavbarLayout({ onOpenLogin } : NavbarLayoutProps) : React.ReactE
 
           <div>
             <h2>
-              <Link to="/" className="text-xl">DevLink</Link>
+              <Link to="/" className="text-xl" viewTransition>DevLink</Link>
             </h2>
           </div>
 
           <div className="justify-self-end flex items-center gap-3">
             {user ? (
               <div className="flex items-center gap-3">
-                <button className="group relative text-(--text-primary) cursor-pointer" data-testid="navbar-username">
-                  <h6>{user.name}</h6>
-                  <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-current transition-all duration-300 group-hover:w-full" />
-                </button>
+                <NotificationBell />
+                <SavedTicketsMenu />
+                <div ref={menuRef} className="relative inline-block group">
+                  <button className="group relative text-(--text-primary) cursor-pointer" data-testid="navbar-username" onClick={() => setUserMenu(c => !c)}>
+                    <h6>{user.name}</h6>
+                    <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-current transition-all duration-300 group-hover:w-full" />
+                  </button>
+
+                  {userMenu && (
+                    <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 border border-(--border-subtle) p-2 bg-(--surface-1) flex flex-col gap-1">
+                      <div>
+                        <Link to="/settings" 
+                        className="hover:bg-(--surface-3)/95 transition-colors p-1 flex gap-1 items-center"
+                        viewTransition>Configurações de perfil
+                        <Settings size={18} />
+                        </Link>
+                      </div>
+
+                      <div className="flex gap-1 items-center">
+                        <span>Tema: </span>
+                        <ThemeToggle />
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 <button 
                   type="button" 
@@ -76,7 +116,7 @@ export function NavbarLayout({ onOpenLogin } : NavbarLayoutProps) : React.ReactE
 
       <Drawer open={openDrawer} onClose={() => setOpenDrawer(false)}>
         {MENU_LINKS.map((link) => (
-          <Link key={link.to} to={link.to} className="text-xl w-full hover:text-(--primary) transition-colors">
+          <Link key={link.to} to={link.to} className="text-xl w-full hover:text-(--primary) transition-colors" viewTransition>
             <ChevronRight className='inline'/>
             {link.label}
           </Link>

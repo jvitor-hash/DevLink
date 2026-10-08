@@ -62,7 +62,7 @@ export default function SavedTicketsMenu({ onOpenChange }: SavedTicketsMenuProps
     return () => {
       cancelled = true;
     };
-  }, [open, userSingleton.isSignedIn]);
+  }, [open]);
 
   const toggleMenu = (): void => {
     const next = !open;
@@ -81,7 +81,7 @@ export default function SavedTicketsMenu({ onOpenChange }: SavedTicketsMenuProps
         aria-label="Projetos salvos"
         data-testid="saved-tickets-btn"
       >
-        <Bookmark size={18} color="var(--primary)"/>
+        <Bookmark size={18} />
         {projects.length > 0 && (
           <span
             className="bg-(--primary) rounded-full absolute -top-1.5 -right-2 min-w-4 px-1 text-center text-[10px] text-white leading-4"
