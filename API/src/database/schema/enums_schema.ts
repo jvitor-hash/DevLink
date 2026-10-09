@@ -48,7 +48,12 @@ export const ticketStatusEnum = pgEnum("ticket_status", [
 export const offerStatusEnum = pgEnum("offer_status", [
   "PENDING",
   "ACCEPTED",
-  "REJECTED",
+  "REFUSED",
+]);
+
+export const messageTypeEnum = pgEnum("message_type", [
+  "MESSAGE",
+  "OFFER",
 ]);
 
 export const notificationTypeEnum = pgEnum("notification_type", [

@@ -25,7 +25,7 @@ export type ProjectStatus =
 
 export type TicketStatus = "BACKLOG" | "IN_PROGRESS" | "REVIEW" | "DONE";
 
-export type OfferStatus = "PENDING" | "ACCEPTED" | "REJECTED";
+export type OfferStatus = "PENDING" | "REFUSED" | "ACCEPTED";
 
 export type NotificationType =
   | "NEW_MESSAGE"
@@ -213,21 +213,26 @@ export interface NotificationUpdate {
 // Message Models
 export interface MessageDTO {
   id: string;
-  projectId: string;
-  senderId: string;
+  conversationId: string;
+  userId: string;
   content: string;
   isRead: boolean;
+  readAt?: string | Date | null;
+  messageType: "MESSAGE" | "OFFER";
   offerDeadline?: string | Date | null;
-  offerStatus?: OfferStatus | null;
+  offerStatus?: "PENDING" | "REFUSED" | "ACCEPTED" | null;
+  offerMoney?: number | string | null;
   createdAt?: string | Date | null;
   updatedAt?: string | Date | null;
 }
 
 export interface MessageCreate {
-  projectId: string;
-  senderId: string;
+  conversationId: string;
   content: string;
   isRead?: boolean;
+  messageType?: "MESSAGE" | "OFFER";
+  offerMoney?: number | null;
+  offerStatus?: "PENDING" | "REFUSED" | "ACCEPTED" | null;
   offerDeadline?: string | null;
 }
 
@@ -386,6 +391,20 @@ export interface UserPreferenceUpdate {
 // Project Action Models (outbox + SSE flow)
 export type ProjectActionType = "SAVE_PROJECT" | "UPDATE_PROJECT" | "DELETE_PROJECT";
 export type ProjectEventType = "project.saved" | "project.updated" | "project.deleted";
+
+// Chat SSE Events
+export type ChatEventType = "CHAT_MESSAGE";
+
+export interface ChatMessageEvent {
+  id: string;
+  event: ChatEventType;
+  data: {
+    messageId: string;
+    conversationId: string;
+    content: string;
+    userId: string;
+  };
+}
 
 export interface ProjectActionAccepted {
   actionId: string;

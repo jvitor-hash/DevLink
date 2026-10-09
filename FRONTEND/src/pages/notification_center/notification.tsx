@@ -46,7 +46,7 @@ const persistIds = (key: string, ids: Set<string>): void => {
 };
 
 export default function NotificationPage() {
-  const [category, setCategory] = useState<Category | null>("RECENTS");
+  const [category] = useState<Category | null>("RECENTS");
   const [events, setEvents] = useState<ProjectEvent[]>([]);
   const [readIds, setReadIds] = useState<Set<string>>(() => restoreIds(CACHE_KEYS.NOTIFICATION_READ_IDS));
   const [archivedIds, setArchivedIds] = useState<Set<string>>(() => restoreIds(CACHE_KEYS.NOTIFICATION_ARCHIVED_IDS));
@@ -115,9 +115,6 @@ export default function NotificationPage() {
       return next;
     });
   };
-
-  const categoryCount = (key: Category): number =>
-    notifications.filter((notification) => matchesCategory(notification, key)).length;
 
   return (
     <div className="mx-auto w-full px-2 py-4 lg:px-6 lg:py-6">

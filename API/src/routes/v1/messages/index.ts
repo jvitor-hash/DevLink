@@ -4,7 +4,7 @@ import { MessageCreateSchema, MessageUpdateSchema, MessageSchema, type MessageCr
 import { MessageService } from "./service";
 import { z } from "zod";
 import { schemas } from "@/database/schema";
-import { eq, sql } from "drizzle-orm";
+import { and, asc, eq, ne, sql } from "drizzle-orm";
 import { db } from "@/client";
 import { SseHub } from "@/modules/sse_hub";
 import { authPlugin } from "@/modules/auth_plugin";
@@ -19,8 +19,13 @@ export const MessageRouter = new Elysia({ prefix: "/api/v1/messages" })
       // Check if conversation exists; if not, create it using payload info
       const existingConv = await db.select({ id: schemas.conversation.id, recipientId: schemas.conversation.recipientId }).from(schemas.conversation).where(eq(schemas.conversation.id, conversationId)).limit(1);
       if (!existingConv || existingConv.length === 0) {
-        const recipientId = (data as any).recipientId ?? (data as any).projectId ?? user.id;
-        const projectId = (data as any).projectId ?? "00000000-0000-0000-0000-000000000000";
+        // Only programmers can create new conversations
+        if (user.role !== "PROGRAMMER") {
+          set.status = 403;
+          return { error: "Only programmers can start new conversations" };
+        }
+        const recipientId = (data as any).recipientId ?? user.id;
+        const projectId = (data as any).projectId ?? null;
         const [newConv] = await db.insert(schemas.conversation).values({
           projectId,
           userId: user.id,
@@ -56,10 +61,21 @@ export const MessageRouter = new Elysia({ prefix: "/api/v1/messages" })
     tags: ["Messages"],
     auth: true,
   })
-  .get("/", async ({ query, set }) => {
+  .get("/", async ({ query, user, set }) => {
     try {
       if (query.conversationId) {
-        return await MessageService.findWhere(eq(schemas.message.conversationId, query.conversationId));
+        await db.update(schemas.message)
+          .set({ isRead: true, readAt: new Date() })
+          .where(and(
+            eq(schemas.message.conversationId, query.conversationId),
+            ne(schemas.message.userId, user.id),
+            eq(schemas.message.isRead, false),
+          ));
+        return await db.select().from(schemas.message)
+          .where(eq(schemas.message.conversationId, query.conversationId))
+          .orderBy(asc(schemas.message.createdAt))
+          .limit(query.limit)
+          .offset(query.offset);
       }
       return await MessageService.findAll(query.limit ?? 10, query.offset ?? 0);
     } catch (error) {
@@ -75,7 +91,7 @@ export const MessageRouter = new Elysia({ prefix: "/api/v1/messages" })
     }),
     response: { 200: z.array(MessageSchema), 500: ErrorSchema },
     tags: ["Messages"],
-    authOptional: true,
+    auth: true,
   })
   .get("/:id", async ({ params, set }) => {
     try {

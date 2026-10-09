@@ -45,7 +45,7 @@ export const ConversationRouter = new Elysia({ prefix: "/api/v1/conversations" }
       500: ErrorSchema,
     },
     tags: ["Conversations"],
-    authOptional: true,
+    auth: true,
   })
   .post("/", async ({ body, user, set }) => {
     try {
