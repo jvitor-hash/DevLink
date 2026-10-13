@@ -86,8 +86,6 @@ export interface UserDTO {
   updatedAt?: string | Date;
 }
 
-
-
 export interface ProjectDTO {
   id: string;
   clientId: string;
@@ -242,6 +240,23 @@ export interface MessageUpdate {
   content?: string;
   isRead?: boolean;
   offerStatus?: OfferStatus | null;
+}
+
+// Conversation Models 
+export interface ConversationDTO {
+  id: string
+  projectId: string
+  userId: string
+  recipientId: string
+  lastMessage: string
+  unreadMessages: number
+  createdAt?: string | Date | null
+  updateAt?: string | Date | null
+}
+
+export interface ConversationCreate {
+  projectId: string
+  userId: string
 }
 
 // Todo Models

@@ -17,13 +17,20 @@ export const MessageRouter = new Elysia({ prefix: "/api/v1/messages" })
       const data = body as MessageCreate;
       let conversationId = data.conversationId;
       // Check if conversation exists; if not, create it using payload info
-      const existingConv = await db.select({ id: schemas.conversation.id, recipientId: schemas.conversation.recipientId }).from(schemas.conversation).where(eq(schemas.conversation.id, conversationId)).limit(1);
+      const existingConv = await db.select({
+        id: schemas.conversation.id,
+        projectId: schemas.conversation.projectId,
+        userId: schemas.conversation.userId,
+        recipientId: schemas.conversation.recipientId,
+      }).from(schemas.conversation).where(eq(schemas.conversation.id, conversationId)).limit(1);
+
       if (!existingConv || existingConv.length === 0) {
-        // Only programmers can create new conversations
         if (user.role !== "PROGRAMMER") {
           set.status = 403;
+
           return { error: "Only programmers can start new conversations" };
         }
+
         const recipientId = (data as any).recipientId ?? user.id;
         const projectId = (data as any).projectId ?? null;
         const [newConv] = await db.insert(schemas.conversation).values({
@@ -33,31 +40,57 @@ export const MessageRouter = new Elysia({ prefix: "/api/v1/messages" })
           lastMessage: data.content,
           unreadMessages: 0,
         }).returning();
+
         conversationId = newConv.id;
         data.conversationId = newConv.id;
+      } else if (user.role === "CLIENT") {
+        const [convProject] = await db.select({ clientId: schemas.project.clientId })
+          .from(schemas.project)
+          .where(eq(schemas.project.id, existingConv[0].projectId))
+          .limit(1);
+
+        if (!convProject || convProject.clientId !== user.id) {
+          set.status = 403;
+
+          return { error: "Clients can only reply to their own projects conversations" };
+        }
       }
+
       const result = await MessageService.create({ ...data, conversationId, userId: user.id });
-      // Notify recipient via SSE
-      const convRow = await db.select({ recipientId: schemas.conversation.recipientId }).from(schemas.conversation).where(eq(schemas.conversation.id, conversationId)).limit(1);
-      const recipientId = convRow[0]?.recipientId;
-      if (recipientId) {
+
+      let targetUserId = existingConv?.[0]?.userId === user.id ? existingConv?.[0]?.recipientId : existingConv?.[0]?.userId;
+
+      if (!targetUserId) {
+        const convRow = await db.select({
+          userId: schemas.conversation.userId,
+          recipientId: schemas.conversation.recipientId,
+        }).from(schemas.conversation).where(eq(schemas.conversation.id, conversationId)).limit(1);
+
+        targetUserId = convRow[0]?.userId === user.id ? convRow[0]?.recipientId : convRow[0]?.userId;
+      }
+
+      if (targetUserId) {
         SseHub.publish({
           id: crypto.randomUUID(),
           event: "CHAT_MESSAGE",
           data: { messageId: result.id, conversationId, content: data.content, userId: user.id },
-          audienceUserIds: [recipientId, user.id],
+          audienceUserIds: [targetUserId, user.id],
         });
       }
+
       set.status = 201;
+
       return result;
     } catch (error) {
       logError("POST /api/v1/messages", error);
+
       set.status = 500;
+
       return { error: "Failed to create message" };
     }
   }, {
     body: MessageCreateSchema,
-    response: { 201: MessageSchema, 500: ErrorSchema },
+    response: { 201: MessageSchema, 403: ErrorSchema, 500: ErrorSchema },
     tags: ["Messages"],
     auth: true,
   })

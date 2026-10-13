@@ -38,7 +38,7 @@ export const ConversationRouter = new Elysia({ prefix: "/api/v1/conversations" }
     }
   }, {
     query: z.object({
-      projectId: z.string().uuid().optional(),
+      projectId: z.uuid().optional(),
     }).optional(),
     response: {
       200: z.array(ConversationSchema),
@@ -53,7 +53,16 @@ export const ConversationRouter = new Elysia({ prefix: "/api/v1/conversations" }
         set.status = 403;
         return { error: "Only programmers can create conversations" };
       }
+      
       const data = body as ConversationCreate;
+      const [project] = await db.select({ client_id: schemas.project.clientId })
+                                 .from(schemas.project)
+                                 .where(eq(schemas.project.id, data.projectId))
+                                 .limit(1);
+      data.recipientId = project?.client_id
+      data.lastMessage = data.content
+      data.unreadMessages = 1
+      
       const result = await ConversationService.create({ ...data, userId: user.id });
       set.status = 201;
       return result;

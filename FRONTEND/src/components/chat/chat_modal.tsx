@@ -9,7 +9,7 @@ type ChatModalProps = {
   project?: { id: string; clientId: string };
 };
 
-function ChatContent({ projectId, clientId }: { projectId?: string; clientId?: string }) {
+function ChatContent({ projectId }: { projectId?: string }) {
   const { conversationId } = useChat();
   return (
     <div className="flex w-full h-full overflow-hidden">
@@ -18,7 +18,6 @@ function ChatContent({ projectId, clientId }: { projectId?: string; clientId?: s
         key={conversationId ?? "empty"}
         conversationId={conversationId}
         projectId={projectId}
-        clientId={clientId}
       />
     </div>
   );
@@ -48,7 +47,7 @@ export default function ChatModal({ show, onClose, project }: ChatModalProps) {
         onCancel={close}
         className="animated-dialog grid place-items-center w-6xl h-[80vh] bg-(--background) border border-(--primary) m-auto"
       >
-        <ChatContent projectId={projectId} clientId={project?.clientId} />
+        <ChatContent projectId={projectId} />
       </dialog>
     </ChatProvider>
   );

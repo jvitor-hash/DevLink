@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { appendUniqueMessages, clearMessagesOnConversationSwitch, retrieveMessagePage } from "../message_history_state";
+import { appendUniqueMessages, canSendMessage, clearMessagesOnConversationSwitch, retrieveMessagePage } from "../message_history_state";
 import type { MessageDTO } from "@/data/types/database";
 
 const message = (id: string): MessageDTO => ({
@@ -31,5 +31,15 @@ describe("message history state", () => {
 
     expect(clearMessagesOnConversationSwitch("conversation-1", "conversation-1", current)).toBe(current);
     expect(clearMessagesOnConversationSwitch("conversation-1", "conversation-2", current)).toEqual([]);
+  });
+
+  test("allows programmers to start new conversations or reply", () => {
+    expect(canSendMessage("PROGRAMMER", null)).toBe(true);
+    expect(canSendMessage("PROGRAMMER", "conversation-1")).toBe(true);
+  });
+
+  test("allows clients to reply only when an active conversation exists", () => {
+    expect(canSendMessage("CLIENT", null)).toBe(false);
+    expect(canSendMessage("CLIENT", "conversation-1")).toBe(true);
   });
 });

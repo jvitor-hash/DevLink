@@ -2,23 +2,17 @@ import { useEffect, useState, type ReactNode } from "react";
 import { X } from "react-feather";
 import { conversationService } from "@/data/services/conversation_service";
 import { useChat } from "./chat_context";
-
-export type Conversation = {
-  id: string;
-  userId?: string;
-  recipientId?: string;
-  lastMessage?: string;
-};
+import type { ConversationDTO } from "@/data/types/database";
 
 type ConversationHistoryProps = { projectId?: string; };
 
 export default function ConversationHistory({ projectId }: ConversationHistoryProps): ReactNode {
-  const { selectConversation, close, conversationId } = useChat(); const [conversations, setConversations] = useState<Conversation[]>([]);
+  const { selectConversation, close, conversationId } = useChat(); const [conversations, setConversations] = useState<ConversationDTO[]>([]);
   useEffect(() => {
     if (!projectId) return;
     const load = async (): Promise<void> => {
       try {
-        const result = await conversationService.list({ projectId }) as Conversation[];
+        const result = await conversationService.list({ projectId }) as ConversationDTO[];
         setConversations(Array.isArray(result) ? result : []);
       } catch {
         setConversations([]);
@@ -26,6 +20,7 @@ export default function ConversationHistory({ projectId }: ConversationHistoryPr
     };
     void load();
   }, [projectId, conversationId]);
+  
   return (
     <div className="flex-2 border-r border-(--border-subtle)">
       <header className="flex p-3 justify-between items-center border-b border-(--border-subtle)">

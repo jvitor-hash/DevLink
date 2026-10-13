@@ -12,6 +12,9 @@ export const ConversationSchema = z.object({
 
 const ConversationDTOs = createCrudSchemas(ConversationSchema, [
   "id",
+  "recipientId",
+  "lastMessage",
+  "unreadMessages",
   "createdAt",
   "updatedAt",
 ]);

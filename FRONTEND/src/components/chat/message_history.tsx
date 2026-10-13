@@ -6,15 +6,12 @@ import type { MessageDTO } from "@/data/types/database";
 import { userSingleton } from "@/context/user";
 import { useChat } from "./chat_context";
 import { useChatEvents } from "@/hooks/use_chat_events";
-import { appendUniqueMessages, retrieveMessagePage } from "./message_history_state";
+import { appendUniqueMessages, canSendMessage, retrieveMessagePage } from "./message_history_state";
+import { conversationService } from "@/data/services/conversation_service";
 
-type MessageHistoryProps = { conversationId: string | null; projectId?: string; clientId?: string };
+type MessageHistoryProps = { conversationId: string | null; projectId?: string; };
 
-export default function MessageHistory({
-  conversationId,
-  projectId,
-  clientId,
-}: MessageHistoryProps) {
+export default function MessageHistory({ conversationId, projectId }: MessageHistoryProps) {
   const { selectConversation } = useChat();
   const currentUserId = userSingleton.id ?? "";
   const [messages, setMessages] = useState<MessageDTO[]>([]);
@@ -66,6 +63,7 @@ export default function MessageHistory({
         updatedAt: new Date().toISOString(),
       };
       setMessages((current) => appendUniqueMessages(current, [newMessage]));
+      console.log("Message recieved on SSE");
     },
   });
 
@@ -85,46 +83,43 @@ export default function MessageHistory({
 
   const sendMessage = async (): Promise<void> => {
     const text = inputText.trim();
-    if (!text) {
-      console.log("Send blocked: empty text");
-      return;
-    }
+
+    if (!text) return;
+
     let activeConversationId = conversationId;
-    if (!activeConversationId) {
-      console.log("No conversation selected. Checking conditions...");
-      const role = userSingleton.role;
-      console.log("Current user role:", role);
-      if (role !== "PROGRAMMER") {
-        console.error("Clients cannot create new conversations. Please select an existing conversation.");
-        return;
-      }
-      console.log("Programmer creating new conversation...", { projectId, recipientId: clientId });
-      try {
+
+    if (!canSendMessage(userSingleton.role ?? "", activeConversationId)) return;
+
+    try {
+      if (!activeConversationId) {
+        console.log("No conversation selected. Checking conditions...");
         const newConv = await conversationService.create({
           projectId: projectId ?? "",
           userId: userSingleton.id ?? "",
-          recipientId: clientId ?? "",
-          lastMessage: text,
         });
+
         console.log("New conversation created:", newConv);
-        selectConversation(newConv.id);
         activeConversationId = newConv.id;
-      } catch (error) {
-        console.error("Failed to create conversation:", error);
-        return;
+        selectConversation(newConv.id);
       }
-    }
-    try {
+
       console.log("Sending message...", { conversationId: activeConversationId, content: text });
       const result = await messageService.create({
         conversationId: activeConversationId,
         content: text,
         messageType: "MESSAGE",
       });
+
       console.log("Message created successfully:", result);
+      setMessages((current) =>
+        appendUniqueMessages(current, [result as MessageDTO])
+      );
+
       setInputText("");
     } catch (error) {
       console.error("Failed to send message:", error);
+
+      return;
     }
   };
 
@@ -202,7 +197,7 @@ export default function MessageHistory({
               return (
                 <div data-testid="chat-message" key={message.id} className={`w-full max-w-75 rounded-sm p-1 px-2 shadow-sm ${isCurrentUser ? "bg-(--primary) self-end" : "bg-(--surface-2)"}`}>
                   <p className={`text-sm ${isCurrentUser ? "text-white" : "text-(--text-primary)"}`}>{message.content}</p>
-                  <p className={`text-end text-xs ${isCurrentUser ? "text-white/80" : "text-(--text-muted)"}`}>{formatRelativeTime(message.createdAt)}</p>
+                  <p className={`text-end text-xs ${isCurrentUser ? "text-white/80" : "text-(--text-muted)"}`}>{message.isRead ? formatRelativeTime(message.createdAt) : "Lido " + formatRelativeTime(message.readAt).toString()}</p>
                 </div>
               );
             })}

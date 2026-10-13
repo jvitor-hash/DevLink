@@ -13,3 +13,11 @@ export const appendUniqueMessages = (current: MessageDTO[], next: MessageDTO[]):
 ];
 
 export const clearMessagesOnConversationSwitch = (previousConversationId: string | null, nextConversationId: string | null, current: MessageDTO[]): MessageDTO[] => previousConversationId === nextConversationId ? current : [];
+
+export const canSendMessage = (role: string, conversationId: string | null): boolean => {
+  if (!conversationId) {
+    return role === "PROGRAMMER";
+  }
+
+  return true;
+};
