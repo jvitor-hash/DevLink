@@ -67,3 +67,5 @@ export const NotificationTypeEnum = z.enum([
     "TICKET_SAVED",
     "SYSTEM"
 ]);
+
+export type NotificationType = z.infer<typeof NotificationTypeEnum>;

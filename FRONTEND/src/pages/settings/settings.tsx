@@ -3,7 +3,7 @@ import { useState } from "react";
 import SettingsProfile from "./settings_profile";
 import { userSingleton } from "@/context/user";
 import { useLoaderData } from "react-router-dom";
-import type { UserDTO, UserPreferenceUpdate } from "@/data/types/database";
+import type { UserDTO, UserPreferenceDTO, UserPreferenceUpdate } from "@/data/types/database";
 import SettingsNotification from "./settings_notification";
 import SettingsProjectPreferences from "./settings_project_preferences";
 import SettingsAccount from "./settings_account";
@@ -19,7 +19,17 @@ const SECTIONS: ReadonlyArray<{ key: string; label: string }> = [
 
 export async function SettingsLoader() {
   const User = await userSingleton.getCurrentUser();
-  return { User };
+  let Preference: UserPreferenceDTO | null = null;
+
+  if (User) {
+    try {
+      Preference = await userPreferenceService.getByUser(User.id);
+    } catch (error) {
+      console.error("Failed to load user preferences:", error);
+    }
+  }
+
+  return { User, Preference };
 }
 
 type PendingChanges = UserPreferenceUpdate;
@@ -30,6 +40,7 @@ export default function SettingsPage() {
   const loaderData = useLoaderData<typeof SettingsLoader>();
   const [section, setSection] = useState<string | null>(SECTIONS[0]["key"] ?? null);
   const user: UserDTO | null = loaderData.User ?? null;
+  const preference: UserPreferenceDTO | null = loaderData.Preference ?? null;
   const [saveFeedback, setSaveFeedback] = useState<{ ok: boolean; message: string; } | null>(null);
   const [pending, setPending] = useState<PendingChanges | null>(null);
   const [pendingProfile, setPendingProfile] = useState<PendingProfile | null>(null);
@@ -120,12 +131,21 @@ export default function SettingsPage() {
 
           {section === "NOTIFICATIONS" && (
             <SettingsNotification
+              preference={{
+                project_notifications: true,
+                message_notifications: true,
+                review_notifications: true,
+                ...preference,
+                ...pending,
+              }}
+              role={user.role}
               onChange={(data) => handleUnsavedChanges(data)}
             />
           )}
 
           {section === "PROJECT_PREFS" && (
             <SettingsProjectPreferences
+              preference={{ ...preference, ...pending }}
               onChange={(data) => handleUnsavedChanges(data)}
             />
           )}

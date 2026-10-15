@@ -2,6 +2,7 @@ import { db } from "@/client";
 import { schemas } from "@/database/schema";
 import { UserRoleEnum } from "@/database/data-transfer-object/enums";
 import { and, eq, sql } from "drizzle-orm";
+import { notificationEnabled } from "@/modules/notification_gate";
 
 export const handleSaveProject = async (
   data: { userId: string; userRole: string; projectId: string } | string,
@@ -56,7 +57,7 @@ export const handleSaveProject = async (
       .where(eq(schemas.project.id, projectId));
 
     // 3. Create notification for project owner (retrieve from project id)
-    await tx.insert(schemas.notification).values({
+    if (await notificationEnabled(existingProject.clientId, "TICKET_SAVED")) await tx.insert(schemas.notification).values({
       userId: existingProject.clientId,
       type: "TICKET_SAVED",
       title: "Projeto salvo",

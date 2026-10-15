@@ -9,6 +9,8 @@ const base = crud(schemas.ticket);
 const participantWhere = (projectId: string, userId: string): SQL<unknown> =>
   and(
     eq(schemas.ticket.projectId, projectId),
+    eq(schemas.project.status, "IN_DEVELOPMENT"),
+    sql`${schemas.project.programmerId} is not null`,
     sql`(
       ${schemas.project.clientId} = ${userId}
       OR ${schemas.project.programmerId} = ${userId}
@@ -28,10 +30,7 @@ export const TicketService = {
       .from(schemas.ticket)
       .innerJoin(schemas.project, eq(schemas.ticket.projectId, schemas.project.id))
       .where(
-        sql`(
-          ${schemas.project.clientId} = ${userId}
-          OR ${schemas.project.programmerId} = ${userId}
-        )`,
+        sql`(${schemas.project.status} = 'IN_DEVELOPMENT' AND ${schemas.project.programmerId} is not null AND (${schemas.project.clientId} = ${userId} OR ${schemas.project.programmerId} = ${userId}))`,
       )
       .orderBy(asc(schemas.ticket.position), asc(schemas.ticket.createdAt))
       .limit(limit)
@@ -58,10 +57,7 @@ export const TicketService = {
       .where(
         and(
           eq(schemas.project.id, data.projectId),
-          sql`(
-            ${schemas.project.clientId} = ${data.creatorId}
-            OR ${schemas.project.programmerId} = ${data.creatorId}
-          )`,
+          sql`(${schemas.project.status} = 'IN_DEVELOPMENT' AND ${schemas.project.programmerId} is not null AND (${schemas.project.clientId} = ${data.creatorId} OR ${schemas.project.programmerId} = ${data.creatorId}))`,
         ),
       )
       .limit(1);
@@ -95,8 +91,9 @@ export const TicketService = {
       and(
         eq(schemas.ticket.id, ticketId),
         sql`(
-          ${schemas.project.clientId} = ${userId}
-          OR ${schemas.project.programmerId} = ${userId}
+          ${schemas.project.status} = 'IN_DEVELOPMENT'
+          AND ${schemas.project.programmerId} is not null
+          AND (${schemas.project.clientId} = ${userId} OR ${schemas.project.programmerId} = ${userId})
         )`,
       ) as SQL<unknown>,
       data,
@@ -108,8 +105,9 @@ export const TicketService = {
       and(
         eq(schemas.ticket.id, ticketId),
         sql`(
-          ${schemas.project.clientId} = ${userId}
-          OR ${schemas.project.programmerId} = ${userId}
+          ${schemas.project.status} = 'IN_DEVELOPMENT'
+          AND ${schemas.project.programmerId} is not null
+          AND (${schemas.project.clientId} = ${userId} OR ${schemas.project.programmerId} = ${userId})
         )`,
       ) as SQL<unknown>,
     );

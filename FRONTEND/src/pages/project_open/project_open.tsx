@@ -6,6 +6,7 @@ import type { ProjectDTO, ProjectEvent } from "@/data/types/database";
 import { useLoaderData, type LoaderFunctionArgs } from "react-router-dom";
 import { useProjectEvents } from "@/hooks/use_project_events";
 import { reportError } from "@/utils/report_error";
+import { useCurrentUser } from "@/hooks/use_current_user";
 
 export async function ProjectOpenLoader({ params }: LoaderFunctionArgs): Promise<ProjectDTO> {
   if (!params.projectId)
@@ -21,6 +22,7 @@ export async function ProjectOpenLoader({ params }: LoaderFunctionArgs): Promise
 
 export default function ProjectOpenPage() {
   const loaderData = useLoaderData<ProjectDTO>();
+  const user = useCurrentUser();
   // The loader throws before render when the project is missing, so it is never null here.
   const [project, setProject] = useState<ProjectDTO>(loaderData);
 
@@ -42,6 +44,8 @@ export default function ProjectOpenPage() {
 
   useProjectEvents(project.id, { onEvent: handleEvent });
 
+  const canAccessWorkPanel = user?.role !== "PROGRAMMER" || project.programmerId === user.id;
+
   return (
     <section className="mx-auto w-full px-2 py-4 lg:px-6 lg:py-6">
       <div className="flex flex-col gap-3">
@@ -55,7 +59,7 @@ export default function ProjectOpenPage() {
         </div>
 
         {/* Keyed per project so board and checklist state never leak across projects. */}
-        <ProjectWorkPanel key={project.id} projectId={project.id} />
+        {canAccessWorkPanel && <ProjectWorkPanel key={project.id} projectId={project.id} />}
       </div>
     </section>
   );

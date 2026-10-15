@@ -22,6 +22,8 @@ export default function MessageHistory({ conversationId, projectId }: MessageHis
   const [offerMoney, setOfferMoney] = useState("");
   const [offerDeadline, setOfferDeadline] = useState("");
   const [offerMessage, setOfferMessage] = useState("");
+  const [respondingOfferId, setRespondingOfferId] = useState<string | null>(null);
+  const respondingOfferRef = useRef<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const messageListRef = useRef<HTMLDivElement>(null);
@@ -55,10 +57,10 @@ export default function MessageHistory({ conversationId, projectId }: MessageHis
         content: event.data.content,
         isRead: event.data.userId === currentUserId,
         readAt: event.data.userId === currentUserId ? new Date().toISOString() : null,
-        messageType: "MESSAGE",
-        offerDeadline: null,
-        offerStatus: null,
-        offerMoney: null,
+        messageType: event.data.messageType ?? "MESSAGE",
+        offerDeadline: event.data.offerDeadline ?? null,
+        offerStatus: event.data.offerStatus ?? null,
+        offerMoney: event.data.offerMoney ?? null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -125,21 +127,44 @@ export default function MessageHistory({ conversationId, projectId }: MessageHis
 
   const sendOffer = async (): Promise<void> => {
     if (!conversationId || !offerMoney) return;
-    await messageService.create({
-      conversationId,
-      content: offerMessage.trim() || `Proposal: $${offerMoney}`,
-      messageType: "OFFER",
-      offerStatus: "PENDING",
-      offerMoney: Number(offerMoney),
-      offerDeadline: offerDeadline
-        ? new Date(offerDeadline).toISOString()
-        : null,
-    });
-    setOfferOpen(false);
-    setOfferMoney("");
-    setOfferDeadline("");
-    setOfferMessage("");
-    // Message will appear via SSE real-time update
+
+    try {
+      const result = await messageService.create({
+        conversationId,
+        content: offerMessage.trim() || `Proposal: $${offerMoney}`,
+        messageType: "OFFER",
+        offerStatus: "PENDING",
+        offerMoney: Number(offerMoney),
+        offerDeadline: offerDeadline
+          ? new Date(offerDeadline).toISOString()
+          : null,
+      });
+
+      setMessages((current) => appendUniqueMessages(current, [result as MessageDTO]));
+      setOfferOpen(false);
+      setOfferMoney("");
+      setOfferDeadline("");
+      setOfferMessage("");
+    } catch (error) {
+      console.error("Failed to send offer:", error);
+    }
+  };
+
+  const respondToOffer = async (message: MessageDTO, offerStatus: "ACCEPTED" | "REFUSED"): Promise<void> => {
+    if (respondingOfferRef.current || message.offerStatus !== "PENDING") return;
+
+    respondingOfferRef.current = message.id;
+    setRespondingOfferId(message.id);
+
+    try {
+      const updated = await messageService.update(message.id, { offerStatus });
+      setMessages((current) => current.map((item) => item.id === message.id ? updated as MessageDTO : item));
+    } catch (error) {
+      console.error("Failed to respond to offer:", error);
+    } finally {
+      respondingOfferRef.current = null;
+      setRespondingOfferId(null);
+    }
   };
 
   const filteredMessages = messages.filter((message) =>
@@ -194,9 +219,24 @@ export default function MessageHistory({ conversationId, projectId }: MessageHis
             )}
             {visibleMessages.map((message) => {
               const isCurrentUser = message.userId === currentUserId;
+              const isOffer = message.messageType === "OFFER";
               return (
-                <div data-testid="chat-message" key={message.id} className={`w-full max-w-75 rounded-sm p-1 px-2 shadow-sm ${isCurrentUser ? "bg-(--primary) self-end" : "bg-(--surface-2)"}`}>
-                  <p className={`text-sm ${isCurrentUser ? "text-white" : "text-(--text-primary)"}`}>{message.content}</p>
+                <div data-testid="chat-message" key={message.id} className={`w-full max-w-75 rounded-md p-2 px-3 shadow-sm ${isOffer ? "border-2 border-(--primary) bg-(--surface-2)" : isCurrentUser ? "bg-(--primary)" : "bg-(--surface-2)"} ${isCurrentUser ? "self-end" : ""}`}>
+                  {isOffer && <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-(--primary)">Proposta de negociação</p>}
+                  <p className={`text-sm ${isOffer || !isCurrentUser ? "text-(--text-primary)" : "text-white"}`}>{message.content}</p>
+                  {isOffer && (
+                    <div className="mt-2 space-y-1 border-t border-(--border-subtle) pt-2 text-xs text-(--text-secondary)">
+                      {message.offerMoney != null && <p><span className="font-semibold">Valor:</span> R$ {Number(message.offerMoney).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>}
+                      {message.offerDeadline && <p><span className="font-semibold">Prazo:</span> {new Date(message.offerDeadline).toLocaleString("pt-BR")}</p>}
+                      <p><span className="font-semibold">Status:</span> {message.offerStatus === "PENDING" ? "Aguardando resposta" : message.offerStatus === "ACCEPTED" ? "Aceita" : "Recusada"}</p>
+                      {!isCurrentUser && message.offerStatus === "PENDING" && (
+                        <div className="mt-2 flex gap-2">
+                          <button data-testid="offer-accept" type="button" disabled={respondingOfferId !== null} onClick={() => void respondToOffer(message, "ACCEPTED")} className="flex-1 rounded bg-(--success) px-2 py-1 text-white disabled:cursor-not-allowed disabled:opacity-50">Aceitar</button>
+                          <button data-testid="offer-reject" type="button" disabled={respondingOfferId !== null} onClick={() => void respondToOffer(message, "REFUSED")} className="flex-1 rounded bg-(--error) px-2 py-1 text-white disabled:cursor-not-allowed disabled:opacity-50">Recusar</button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                   <p className={`text-end text-xs ${isCurrentUser ? "text-white/80" : "text-(--text-muted)"}`}>{message.isRead ? formatRelativeTime(message.createdAt) : "Lido " + formatRelativeTime(message.readAt).toString()}</p>
                 </div>
               );

@@ -59,7 +59,7 @@ export function NavbarLayout({ onOpenLogin } : NavbarLayoutProps) : React.ReactE
 
           <div>
             <h2>
-              <Link to="/" className="text-xl" viewTransition>DevLink</Link>
+              <Link to="/" className="text-xl">DevLink</Link>
             </h2>
           </div>
 
@@ -79,7 +79,7 @@ export function NavbarLayout({ onOpenLogin } : NavbarLayoutProps) : React.ReactE
                       <div>
                         <Link to="/settings" 
                         className="hover:bg-(--surface-3)/95 transition-colors p-1 flex gap-1 items-center"
-                        viewTransition>Configurações de perfil
+                        >Configurações de perfil
                         <Settings size={18} />
                         </Link>
                       </div>
@@ -116,7 +116,7 @@ export function NavbarLayout({ onOpenLogin } : NavbarLayoutProps) : React.ReactE
 
       <Drawer open={openDrawer} onClose={() => setOpenDrawer(false)}>
         {MENU_LINKS.map((link) => (
-          <Link key={link.to} to={link.to} className="text-xl w-full hover:text-(--primary) transition-colors" viewTransition>
+          <Link key={link.to} to={link.to} className="text-xl w-full hover:text-(--primary) transition-colors">
             <ChevronRight className='inline'/>
             {link.label}
           </Link>

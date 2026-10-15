@@ -9,6 +9,8 @@ const base = crud(schemas.todo);
 const participantWhere = (projectId: string, userId: string): SQL<unknown> =>
   and(
     eq(schemas.todo.projectId, projectId),
+    eq(schemas.project.status, "IN_DEVELOPMENT"),
+    sql`${schemas.project.programmerId} is not null`,
     sql`(
       ${schemas.project.clientId} = ${userId}
       OR ${schemas.project.programmerId} = ${userId}
@@ -28,10 +30,7 @@ export const TodoService = {
       .from(schemas.todo)
       .innerJoin(schemas.project, eq(schemas.todo.projectId, schemas.project.id))
       .where(
-        sql`(
-          ${schemas.project.clientId} = ${userId}
-          OR ${schemas.project.programmerId} = ${userId}
-        )`,
+        sql`(${schemas.project.status} = 'IN_DEVELOPMENT' AND ${schemas.project.programmerId} is not null AND (${schemas.project.clientId} = ${userId} OR ${schemas.project.programmerId} = ${userId}))`,
       )
       .orderBy(asc(schemas.todo.createdAt))
       .limit(limit)
@@ -58,10 +57,7 @@ export const TodoService = {
       .where(
         and(
           eq(schemas.project.id, data.projectId),
-          sql`(
-            ${schemas.project.clientId} = ${data.creatorId}
-            OR ${schemas.project.programmerId} = ${data.creatorId}
-          )`,
+          sql`(${schemas.project.status} = 'IN_DEVELOPMENT' AND ${schemas.project.programmerId} is not null AND (${schemas.project.clientId} = ${data.creatorId} OR ${schemas.project.programmerId} = ${data.creatorId}))`,
         ),
       )
       .limit(1);
@@ -80,7 +76,7 @@ export const TodoService = {
       .select({ id: schemas.todo.id })
       .from(schemas.todo)
       .innerJoin(schemas.project, eq(schemas.todo.projectId, schemas.project.id))
-      .where(and(eq(schemas.todo.id, todoId), sql`(${schemas.project.clientId} = ${userId} OR ${schemas.project.programmerId} = ${userId})`))
+      .where(and(eq(schemas.todo.id, todoId), eq(schemas.project.status, "IN_DEVELOPMENT"), sql`${schemas.project.programmerId} is not null`, sql`(${schemas.project.clientId} = ${userId} OR ${schemas.project.programmerId} = ${userId})`))
       .limit(1);
 
     if (!allowed.length) throw new Error("Todo not found or unauthorized");
@@ -96,7 +92,7 @@ export const TodoService = {
       .select({ id: schemas.todo.id })
       .from(schemas.todo)
       .innerJoin(schemas.project, eq(schemas.todo.projectId, schemas.project.id))
-      .where(and(eq(schemas.todo.id, todoId), sql`(${schemas.project.clientId} = ${userId} OR ${schemas.project.programmerId} = ${userId})`))
+      .where(and(eq(schemas.todo.id, todoId), eq(schemas.project.status, "IN_DEVELOPMENT"), sql`${schemas.project.programmerId} is not null`, sql`(${schemas.project.clientId} = ${userId} OR ${schemas.project.programmerId} = ${userId})`))
       .limit(1);
 
     if (!allowed.length) throw new Error("Todo not found or unauthorized");

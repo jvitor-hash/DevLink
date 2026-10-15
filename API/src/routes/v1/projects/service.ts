@@ -1,6 +1,6 @@
 import { schemas } from "@/database/schema";
 import { crud } from "@/modules/crud_factory";
-import { and, eq, gte, lte, inArray, notInArray, sql, type SQL } from "drizzle-orm";
+import { and, eq, gte, lte, inArray, notInArray, or, sql, type SQL } from "drizzle-orm";
 
 export const ProjectService = {
   ...crud(schemas.project),
@@ -81,6 +81,11 @@ export const ProjectService = {
       conditions.push(lte(schemas.project.maxBudget, filters.maxBudget));
     }
 
+    conditions.push(or(
+      sql`${schemas.project.status} <> 'IN_DEVELOPMENT'`,
+      ...(userId ? [eq(schemas.project.clientId, userId), eq(schemas.project.programmerId, userId)] : []),
+    ) as SQL<unknown>);
+
     const where = conditions.length ? and(...conditions) : undefined;
 
     const rows = await db.select().from(schemas.project).where(where).limit(limit).offset(offset);
@@ -92,7 +97,14 @@ export const ProjectService = {
       .select({ project: schemas.project })
       .from(schemas.saveProject)
       .innerJoin(schemas.project, eq(schemas.saveProject.projectId, schemas.project.id))
-      .where(eq(schemas.saveProject.userId, userId))
+      .where(and(
+        eq(schemas.saveProject.userId, userId),
+        or(
+          sql`${schemas.project.status} <> 'IN_DEVELOPMENT'`,
+          eq(schemas.project.clientId, userId),
+          eq(schemas.project.programmerId, userId),
+        ),
+      ))
       .orderBy(sql`${schemas.saveProject.createdAt} desc`)
       .limit(limit)
       .offset(offset);

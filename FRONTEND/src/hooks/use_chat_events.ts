@@ -12,11 +12,7 @@ export type RawChatEvent = {
 export const isChatEventType = (value: unknown): value is ChatEventType =>
   typeof value === "string" && (CHAT_EVENT_TYPES as readonly string[]).includes(value);
 
-export const acceptChatEvent = (
-  seen: Set<string>,
-  raw: RawChatEvent,
-  conversationId: string | null,
-): ChatMessageEvent | null => {
+export const acceptChatEvent = (seen: Set<string>, raw: RawChatEvent, conversationId: string | null): ChatMessageEvent | null => {
   const { id, event, data } = raw;
 
   if (typeof id !== "string" || id.length === 0) return null;
@@ -25,7 +21,7 @@ export const acceptChatEvent = (
 
   if (typeof data !== "object" || data === null) return null;
   const eventData = data as Record<string, unknown>;
-  const { messageId, conversationId: eventConversationId, content, userId } = eventData;
+  const { messageId, conversationId: eventConversationId, content, userId, messageType, offerStatus, offerMoney, offerDeadline } = eventData;
 
   if (typeof messageId !== "string" || messageId.length === 0) return null;
   if (typeof eventConversationId !== "string" || eventConversationId.length === 0) return null;
@@ -50,6 +46,10 @@ export const acceptChatEvent = (
       conversationId: eventConversationId,
       content,
       userId,
+      ...(messageType === "MESSAGE" || messageType === "OFFER" ? { messageType } : {}),
+      ...(offerStatus === "PENDING" || offerStatus === "REFUSED" || offerStatus === "ACCEPTED" || offerStatus === null ? { offerStatus } : {}),
+      ...(typeof offerMoney === "number" || typeof offerMoney === "string" || offerMoney === null ? { offerMoney } : {}),
+      ...(typeof offerDeadline === "string" || offerDeadline instanceof Date || offerDeadline === null ? { offerDeadline } : {}),
     },
   };
 };

@@ -9,6 +9,8 @@ import { db } from "@/client";
 import { SseHub } from "@/modules/sse_hub";
 import { authPlugin } from "@/modules/auth_plugin";
 import { logError } from "@/modules/logger";
+import { offerResponseProjectPatch } from "@/modules/project_status";
+import { notificationEnabled } from "@/modules/notification_gate";
 
 export const MessageRouter = new Elysia({ prefix: "/api/v1/messages" })
   .use(authPlugin)
@@ -73,12 +75,14 @@ export const MessageRouter = new Elysia({ prefix: "/api/v1/messages" })
       }
 
       if (targetUserId) {
-        if (user.role === "PROGRAMMER") {
+        if ((user.role === "PROGRAMMER" || user.role === "CLIENT") && await notificationEnabled(targetUserId, "NEW_MESSAGE")) {
           await db.insert(schemas.notification).values({
             userId: targetUserId,
             type: "NEW_MESSAGE",
             title: "Nova mensagem",
-            message: `Você recebeu uma nova mensagem: "${data.content}"`,
+            message: user.role === "CLIENT"
+              ? `O cliente respondeu: "${data.content}"`
+              : `Você recebeu uma nova mensagem: "${data.content}"`,
             projectId: targetProjectId,
             isRead: false,
             archived: false,
@@ -88,7 +92,16 @@ export const MessageRouter = new Elysia({ prefix: "/api/v1/messages" })
         SseHub.publish({
           id: crypto.randomUUID(),
           event: "CHAT_MESSAGE",
-          data: { messageId: result.id, conversationId, content: data.content, userId: user.id },
+          data: {
+            messageId: result.id,
+            conversationId,
+            content: data.content,
+            userId: user.id,
+            messageType: result.messageType,
+            offerStatus: result.offerStatus,
+            offerMoney: result.offerMoney,
+            offerDeadline: result.offerDeadline,
+          },
           audienceUserIds: [targetUserId, user.id],
         });
       }
@@ -160,9 +173,62 @@ export const MessageRouter = new Elysia({ prefix: "/api/v1/messages" })
     tags: ["Messages"],
     authOptional: true,
   })
-  .put("/:id", async ({ params, body, set }) => {
+  .put("/:id", async ({ params, body, user, set }) => {
     try {
       const data = body as MessageUpdate;
+      const [message] = await db.select({
+        id: schemas.message.id,
+        userId: schemas.message.userId,
+        messageType: schemas.message.messageType,
+        offerStatus: schemas.message.offerStatus,
+        projectId: schemas.conversation.projectId,
+        clientId: schemas.project.clientId,
+        projectStatus: schemas.project.status,
+        projectTitle: schemas.project.title,
+      }).from(schemas.message)
+        .innerJoin(schemas.conversation, eq(schemas.message.conversationId, schemas.conversation.id))
+        .innerJoin(schemas.project, eq(schemas.conversation.projectId, schemas.project.id))
+        .where(eq(schemas.message.id, params.id)).limit(1);
+
+      if (data.offerStatus && message?.messageType === "OFFER" && message.offerStatus === "PENDING") {
+        if (!message || user.id !== message.clientId) {
+          set.status = 403;
+          return { error: "Only the project client can respond to an offer" };
+        }
+
+        const projectPatch = offerResponseProjectPatch(message.projectStatus, data.offerStatus === "ACCEPTED" ? "ACCEPTED" : "REJECTED");
+        if (projectPatch) {
+          await db.update(schemas.project).set({
+            ...projectPatch,
+            programmerId: data.offerStatus === "ACCEPTED" ? message.userId : null,
+          }).where(eq(schemas.project.id, message.projectId));
+
+          if (projectPatch.status === "IN_DEVELOPMENT") {
+            await db.delete(schemas.saveProject)
+              .where(eq(schemas.saveProject.projectId, message.projectId));
+          }
+
+          SseHub.publish({
+            id: crypto.randomUUID(),
+            event: "project.updated",
+            data: { status: projectPatch.status, programmerId: data.offerStatus === "ACCEPTED" ? message.userId : null },
+            audienceUserIds: [message.clientId, message.userId],
+          });
+        }
+
+        if (await notificationEnabled(message.userId, data.offerStatus === "ACCEPTED" ? "OFFER_ACCEPTED" : "OFFER_REJECTED")) await db.insert(schemas.notification).values({
+          userId: message.userId,
+          type: data.offerStatus === "ACCEPTED" ? "OFFER_ACCEPTED" : "OFFER_REJECTED",
+          title: data.offerStatus === "ACCEPTED" ? "Proposta aceita" : "Proposta recusada",
+          message: data.offerStatus === "ACCEPTED"
+            ? `Sua proposta para o projeto "${message.projectTitle}" foi aceita.`
+            : `Sua proposta para o projeto "${message.projectTitle}" foi recusada.`,
+          projectId: message.projectId,
+          isRead: false,
+          archived: false,
+        });
+      }
+
       const result = await MessageService.update(eq(schemas.message.id, params.id), data);
       return result;
     } catch (error) {
@@ -173,7 +239,7 @@ export const MessageRouter = new Elysia({ prefix: "/api/v1/messages" })
   }, {
     params: z.object({ id: z.uuid() }),
     body: MessageUpdateSchema,
-    response: { 200: MessageSchema, 404: ErrorSchema, 500: ErrorSchema },
+    response: { 200: MessageSchema, 403: ErrorSchema, 404: ErrorSchema, 500: ErrorSchema },
     tags: ["Messages"],
     auth: true,
   })

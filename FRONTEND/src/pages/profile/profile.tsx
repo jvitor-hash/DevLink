@@ -7,7 +7,6 @@ import type { ProjectDTO, PublicUserDTO } from "@/data/types/database";
 import { formatRelativeTime } from "@/utils/time_formatting";
 import Badge from "@/components/ui/badge_component";
 import { projectService } from "@/data/services/project_service";
-import { HIDDEN_PROJECT_STATUSES } from "@/data/types/project_filters";
 
 const FEED_TABS: Array<{ key: string; label: string }> = [
   { key: "ACTIVITY", label: "Atividades" },
@@ -25,7 +24,6 @@ export async function ProfileSelfLoader(): Promise<ProfileLoaderData> {
   if (!cached) throw new Error("Usuario nao encontrado");
 
   const projects = await projectService.list({
-    excludeStatuses: HIDDEN_PROJECT_STATUSES,
     clientId: cached.id,
     limit: 20,
     offset: 0
@@ -44,7 +42,6 @@ export async function ProfileOtherLoader({ params }: LoaderFunctionArgs): Promis
   if (!user) throw new Error("Usuario nao encontrado");
 
   const projects = await projectService.list({
-    excludeStatuses: HIDDEN_PROJECT_STATUSES,
     clientId: user.id,
     limit: 20,
     offset: 0

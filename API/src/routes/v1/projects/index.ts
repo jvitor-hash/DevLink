@@ -197,6 +197,11 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
         return { error: "Project not found" };
       }
 
+      if (project.status === "IN_DEVELOPMENT" && (!user || (project.clientId !== user.id && project.programmerId !== user.id))) {
+        set.status = 403;
+        return { error: "Project is only available to its participants" };
+      }
+
       // Track views for the client's periodic insights; owner views are ignored.
       await ProjectService.recordView(params.id, user?.id ?? null).catch(() => undefined);
 
@@ -212,6 +217,7 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
     }),
     response: {
       200: ProjectDTOSchema,
+      403: ErrorSchema,
       404: ErrorSchema,
       500: ErrorSchema,
     },

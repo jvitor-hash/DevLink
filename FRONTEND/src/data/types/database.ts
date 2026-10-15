@@ -35,6 +35,8 @@ export type NotificationType =
   | "PROJECT_COMPLETED"
   | "PROJECT_CANCELLED"
   | "TICKET_SAVED"
+  | "OFFER_ACCEPTED"
+  | "OFFER_REJECTED"
   | "SYSTEM";
 
 export type Audience =
@@ -174,6 +176,12 @@ export interface ProjectUpdate {
   successCriteria?: string | null;
   valueProposition?: string | null;
   differentiation?: string | null;
+}
+
+// Project Actions
+export interface ProjectActionSave {
+  userId: string
+  projectId: string
 }
 
 // Notification Models
@@ -418,6 +426,10 @@ export interface ChatMessageEvent {
     conversationId: string;
     content: string;
     userId: string;
+    messageType?: "MESSAGE" | "OFFER";
+    offerStatus?: "PENDING" | "REFUSED" | "ACCEPTED" | null;
+    offerMoney?: number | string | null;
+    offerDeadline?: string | Date | null;
   };
 }
 
