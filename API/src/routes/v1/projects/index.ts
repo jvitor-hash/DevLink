@@ -7,6 +7,7 @@ import { schemas } from "@/database/schema";
 import { and, eq, type SQL } from "drizzle-orm";
 import { authPlugin } from "@/modules/auth_plugin";
 import { logError } from "@/modules/logger";
+import { handleSaveProject } from "./handlers";
 
 export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
   .use(authPlugin)
@@ -29,6 +30,42 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
     body: ProjectCreateSchema,
     response: {
       201: ProjectDTOSchema,
+      500: ErrorSchema,
+    },
+    tags: ["Projects"],
+    auth: true,
+  })
+  .post("/actions", async ({ body, user, set }) => {
+    if (body.type === "SAVE_PROJECT") {
+      try {
+        await handleSaveProject({
+          userId: user.id,
+          userRole: user.role,
+          projectId: (body.payload as { projectId: string }).projectId,
+        });
+
+        return { success: true };
+      } catch (error) {
+        set.status = 500;
+        logError("POST /api/v1/projects/actions", error);
+
+        return { error: "Failed to perform action" };
+      }
+    }
+
+    set.status = 400;
+
+    return { error: "Unknown action" };
+  }, {
+    body: z.object({
+      type: z.string(),
+      payload: z.object({
+        projectId: z.string(),
+      }),
+    }),
+    response: {
+      200: z.object({ success: z.boolean() }),
+      400: ErrorSchema,
       500: ErrorSchema,
     },
     tags: ["Projects"],
@@ -86,6 +123,26 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
     },
     tags: ["Projects"],
     authOptional: true,
+  })
+  .get("/saved", async ({ query, user, set }) => {
+    try {
+      return await ProjectService.findSavedByUser(user.id, query.limit, query.offset);
+    } catch (error) {
+      logError("GET /api/v1/projects/saved", error);
+      set.status = 500;
+      return { error: "Failed to fetch saved projects" };
+    }
+  }, {
+    query: z.object({
+      limit: z.coerce.number().min(1).max(100).default(20),
+      offset: z.coerce.number().min(0).default(0),
+    }),
+    response: {
+      200: z.array(ProjectDTOSchema),
+      500: ErrorSchema,
+    },
+    tags: ["Projects"],
+    auth: true,
   })
   .get("/counts/by-client", async ({ query, set }) => {
     try {

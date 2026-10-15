@@ -1,14 +1,29 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Bell } from "react-feather";
 import { useProjectEvents } from "@/hooks/use_project_events";
 import { userSingleton } from "@/context/user";
 import type { ProjectEvent } from "@/data/types/database";
+import { notificationService } from "@/data/services/notification_service";
 
 // Live bell badge: counts project events that arrived while the user has
 // the app open. Client-side only; a fresh session starts at zero.
 export default function NotificationBell() {
   const [unreadIds, setUnreadIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    let mounted = true;
+
+    notificationService.list({ limit: 100 }).then((notifications) => {
+      if (mounted) {
+        setUnreadIds(new Set(notifications.filter((notification) => !notification.isRead && !notification.archived).map((notification) => notification.id)));
+      }
+    }).catch(() => undefined);
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const handleEvent = useCallback((event: ProjectEvent): void => {
     setUnreadIds((current) => new Set(current).add(event.id));

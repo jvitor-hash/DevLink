@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "@/components/ui/button_component";
 import NotificationListItem from "@/components/ui/notification_list_item";
@@ -7,6 +7,7 @@ import { eventToNotification } from "@/utils/notification_mapper";
 import { useProjectEvents } from "@/hooks/use_project_events";
 import { useCurrentUser } from "@/hooks/use_current_user";
 import { cache, CACHE_KEYS } from "@/utils/session_cache";
+import { notificationService } from "@/data/services/notification_service";
 import type { NotificationDTO, ProjectEvent } from "@/data/types/database";
 
 type Category = "RECENTS" | "SAVED" | "ARCHIVES" | "OLD";
@@ -46,33 +47,85 @@ const persistIds = (key: string, ids: Set<string>): void => {
 };
 
 export default function NotificationPage() {
-  const [category] = useState<Category | null>("RECENTS");
+  const [category, setCategory] = useState<Category | null>("RECENTS");
+  const [persistedNotifications, setPersistedNotifications] = useState<NotificationDTO[]>([]);
   const [events, setEvents] = useState<ProjectEvent[]>([]);
   const [readIds, setReadIds] = useState<Set<string>>(() => restoreIds(CACHE_KEYS.NOTIFICATION_READ_IDS));
   const [archivedIds, setArchivedIds] = useState<Set<string>>(() => restoreIds(CACHE_KEYS.NOTIFICATION_ARCHIVED_IDS));
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchNotifications = async (): Promise<void> => {
+      try {
+        const data = await notificationService.list();
+
+        if (isMounted) {
+          setPersistedNotifications(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchNotifications();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Live feed: every project event becomes a notification entry.
   const handleEvent = useCallback((event: ProjectEvent): void => {
     setEvents((current) => [event, ...current.filter((existing) => existing.id !== event.id)]);
   }, []);
 
-  // The feed is scoped to the audience the API streams for the signed-in user,
-  // so every event they are entitled to arrives here regardless of project.
   const user = useCurrentUser();
 
   useProjectEvents(null, { onEvent: handleEvent, scope: user ? "audience" : "inactive" });
 
-  const notifications = useMemo<NotificationDTO[]>(
-    () => events.map((event) => eventToNotification(
-      event,
-      new Date().toISOString(),
-      readIds.has(event.id),
-      archivedIds.has(event.id),
-    )),
-    [events, readIds, archivedIds],
-  );
+  const notifications = useMemo<NotificationDTO[]>(() => {
+    const liveNotifications = events.map((event) =>
+      eventToNotification(
+        event,
+        new Date().toISOString(),
+        readIds.has(event.id),
+        archivedIds.has(event.id)
+      )
+    );
+
+    const mappedPersisted = persistedNotifications.map((notif) => ({
+      ...notif,
+      isRead: notif.isRead || readIds.has(notif.id),
+      archived: archivedIds.has(notif.id) ? true : notif.archived,
+    }));
+
+    const seen = new Set<string>();
+    const combined: NotificationDTO[] = [];
+
+    for (const item of liveNotifications) {
+      if (!seen.has(item.id)) {
+        seen.add(item.id);
+        combined.push(item);
+      }
+    }
+
+    for (const item of mappedPersisted) {
+      if (!seen.has(item.id)) {
+        seen.add(item.id);
+        combined.push(item);
+      }
+    }
+
+    return combined;
+  }, [events, persistedNotifications, readIds, archivedIds]);
 
   const filtered = useMemo(
     () => notifications.filter((notification) => matchesCategory(notification, category)),
@@ -82,38 +135,66 @@ export default function NotificationPage() {
   const selected = filtered.find((notification) => notification.id === selectedId) ?? null;
   const selectedProjectId = selected?.projectId ?? null;
 
-  // Read and archived flags survive navigation and reloads: the API only
-  // streams live events, so the local ids are the source of truth here.
-  const markAsRead = (notification: NotificationDTO): void => {
+  const markAsRead = async (notificationItem: NotificationDTO): Promise<void> => {
     setReadIds((current) => {
-      const next = new Set(current).add(notification.id);
+      const next = new Set(current).add(notificationItem.id);
 
       persistIds(CACHE_KEYS.NOTIFICATION_READ_IDS, next);
 
       return next;
     });
+
+    setPersistedNotifications((current) =>
+      current.map((item) => (item.id === notificationItem.id ? { ...item, isRead: true } : item))
+    );
+
+    try {
+      await notificationService.markAsRead(notificationItem.id);
+    } catch {
+      // Ignore API errors for live-only events
+    }
   };
 
-  const archive = (notification: NotificationDTO): void => {
+  const archive = async (notificationItem: NotificationDTO): Promise<void> => {
     setArchivedIds((current) => {
-      const next = new Set(current).add(notification.id);
+      const next = new Set(current).add(notificationItem.id);
 
       persistIds(CACHE_KEYS.NOTIFICATION_ARCHIVED_IDS, next);
 
       return next;
     });
+
+    setPersistedNotifications((current) =>
+      current.map((item) => (item.id === notificationItem.id ? { ...item, archived: true } : item))
+    );
+
+    try {
+      await notificationService.archive(notificationItem.id);
+    } catch {
+      // Ignore API errors for live-only events
+    }
   };
 
-  const unarchive = (notification: NotificationDTO): void => {
+  const unarchive = async (notificationItem: NotificationDTO): Promise<void> => {
     setArchivedIds((current) => {
       const next = new Set(current);
 
-      next.delete(notification.id);
+      next.delete(notificationItem.id);
 
       persistIds(CACHE_KEYS.NOTIFICATION_ARCHIVED_IDS, next);
 
       return next;
     });
+
+    setPersistedNotifications((current) =>
+      current.map((item) => (item.id === notificationItem.id ? { ...item, archived: false } : item))
+    );
+
+    try {
+      await notificationService.unarchive(notificationItem.id);
+    } catch {
+      // Ignore API errors for live-only events
+    }
   };
 
   return (
@@ -124,7 +205,13 @@ export default function NotificationPage() {
         <h1 className="mb-4 text-xl">Notificações</h1>
         <nav className="flex flex-row gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
           {CATEGORIES.map(({ key, label }) => (
-            <Button key={key} label={label} buttonType="button" colorType="primary"/>
+            <Button
+              key={key}
+              label={label}
+              buttonType="button"
+              colorType={category === key ? "primary" : "secondary"}
+              onClick={() => setCategory(key)}
+            />
           ))}
         </nav>
       </div>
@@ -135,7 +222,9 @@ export default function NotificationPage() {
           <h2 className="text-xl">{CATEGORIES.find((c) => c.key === category)?.label}</h2>
         </div>
 
-        {filtered.length === 0 ? (
+        {isLoading && notifications.length === 0 ? (
+          <p className="text-(--text-muted) py-6 text-center">Carregando notificações...</p>
+        ) : filtered.length === 0 ? (
           <p className="text-(--text-muted) py-6 text-center">Nenhuma notificação nesta categoria.</p>
         ) : (
           <ul className="flex flex-col gap-2">

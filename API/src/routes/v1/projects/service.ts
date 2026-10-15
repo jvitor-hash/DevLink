@@ -87,6 +87,19 @@ export const ProjectService = {
     return rows as typeof schemas.project.$inferSelect[];
   },
 
+  findSavedByUser: async (userId: string, limit = 20, offset = 0): Promise<typeof schemas.project.$inferSelect[]> => {
+    const rows = await db
+      .select({ project: schemas.project })
+      .from(schemas.saveProject)
+      .innerJoin(schemas.project, eq(schemas.saveProject.projectId, schemas.project.id))
+      .where(eq(schemas.saveProject.userId, userId))
+      .orderBy(sql`${schemas.saveProject.createdAt} desc`)
+      .limit(limit)
+      .offset(offset);
+
+    return rows.map(({ project }) => project);
+  },
+
   /** Open project counts grouped by category, keyed by the stored category value. */
   countByCategory: async (excludeStatuses?: string[]): Promise<Record<string, number>> => {
     const where = excludeStatuses?.length

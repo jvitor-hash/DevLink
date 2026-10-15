@@ -59,17 +59,32 @@ export const MessageRouter = new Elysia({ prefix: "/api/v1/messages" })
       const result = await MessageService.create({ ...data, conversationId, userId: user.id });
 
       let targetUserId = existingConv?.[0]?.userId === user.id ? existingConv?.[0]?.recipientId : existingConv?.[0]?.userId;
+      let targetProjectId = existingConv?.[0]?.projectId ?? null;
 
       if (!targetUserId) {
         const convRow = await db.select({
           userId: schemas.conversation.userId,
           recipientId: schemas.conversation.recipientId,
+          projectId: schemas.conversation.projectId,
         }).from(schemas.conversation).where(eq(schemas.conversation.id, conversationId)).limit(1);
 
         targetUserId = convRow[0]?.userId === user.id ? convRow[0]?.recipientId : convRow[0]?.userId;
+        targetProjectId = convRow[0]?.projectId ?? null;
       }
 
       if (targetUserId) {
+        if (user.role === "PROGRAMMER") {
+          await db.insert(schemas.notification).values({
+            userId: targetUserId,
+            type: "NEW_MESSAGE",
+            title: "Nova mensagem",
+            message: `Você recebeu uma nova mensagem: "${data.content}"`,
+            projectId: targetProjectId,
+            isRead: false,
+            archived: false,
+          });
+        }
+
         SseHub.publish({
           id: crypto.randomUUID(),
           event: "CHAT_MESSAGE",

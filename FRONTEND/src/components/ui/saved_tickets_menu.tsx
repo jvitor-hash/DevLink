@@ -53,7 +53,7 @@ export default function SavedTicketsMenu({ onOpenChange }: SavedTicketsMenuProps
     let cancelled = false;
 
     projectService
-      .list({ clientId: userSingleton.id ?? "", limit: 20 })
+      .listSaved({ limit: 20 })
       .then((rows) => {
         if (!cancelled) setProjects(rows);
       })
