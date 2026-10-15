@@ -145,7 +145,11 @@ export default function SettingsPage() {
 
           {section === "PROJECT_PREFS" && (
             <SettingsProjectPreferences
-              preference={{ ...preference, ...pending }}
+              preference={{
+                maxDeadlineDays: preference?.maxDeadlineDays ?? "365",
+                maxBudget: preference?.maxBudget ?? 0,
+                ...pending,
+              }}
               onChange={(data) => handleUnsavedChanges(data)}
             />
           )}

@@ -16,3 +16,4 @@ export const projectActions = pgTable("project_actions", {
 
 export type ProjectAction = typeof projectActions.$inferSelect;
 export type NewProjectAction = typeof projectActions.$inferInsert;
+

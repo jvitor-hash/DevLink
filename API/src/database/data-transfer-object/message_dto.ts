@@ -5,7 +5,7 @@ export const MessageSchema = z.object({
   id: idSchema,
   conversationId: idSchema,
   userId: idSchema.optional(),
-  content: z.string().min(1),
+  content: z.string().trim().min(1),
   isRead: z.boolean().default(false),
   readAt: z.union([z.date(), z.string().datetime()]).nullable().optional(),
   recipientId: idSchema.optional(),

@@ -30,7 +30,7 @@ describe("Offer acceptance and rejection", () => {
     cy.clearCookies();
     cy.loginViaApiAsProgrammer(programmer.email, password);
     return cy.request({ method: "POST", url: `${API_URL}/api/v1/conversations`, body: { projectId, userId: "00000000-0000-0000-0000-000000000000", recipientId: "00000000-0000-0000-0000-000000000000" } })
-      .then((conversation) => cy.request({ method: "POST", url: `${API_URL}/api/v1/messages`, body: { conversationId: conversation.body.id, content: `Offer ${tag}`, messageType: "OFFER", offerStatus: "PENDING", offerMoney: 250 }).then(() => conversation.body.id as string));
+      .then((conversation) => cy.request({ method: "POST", url: `${API_URL}/api/v1/messages`, body: { conversationId: conversation.body.id, content: `Offer ${tag}`, messageType: "OFFER", offerStatus: "PENDING", offerMoney: 250 } }).then(() => conversation.body.id as string));
   };
 
   before(() => {

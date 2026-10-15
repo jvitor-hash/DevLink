@@ -21,7 +21,7 @@ type NavbarLayoutProps = { onOpenLogin: () => void };
 export function NavbarLayout({ onOpenLogin } : NavbarLayoutProps) : React.ReactElement {
   const [openDrawer, setOpenDrawer] = useState<boolean>(false);
   const [userMenu, setUserMenu] = useState<boolean>(false);
-  const menuRef = useRef(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   // Re-renders on login, register and logout through the singleton subscription.
   const user = useCurrentUser();
@@ -34,8 +34,8 @@ export function NavbarLayout({ onOpenLogin } : NavbarLayoutProps) : React.ReactE
   };
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
+    const handleClickOutside = (event: globalThis.MouseEvent): void => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setUserMenu(false);
       }
     };

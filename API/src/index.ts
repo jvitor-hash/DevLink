@@ -10,15 +10,13 @@ import { UserPreferenceRouter } from "@/routes/v1/user_preferences";
 import { TodoRouter } from "@/routes/v1/todo";
 import { TicketRouter } from "@/routes/v1/ticket";
 import { UsersRouter } from "@/routes/v1/users";
-import { ProjectActionRouter } from "@/routes/v1/project_action";
 import { EventsRouter } from "@/routes/v1/events";
 import { MessageRouter } from "@/routes/v1/messages";
 import { ConversationRouter } from "@/routes/v1/conversation";
+import { NotificationRouter } from "@/routes/v1/notification";
 import { ClientAuthRouter } from "./routes/v1/client";
 import { ProgrammerAuthRouter } from "./routes/v1/programmer";
 import { logger, loggerPlugin } from "./modules/logger";
-import { OutboxDispatcher } from "./modules/outbox_dispatcher";
-import { SseHub } from "./modules/sse_hub";
 
 const schema = await auth.api.generateOpenAPISchema();
 
@@ -74,10 +72,10 @@ const app = new Elysia()
   .use(TicketRouter)
   .use(UserPreferenceRouter)
   .use(UsersRouter)
-  .use(ProjectActionRouter)
   .use(EventsRouter)
   .use(MessageRouter)
   .use(ConversationRouter)
+  .use(NotificationRouter)
   .get("/health", () => ({ OK: true }), {
     detail: {
       summary: "/health",
@@ -85,13 +83,6 @@ const app = new Elysia()
     },
   })
   .listen(env.PORT);
-
-OutboxDispatcher.startOutboxDispatcher();
-const heartbeatTimer = SseHub.startHeartbeats(20_000);
-process.on("exit", () => {
-  OutboxDispatcher.stopOutboxDispatcher();
-  clearInterval(heartbeatTimer);
-});
 
 console.log(`Elysia is running at ${app.server?.hostname}:${app.server?.port}`);
 

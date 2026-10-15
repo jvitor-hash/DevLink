@@ -8,24 +8,24 @@ import { ticket } from "./ticket_schema";
 import { todo } from "./todo_schema";
 import { user } from "./user_schema";
 import { userPreference } from "./user_preferences_schema";
-import { verification } from "./verification_schema";
+import { conversation } from "./conversation_schema";
+import { saveProject } from "./save_project_schema";
 import { outboxEvents } from "./outbox_events_schema";
 import { projectActions } from "./project_actions_audit_schema";
-import { conversation } from "./conversation_schema";
 
 export const schemas = {
   user,
   account,
   session,
   conversation,
-  verification,
   project,
   review,
   notification,
   userPreference,
-  outboxEvents,
-  projectActions,
   message,
   ticket,
   todo,
+  saveProject,
+  outboxEvents,
+  projectActions,
 };

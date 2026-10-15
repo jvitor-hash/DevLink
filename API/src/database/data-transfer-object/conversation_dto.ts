@@ -19,7 +19,7 @@ const ConversationDTOs = createCrudSchemas(ConversationSchema, [
   "updatedAt",
 ]);
 
-export const ConversationCreateSchema = ConversationDTOs.create;
+export const ConversationCreateSchema = ConversationDTOs.create.extend({ unreadMessages: z.number().default(0) });
 export const ConversationUpdateSchema = ConversationDTOs.update;
 
 export type ConversationDTO = z.infer<typeof ConversationSchema>;

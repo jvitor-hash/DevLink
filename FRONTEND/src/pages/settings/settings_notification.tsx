@@ -1,6 +1,8 @@
 import { Toggle } from "@/components/form/toggle_component";
 import type { UserPreferenceDTO, UserRole } from "@/data/types/database";
 
+type NotificationPreferenceKey = "project_notifications" | "message_notifications" | "review_notifications";
+
 type SettingsNotificationProps = {
   preference?: Partial<Pick<UserPreferenceDTO, "project_notifications" | "message_notifications" | "review_notifications">>;
   role?: UserRole | string | null;
@@ -12,7 +14,7 @@ export default function SettingsNotification({
   role,
   onChange,
 }: SettingsNotificationProps) {
-  const notifications: ReadonlyArray<readonly [string, string]> = role === "PROGRAMMER"
+  const notifications: ReadonlyArray<readonly [NotificationPreferenceKey, string]> = role === "PROGRAMMER"
     ? [
       ["project_notifications", "Novos projetos disponíveis"],
       ["message_notifications", "Mensagens de clientes"],
@@ -26,7 +28,7 @@ export default function SettingsNotification({
 
   const options =
     preference ??
-    notifications.reduce<Record<string, boolean>>((acc, [key]) => {
+    notifications.reduce<Partial<Record<NotificationPreferenceKey, boolean>>>((acc, [key]) => {
       acc[key] = true;
       return acc;
     }, {});

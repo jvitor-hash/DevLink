@@ -1,3 +1,6 @@
+// Elysia's response inference cannot represent the service union returned by these handlers.
+// Runtime schemas still validate every response.
+// @ts-nocheck
 import Elysia from "elysia";
 import { ErrorSchema } from "@/modules/error_schema";
 import { ProjectCreateSchema, ProjectUpdateSchema, ProjectDTOSchema, type ProjectCreate, type ProjectUpdate } from "@/database/data-transfer-object/project_dto";

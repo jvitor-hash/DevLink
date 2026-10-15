@@ -39,6 +39,37 @@ describe("Message Schema Validation", () => {
     expect(result.success).toBe(true);
   });
 
+  test("rejects invalid offer states and negative amounts", () => {
+    expect(MessageCreateSchema.safeParse({
+      conversationId,
+      content: "Proposal",
+      messageType: "OFFER",
+      offerStatus: "INVALID",
+    }).success).toBe(false);
+
+    expect(MessageCreateSchema.safeParse({
+      conversationId,
+      content: "Proposal",
+      messageType: "OFFER",
+      offerMoney: -1,
+    }).success).toBe(false);
+  });
+
+  test("accepts every supported offer status", () => {
+    for (const offerStatus of ["PENDING", "ACCEPTED", "REFUSED"] as const) {
+      expect(MessageCreateSchema.safeParse({
+        conversationId,
+        content: `Offer ${offerStatus}`,
+        messageType: "OFFER",
+        offerStatus,
+      }).success).toBe(true);
+    }
+  });
+
+  test("rejects whitespace-only messages", () => {
+    expect(MessageCreateSchema.safeParse({ conversationId, content: "   " }).success).toBe(false);
+  });
+
   test("rejects an invalid conversation UUID and empty content", () => {
     expect(MessageCreateSchema.safeParse({ conversationId: "invalid-uuid", content: "Test" }).success).toBe(false);
     expect(MessageCreateSchema.safeParse({ conversationId, content: "" }).success).toBe(false);

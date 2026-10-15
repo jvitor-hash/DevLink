@@ -13,3 +13,4 @@ export const verification = pgTable("verification", {
 
 export type Verification = typeof verification.$inferSelect;
 export type NewVerification = typeof verification.$inferInsert;
+

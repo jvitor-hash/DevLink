@@ -162,7 +162,7 @@ export const ProjectService = {
     await db
       .update(schemas.project)
       .set({
-        viewTotalCount: sql`${schemas.project.viewTotalCount} + 1`,
+        saveTotalCount: sql`${schemas.project.saveTotalCount} + 1`,
         lastViewedAt: new Date(),
       })
       .where(eq(schemas.project.id, projectId));
