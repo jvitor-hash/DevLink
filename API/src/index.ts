@@ -17,6 +17,7 @@ import { NotificationRouter } from "@/routes/v1/notification";
 import { ClientAuthRouter } from "./routes/v1/client";
 import { ProgrammerAuthRouter } from "./routes/v1/programmer";
 import { logger, loggerPlugin } from "./modules/logger";
+import { SseHub } from "./modules/sse_hub";
 
 const schema = await auth.api.generateOpenAPISchema();
 
@@ -83,6 +84,10 @@ const app = new Elysia()
     },
   })
   .listen(env.PORT);
+
+// Keep SSE connections alive through reverse proxies and load balancers.
+// The heartbeat interval is shorter than common idle connection timeouts.
+SseHub.startHeartbeats();
 
 console.log(`Elysia is running at ${app.server?.hostname}:${app.server?.port}`);
 

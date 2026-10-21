@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Bookmark } from "react-feather";
 import { userSingleton } from "@/context/user";
 import { projectService } from "@/data/services/project_service";
-import { reportError } from "@/utils/report_error";
 import type { ProjectDTO } from "@/data/types/database";
 
 type SavedTicketsMenuProps = {
@@ -57,7 +56,9 @@ export default function SavedTicketsMenu({ onOpenChange }: SavedTicketsMenuProps
       .then((rows) => {
         if (!cancelled) setProjects(rows);
       })
-      .catch((error: unknown) => reportError("saved_tickets_menu: carregar projetos", error));
+      .catch((error) => {
+        console.error("[Saved Ticket Menu] Failure: " + error);
+      });
 
     return () => {
       cancelled = true;

@@ -1,6 +1,5 @@
 import { apiClient, ApiRequestError } from "@/utils/api_client";
 import { cache, CACHE_KEYS } from "@/utils/session_cache";
-import { reportError } from "@/utils/report_error";
 import type { UserDTO, UserRole } from "@/data/types/database";
 
 export interface LoginCredentials {
@@ -107,7 +106,7 @@ export class AuthService {
       // A 401 here just means signed out; anything else is worth surfacing.
       if (error instanceof ApiRequestError && error.status === 401) return null;
 
-      reportError("auth: carregar sessão", error, "Não foi possível verificar sua sessão.");
+      console.error("auth: carregar sessão", error, "Não foi possível verificar sua sessão.");
 
       return null;
     }

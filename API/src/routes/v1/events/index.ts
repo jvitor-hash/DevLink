@@ -17,26 +17,44 @@ export const EventsRouter = new Elysia({ prefix: "/api/v1/events" })
   .get("/stream", ({ user }) => {
     const encoder = new TextEncoder();
     let clientId: string | null = null;
+    let closed = false;
+
+    const cleanup = () => {
+      if (closed) return;
+      closed = true;
+
+      if (clientId !== null) {
+        SseHub.unregister(clientId);
+        clientId = null;
+      }
+    };
 
     const stream = new ReadableStream<Uint8Array>({
       start(controller) {
         const writeFn = (chunk: string) => {
+          if (closed) {
+            throw new Error("SSE stream is closed");
+          }
+
           try {
             controller.enqueue(encoder.encode(chunk));
-          } catch {
-            // Controller already closed; the hub drops the client on next write.
-            throw new Error("SSE controller closed");
+          } catch (error) {
+            cleanup();
+            throw error;
           }
         };
 
-        clientId = SseHub.register(user.id, writeFn);
-
-        controller.enqueue(encoder.encode(`retry: ${RETRY_HINT_MS}\n\n`));
-        controller.enqueue(encoder.encode(": connected\n\n"));
+        try {
+          clientId = SseHub.register(user.id, writeFn);
+          controller.enqueue(encoder.encode(`retry: ${RETRY_HINT_MS}\n\n`));
+          controller.enqueue(encoder.encode(": connected\n\n"));
+        } catch (error) {
+          cleanup();
+          throw error;
+        }
       },
       cancel() {
-        if (clientId) SseHub.unregister(clientId);
-        clientId = null;
+        cleanup();
       },
     });
 

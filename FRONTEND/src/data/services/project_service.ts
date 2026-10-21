@@ -1,7 +1,5 @@
-import type { ListParams, ProjectActionAccepted, ProjectActionType, ProjectCreate, ProjectDTO, ProjectEvent, ProjectUpdate } from "@/data/types/database";
+import type { ListParams, ProjectActionAccepted, ProjectActionType, ProjectCreate, ProjectDTO, ProjectUpdate } from "@/data/types/database";
 import { apiClient } from "@/utils/api_client";
-import { projectActionsEnabled } from "@/utils/feature_flags";
-import { mockProjectAction, mockProjectEventBus } from "@/utils/mock_project_events";
 
 const endpoints = ["/api/v1/projects"];
 
@@ -31,30 +29,8 @@ export const projectService = {
     }),
 };
 
-const MOCK_EVENT_BY_ACTION: Record<ProjectActionType, ProjectEvent["type"]> = {
-  SAVE_PROJECT: "project.saved",
-  UPDATE_PROJECT: "project.updated",
-  DELETE_PROJECT: "project.deleted",
-};
-
-// Event-driven project actions; the API replies 202 with an outbox event id.
-// With the feature flag off, everything resolves locally against mocks and
-// a matching mock event is emitted so the UI reacts without a backend.
 export const projectActions = {
   send: async (action: ProjectActionType, payload: Record<string, unknown>, idempotencyKey?: string): Promise<ProjectActionAccepted> => {
-    if (!projectActionsEnabled()) {
-      const receipt = mockProjectAction(action, payload);
-      const projectId = typeof payload.projectId === "string" ? payload.projectId : crypto.randomUUID();
-
-      mockProjectEventBus.emit({
-        type: MOCK_EVENT_BY_ACTION[action],
-        projectId,
-        payload: { mocked: true },
-      });
-
-      return receipt;
-    }
-
     return apiClient.post<ProjectActionAccepted>(
       "/api/v1/project_action",
       { action, payload },

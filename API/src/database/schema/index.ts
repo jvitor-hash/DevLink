@@ -10,8 +10,6 @@ import { user } from "./user_schema";
 import { userPreference } from "./user_preferences_schema";
 import { conversation } from "./conversation_schema";
 import { saveProject } from "./save_project_schema";
-import { outboxEvents } from "./outbox_events_schema";
-import { projectActions } from "./project_actions_audit_schema";
 
 export const schemas = {
   user,
@@ -25,7 +23,5 @@ export const schemas = {
   message,
   ticket,
   todo,
-  saveProject,
-  outboxEvents,
-  projectActions,
+  saveProject
 };

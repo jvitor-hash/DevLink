@@ -91,7 +91,7 @@ export const MessageRouter = new Elysia({ prefix: "/api/v1/messages" })
 
         SseHub.publish({
           id: crypto.randomUUID(),
-          event: "CHAT_MESSAGE",
+          event: "project.chat_message",
           data: {
             messageId: result.id,
             conversationId,

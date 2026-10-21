@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Banner from "@/components/ui/banner_component";
 import { projectService, projectActions } from "@/data/services/project_service";
-import { projectActionsEnabled } from "@/utils/feature_flags";
 import { QUESTIONNAIRE_MAX_STEPS } from "./questionnaire.constants";
 import { toProjectCreatePayload } from "./questionnaire.mappers";
 import { validateQuestionnaire, validateStep } from "./questionnaire.validation";
@@ -87,19 +86,12 @@ export default function Questionnaire() {
     const payload = toProjectCreatePayload(form);
 
     try {
-      // Flag on: the action router accepts the request (202) and the SSE
-      // stream confirms with a project.saved event. Flag off: plain create.
-      if (projectActionsEnabled()) {
-        await projectActions.saveProject(payload);
-        resetForm();
-        setStep(1);
-        showFeedback("success", "Projeto enviado! Confirmação em instantes...");
-      } else {
-        await projectService.create(payload);
-        resetForm();
-        setStep(1);
-        showFeedback("success", "Projeto publicado com sucesso!");
-      }
+      await projectActions.saveProject(payload);
+      await projectService.create(payload);
+      resetForm();
+      setStep(1);
+      showFeedback("success", "Projeto publicado com sucesso!");
+      
     } catch (submitError) {
       showFeedback(
         "error",

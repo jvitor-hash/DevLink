@@ -37,7 +37,7 @@ const publish = (event: SSEEvent): number => {
       delivered += 1;
     } catch (error) {
       logger.warn("[sse-hub] write failed, dropping client", clientId, error);
-      clients.delete(clientId);
+      unregister(clientId);
     }
   }
 
@@ -61,7 +61,7 @@ const startHeartbeats = (intervalMs = 20_000): Timer => {
       try {
         client.write(heartbeatFrame);
       } catch {
-        clients.delete(clientId);
+        unregister(clientId);
       }
     }
   }, intervalMs);

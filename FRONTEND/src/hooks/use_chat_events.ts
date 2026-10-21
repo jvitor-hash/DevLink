@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { BASE_URL, type ChatEventType, type ChatMessageEvent } from "@/data/types/database";
-
-const CHAT_EVENT_TYPES: readonly ChatEventType[] = ["CHAT_MESSAGE"];
+import { BASE_URL, type ChatMessageEvent } from "@/data/types/database";
 
 export type RawChatEvent = {
   id?: unknown;
@@ -9,14 +7,11 @@ export type RawChatEvent = {
   data?: unknown;
 };
 
-export const isChatEventType = (value: unknown): value is ChatEventType =>
-  typeof value === "string" && (CHAT_EVENT_TYPES as readonly string[]).includes(value);
-
 export const acceptChatEvent = (seen: Set<string>, raw: RawChatEvent, conversationId: string | null): ChatMessageEvent | null => {
   const { id, event, data } = raw;
 
   if (typeof id !== "string" || id.length === 0) return null;
-  if (!isChatEventType(event)) return null;
+  if (event !== "project.chat_message") return null;
   if (seen.has(id)) return null;
 
   if (typeof data !== "object" || data === null) return null;
@@ -38,18 +33,46 @@ export const acceptChatEvent = (seen: Set<string>, raw: RawChatEvent, conversati
   }
   seen.add(id);
 
+  const validMessageType =
+    messageType === "MESSAGE" || messageType === "OFFER"
+      ? messageType
+      : undefined;
+
+  const validOfferStatus =
+    offerStatus === "PENDING" ||
+    offerStatus === "REFUSED" ||
+    offerStatus === "ACCEPTED" ||
+    offerStatus === null
+      ? offerStatus
+      : undefined;
+
+  const validOfferMoney =
+    typeof offerMoney === "number" ||
+    typeof offerMoney === "string" ||
+    offerMoney === null
+      ? offerMoney
+      : undefined;
+
+  const validOfferDeadline =
+    typeof offerDeadline === "string" ||
+    offerDeadline instanceof Date ||
+    offerDeadline === null
+      ? offerDeadline
+      : undefined;
+
+
   return {
     id,
-    event,
+    event: "project.chat_message",
     data: {
       messageId,
       conversationId: eventConversationId,
       content,
       userId,
-      ...(messageType === "MESSAGE" || messageType === "OFFER" ? { messageType } : {}),
-      ...(offerStatus === "PENDING" || offerStatus === "REFUSED" || offerStatus === "ACCEPTED" || offerStatus === null ? { offerStatus } : {}),
-      ...(typeof offerMoney === "number" || typeof offerMoney === "string" || offerMoney === null ? { offerMoney } : {}),
-      ...(typeof offerDeadline === "string" || offerDeadline instanceof Date || offerDeadline === null ? { offerDeadline } : {}),
+      validMessageType,
+      validOfferStatus,
+      validOfferMoney,
+      validOfferDeadline,
     },
   };
 };
@@ -58,10 +81,7 @@ type UseChatEventsOptions = {
   onMessage: (event: ChatMessageEvent) => void;
 };
 
-export function useChatEvents(
-  conversationId: string | null,
-  options: UseChatEventsOptions,
-): boolean {
+export function useChatEvents(conversationId: string | null, options: UseChatEventsOptions): boolean {
   const { onMessage } = options;
   const [streamConnected, setStreamConnected] = useState<boolean>(false);
   const seenRef = useRef<Set<string>>(new Set());
@@ -79,10 +99,14 @@ export function useChatEvents(
     source.onopen = () => setStreamConnected(true);
     source.onerror = () => setStreamConnected(false);
 
-    const handleMessage = (raw: string): void => {
+    const handleMessage = (message: MessageEvent<string>): void => {
       try {
-        const parsed = JSON.parse(raw) as RawChatEvent;
-        const event = acceptChatEvent(seenRef.current, parsed, conversationId);
+        const parsed = JSON.parse(message.data) as Omit<RawChatEvent, "id" | "event">; 
+        const event = acceptChatEvent(seenRef.current, {
+          ...parsed,
+          id: message.lastEventId,
+          event: message.type
+        }, conversationId);
 
         if (event) onMessageRef.current(event);
       } catch {
@@ -90,8 +114,8 @@ export function useChatEvents(
       }
     };
 
-    for (const type of CHAT_EVENT_TYPES) {
-      source.addEventListener(type, (message) => handleMessage((message as MessageEvent<string>).data));
+    for (const type of ["project.chat_message"]) {
+      source.addEventListener(type, (message) => handleMessage((message as MessageEvent<string>)));
     }
 
     return () => {

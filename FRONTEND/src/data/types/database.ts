@@ -178,12 +178,6 @@ export interface ProjectUpdate {
   differentiation?: string | null;
 }
 
-// Project Actions
-export interface ProjectActionSave {
-  userId: string
-  projectId: string
-}
-
 // Notification Models
 export interface NotificationDTO {
   id: string;
@@ -411,16 +405,9 @@ export interface UserPreferenceUpdate {
   maxBudget?: number;
 }
 
-// Project Action Models (outbox + SSE flow)
-export type ProjectActionType = "SAVE_PROJECT" | "UPDATE_PROJECT" | "DELETE_PROJECT";
-export type ProjectEventType = "project.saved" | "project.updated" | "project.deleted";
-
-// Chat SSE Events
-export type ChatEventType = "CHAT_MESSAGE";
-
 export interface ChatMessageEvent {
   id: string;
-  event: ChatEventType;
+  event: "project.chat_message";
   data: {
     messageId: string;
     conversationId: string;
@@ -433,15 +420,9 @@ export interface ChatMessageEvent {
   };
 }
 
-export interface ProjectActionAccepted {
-  actionId: string;
-  eventId: string;
-  status: "PENDING";
-}
-
 export interface ProjectEvent {
   id: string;
-  type: ProjectEventType;
+  type: "project.saved" | "project.updated" | "project.deleted";
   aggregateType: string;
   aggregateId: string;
   payload: Record<string, unknown>;

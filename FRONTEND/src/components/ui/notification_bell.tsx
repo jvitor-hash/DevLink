@@ -38,12 +38,7 @@ export default function NotificationBell() {
       <Bell size={18} />
 
       {count > 0 && (
-        <span
-          className="absolute -top-1.5 -right-2 min-w-4 px-1 text-center text-[10px] leading-4"
-          data-testid="notification-count"
-        >
-          {count > 9 ? "9+" : count}
-        </span>
+        <span className="bg-(--primary) rounded-full absolute -top-1.5 -right-2 min-w-4 px-1"></span>
       )}
     </Link>
   );
