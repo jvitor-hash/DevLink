@@ -1,6 +1,3 @@
-// Elysia's response inference cannot represent the service union returned by these handlers.
-// Runtime schemas still validate every response.
-// @ts-nocheck
 import Elysia from "elysia";
 import { ErrorSchema } from "@/modules/error_schema";
 import { ProjectCreateSchema, ProjectUpdateSchema, ProjectDTOSchema, type ProjectCreate, type ProjectUpdate } from "@/database/data-transfer-object/project_dto";
@@ -10,7 +7,7 @@ import { schemas } from "@/database/schema";
 import { and, eq, type SQL } from "drizzle-orm";
 import { authPlugin } from "@/modules/auth_plugin";
 import { logError } from "@/modules/logger";
-import { handleSaveProject } from "./handlers";
+import { handleSaveProject, handleUnsaveProject } from "./handlers";
 
 export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
   .use(authPlugin)
@@ -39,9 +36,15 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
     auth: true,
   })
   .post("/actions", async ({ body, user, set }) => {
-    if (body.type === "SAVE_PROJECT") {
+    if (user.role !== "PROGRAMMER") {
+      set.status = 403;
+      return { error: "Only programmers can save projects" };
+    }
+
+    if (body.type === "SAVE_PROJECT" || body.type === "UNSAVE_PROJECT") {
       try {
-        await handleSaveProject({
+        const handler = body.type === "SAVE_PROJECT" ? handleSaveProject : handleUnsaveProject;
+        await handler({
           userId: user.id,
           userRole: user.role,
           projectId: (body.payload as { projectId: string }).projectId,
@@ -61,7 +64,7 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
     return { error: "Unknown action" };
   }, {
     body: z.object({
-      type: z.string(),
+      type: z.enum(["SAVE_PROJECT", "UNSAVE_PROJECT"]),
       payload: z.object({
         projectId: z.string(),
       }),
@@ -69,6 +72,7 @@ export const ProjectsRouter = new Elysia({ prefix: "/api/v1/projects" })
     response: {
       200: z.object({ success: z.boolean() }),
       400: ErrorSchema,
+      403: ErrorSchema,
       500: ErrorSchema,
     },
     tags: ["Projects"],

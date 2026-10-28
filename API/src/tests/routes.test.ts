@@ -1,7 +1,6 @@
 import { describe, expect, test, beforeAll, afterAll } from "bun:test";
 import { Elysia } from "elysia";
 import { ProjectsRouter } from "../routes/v1/projects";
-import { ProjectActionRouter } from "../routes/v1/project_action";
 import { EventsRouter } from "../routes/v1/events";
 import { UserPreferenceRouter } from "../routes/v1/user_preferences";
 import { ReviewRouter } from "../routes/v1/review";
@@ -19,7 +18,6 @@ describe("API Routes Integration Tests", () => {
     app = new Elysia()
       .use(authPlugin)
       .use(ProjectsRouter)
-      .use(ProjectActionRouter)
       .use(EventsRouter)
       .use(UserPreferenceRouter)
       .use(ReviewRouter)
@@ -66,27 +64,6 @@ describe("API Routes Integration Tests", () => {
         body: JSON.stringify({}),
       });
       expect(response.status).toBe(422);
-    });
-
-    test("POST /api/v1/project_action requires authentication (401)", async () => {
-      const response = await fetch(`http://localhost:${serverPort}/api/v1/project_action`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "SAVE_PROJECT", payload: { title: "Test" } }),
-      });
-      expect(response.status).toBe(401);
-    });
-
-    test("POST /api/v1/project_action rejects unknown actions (400)", async () => {
-      const response = await fetch(`http://localhost:${serverPort}/api/v1/project_action`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Idempotency-Key": "550e8400-e29b-41d4-a716-446655440001",
-        },
-        body: JSON.stringify({ action: "ARCHIVE_PROJECT", payload: {} }),
-      });
-      expect([400, 401]).toContain(response.status);
     });
 
     test("GET /api/v1/events/stream requires authentication (401)", async () => {

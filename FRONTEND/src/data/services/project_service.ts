@@ -1,4 +1,4 @@
-import type { ListParams, ProjectActionAccepted, ProjectActionType, ProjectCreate, ProjectDTO, ProjectUpdate } from "@/data/types/database";
+import type { ListParams, ProjectCreate, ProjectDTO, ProjectUpdate } from "@/data/types/database";
 import { apiClient } from "@/utils/api_client";
 
 const endpoints = ["/api/v1/projects"];
@@ -27,21 +27,10 @@ export const projectService = {
       type: "SAVE_PROJECT",
       payload: { projectId },
     }),
+  unsaveProject: (projectId: string): Promise<{ success: boolean }> =>
+    apiClient.post<{ success: boolean }>(`${endpoints[0]}/actions`, {
+      type: "UNSAVE_PROJECT",
+      payload: { projectId },
+    }),
 };
 
-export const projectActions = {
-  send: async (action: ProjectActionType, payload: Record<string, unknown>, idempotencyKey?: string): Promise<ProjectActionAccepted> => {
-    return apiClient.post<ProjectActionAccepted>(
-      "/api/v1/project_action",
-      { action, payload },
-      { "Idempotency-Key": idempotencyKey ?? crypto.randomUUID() },
-    );
-  },
-
-  saveProject: (payload: ProjectCreate) => projectActions.send("SAVE_PROJECT", payload as unknown as Record<string, unknown>),
-
-  updateProject: (projectId: string, payload: ProjectUpdate) =>
-    projectActions.send("UPDATE_PROJECT", { projectId, ...payload } as unknown as Record<string, unknown>),
-
-  deleteProject: (projectId: string) => projectActions.send("DELETE_PROJECT", { projectId }),
-}

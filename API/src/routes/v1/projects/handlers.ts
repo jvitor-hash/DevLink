@@ -13,8 +13,8 @@ export const handleSaveProject = async (
   const userRole = typeof data === "object" ? data.userRole : (maybeUserRole ?? "");
   const projectId = typeof data === "object" ? data.projectId : (maybeProjectId ?? "");
 
-  // 1. Validate if user is a programmer or admin
-  if (![UserRoleEnum.enum.PROGRAMMER, UserRoleEnum.enum.ADMIN].includes(userRole as "PROGRAMMER" | "ADMIN")) {
+  // Only programmers may save projects.
+  if (userRole !== UserRoleEnum.enum.PROGRAMMER) {
     return;
   }
 
@@ -66,6 +66,22 @@ export const handleSaveProject = async (
       isRead: false,
       archived: false,
     });
+  });
+};
+
+export const handleUnsaveProject = async ({ userId, userRole, projectId }: { userId: string; userRole: string; projectId: string }): Promise<void> => {
+  if (userRole !== UserRoleEnum.enum.PROGRAMMER || !userId || !projectId) return;
+
+  await db.transaction(async (tx) => {
+    const deleted = await tx.delete(schemas.saveProject)
+      .where(and(eq(schemas.saveProject.userId, userId), eq(schemas.saveProject.projectId, projectId)))
+      .returning({ id: schemas.saveProject.id });
+
+    if (deleted.length) {
+      await tx.update(schemas.project)
+        .set({ saveTotalCount: sql`GREATEST(${schemas.project.saveTotalCount} - 1, 0)` })
+        .where(eq(schemas.project.id, projectId));
+    }
   });
 };
 

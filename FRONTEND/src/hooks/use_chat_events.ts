@@ -69,10 +69,10 @@ export const acceptChatEvent = (seen: Set<string>, raw: RawChatEvent, conversati
       conversationId: eventConversationId,
       content,
       userId,
-      validMessageType,
-      validOfferStatus,
-      validOfferMoney,
-      validOfferDeadline,
+      messageType: validMessageType,
+      offerStatus: validOfferStatus,
+      offerMoney: validOfferMoney,
+      offerDeadline: validOfferDeadline,
     },
   };
 };

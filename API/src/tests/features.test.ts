@@ -8,7 +8,6 @@ import {
   UserPreferenceUpdateSchema,
 } from "../database/data-transfer-object/user_preferences_dto";
 import { ReviewCreateSchema } from "../database/data-transfer-object/review_dto";
-import { ProjectActionRequestSchema } from "../database/data-transfer-object/project_action_dto";
 
 const baseProject = {
   title: "Budget Range Project",
@@ -94,15 +93,7 @@ describe("User Preference Constraint Validation", () => {
   });
 });
 
-describe("Notification and Review Enum Updates", () => {
-  test("ProjectActionRequestSchema should accept the action envelope", () => {
-    const result = ProjectActionRequestSchema.safeParse({
-      action: "SAVE_PROJECT",
-      payload: { title: "Novo projeto" },
-    });
-    expect(result.success).toBe(true);
-  });
-
+describe("Review Validation", () => {
   test("ReviewCreateSchema should accept rating 0 and 5", () => {
     const zero = ReviewCreateSchema.safeParse({
       projectId: "550e8400-e29b-41d4-a716-446655440000",

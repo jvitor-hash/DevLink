@@ -65,7 +65,7 @@ type UseProjectEventsOptions = {
 // to the local mock bus instead, so demos work without a backend.
 export function useProjectEvents(projectId: string | null, options: UseProjectEventsOptions): boolean {
   const { onEvent, scope = "project" } = options;
-  const [_, setStreamConnected] = useState<boolean>(false);
+  const [streamConnected, setStreamConnected] = useState<boolean>(false);
   const seenRef = useRef<Set<string>>(new Set());
   const onEventRef = useRef<(event: ProjectEvent) => void>(options.onEvent);
 
@@ -118,4 +118,6 @@ export function useProjectEvents(projectId: string | null, options: UseProjectEv
 
   // Nothing to watch means disconnected; in mock mode the bus is connected by definition.
   if (!isActive) return false;
+
+  return streamConnected;
 }

@@ -2,12 +2,13 @@ import SearchFiltersLayout from "@/components/ui/search_filters";
 import { EMPTY_FILTERS, HIDDEN_PROJECT_STATUSES, type ProjectFilters } from "@/data/types/project_filters";
 import Input from "@/components/form/input_component";
 import ProjectPreview from "@/components/ui/project_ticket_component";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLoaderData, useNavigate, useSearchParams, type LoaderFunctionArgs } from "react-router-dom";
 import { type ProjectDTO, type ListParams } from "@/data/types/database";
 import { projectService } from "@/data/services/project_service";
 import { ActiveFiltersBanner } from "@/components/ui/active_filters_banner";
 import Button from "@/components/ui/button_component";
+import { useCurrentUser } from "@/hooks/use_current_user";
 
 const PAGE_SIZE = 10;
 
@@ -102,6 +103,45 @@ export async function ProjectLoader({ request }: LoaderFunctionArgs): Promise<Pr
 
 export default function ProjectPage() {
   const { projects, page, hasNextPage } = useLoaderData<typeof ProjectLoader>();
+  const user = useCurrentUser();
+  const [savedProjectIds, setSavedProjectIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (user?.role !== "PROGRAMMER") {
+      setSavedProjectIds(new Set());
+      return;
+    }
+
+    let cancelled = false;
+    projectService.listSaved({ limit: 100 }).then((savedProjects) => {
+      if (!cancelled) setSavedProjectIds(new Set(savedProjects.map((project) => project.id)));
+    }).catch((error) => console.error("Failed to load saved projects", error));
+
+    return () => { cancelled = true; };
+  }, [user?.role]);
+
+  const toggleSaved = async (projectId: string): Promise<void> => {
+    if (user?.role !== "PROGRAMMER") return;
+
+    const isSaved = savedProjectIds.has(projectId);
+    setSavedProjectIds((current) => {
+      const next = new Set(current);
+      if (isSaved) next.delete(projectId); else next.add(projectId);
+      return next;
+    });
+
+    try {
+      if (isSaved) await projectService.unsaveProject(projectId);
+      else await projectService.saveProject(projectId);
+    } catch (error) {
+      setSavedProjectIds((current) => {
+        const next = new Set(current);
+        if (isSaved) next.add(projectId); else next.delete(projectId);
+        return next;
+      });
+      console.error("Failed to update saved project", error);
+    }
+  };
   const [filters, setFilters] = useState<ProjectFilters>(EMPTY_FILTERS);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -233,6 +273,9 @@ export default function ProjectPage() {
                 status={project.status}
                 maxBudget={project.maxBudget}
                 minBudget={project.minBudget}
+                saved={savedProjectIds.has(project.id)}
+                saveCount={project.saveTotalCount}
+                onToggleSaved={() => { void toggleSaved(project.id); }}
               />
             ))
           ) : (

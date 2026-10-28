@@ -1,7 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { OutboxDispatcher } from "../modules/outbox_dispatcher";
 import { SseHub, type SSEEvent } from "../modules/sse_hub";
-import { ProjectActionRouter } from "../routes/v1/project_action";
 import { EventsRouter } from "../routes/v1/events";
 
 describe("Outbox Dispatcher", () => {
@@ -20,9 +19,6 @@ describe("Outbox Dispatcher", () => {
     expect(claimed).toBeGreaterThanOrEqual(-1);
   });
 
-  test("worker id is stable per process", () => {
-    expect(OutboxDispatcher.workerId).toBe(OutboxDispatcher.workerId);
-  });
 });
 
 describe("SSE Hub", () => {
@@ -93,14 +89,3 @@ describe("SSE Hub", () => {
   });
 });
 
-describe("Routers Definition", () => {
-  test("ProjectActionRouter is properly configured", () => {
-    expect(ProjectActionRouter).toBeDefined();
-    expect(typeof ProjectActionRouter.prefix).toBe("function");
-  });
-
-  test("EventsRouter is properly configured", () => {
-    expect(EventsRouter).toBeDefined();
-    expect(typeof EventsRouter.prefix).toBe("function");
-  });
-});

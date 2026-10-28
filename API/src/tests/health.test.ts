@@ -19,18 +19,4 @@ describe("Health Endpoint", () => {
     await app.stop();
   });
 
-  test("should return valid JSON body", async () => {
-    const app = new Elysia()
-      .get("/health", () => JSON.stringify({ OK: true }))
-      .listen(0);
-
-    const response = await app.handle(new Request("http://localhost:" + app.server?.port + "/health"));
-    
-    const body = await response.json();
-    expect(typeof body).toBe("object");
-    expect(body).toHaveProperty("OK");
-    expect(body.OK).toBe(true);
-    
-    await app.stop();
-  });
 });

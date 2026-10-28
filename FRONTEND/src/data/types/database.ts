@@ -422,11 +422,13 @@ export interface ChatMessageEvent {
 
 export interface ProjectEvent {
   id: string;
-  type: "project.saved" | "project.updated" | "project.deleted";
+  type: ProjectEventType;
   aggregateType: string;
   aggregateId: string;
   payload: Record<string, unknown>;
 }
+
+export type ProjectEventType = "project.saved" | "project.updated" | "project.deleted";
 
 // Public User Models
 export interface PublicUserDTO {
