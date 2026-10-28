@@ -3,15 +3,15 @@ import { z } from "zod";
 import { authPlugin } from "@/modules/auth_plugin";
 import { ErrorSchema } from "@/modules/error_schema";
 import { logError, logger } from "@/modules/logger";
-import { ActionError, handlers } from "./handlers";
-import { ProjectActionRateLimiter } from "./rate_limiter";
-
-const BODY_SCHEMA = z.object({
-  action: z.enum(["SAVE_PROJECT", "UPDATE_PROJECT", "DELETE_PROJECT"]),
-  payload: z.record(z.string(), z.unknown()),
-});
+import { ActionError, deleteProjectHandler, saveProjectHandler, updateProjectHandler } from "./handlers";
 
 const IDEMPOTENCY_KEY_MAX = 200;
+
+const handlers: Record<string, CallableFunction> = {
+  "project.save_project": saveProjectHandler,
+  "project.update_project": updateProjectHandler,
+  "project.delete_project": deleteProjectHandler,
+}
 
 export const ProjectActionRouter = new Elysia({ prefix: "/api/v1/project_action" })
   .use(authPlugin)
@@ -23,19 +23,7 @@ export const ProjectActionRouter = new Elysia({ prefix: "/api/v1/project_action"
       return { error: "Idempotency-Key too long" };
     }
 
-    if (!ProjectActionRateLimiter.consume(user.id)) {
-      set.status = 429;
-      return { error: "Too many actions, slow down" };
-    }
-
-    const parsed = BODY_SCHEMA.safeParse(body);
-
-    if (!parsed.success) {
-      set.status = 400;
-      return { error: "Invalid action payload" };
-    }
-
-    const handler = handlers[parsed.data.action];
+    const handler = handlers[body.action];
 
     if (!handler) {
       set.status = 400;
@@ -45,11 +33,11 @@ export const ProjectActionRouter = new Elysia({ prefix: "/api/v1/project_action"
     try {
       const result = await handler({
         userId: user.id,
-        payload: parsed.data.payload,
+        payload: body.payload,
         idempotencyKey,
       });
 
-      logger.info("[project_action]", parsed.data.action, "actionId:", result.actionId, "eventId:", result.eventId);
+      logger.info("[project_action] - ", body.action, "eventId:", result.eventId);
 
       set.status = 202;
       return result;
@@ -75,8 +63,8 @@ export const ProjectActionRouter = new Elysia({ prefix: "/api/v1/project_action"
     }),
     response: {
       202: z.object({
-        actionId: z.string().uuid(),
-        eventId: z.string().uuid(),
+        actionId: z.uuid(),
+        eventId: z.uuid(),
         status: z.literal("PENDING"),
       }),
       400: ErrorSchema,
@@ -89,6 +77,3 @@ export const ProjectActionRouter = new Elysia({ prefix: "/api/v1/project_action"
     tags: ["Project Actions"],
     auth: true,
   });
-
-export type ProjectActionBody = z.infer<typeof BODY_SCHEMA>;
-

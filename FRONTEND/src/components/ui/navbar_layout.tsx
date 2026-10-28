@@ -59,7 +59,7 @@ export function NavbarLayout({ onOpenLogin } : NavbarLayoutProps) : React.ReactE
 
           <div>
             <h2>
-              <Link to="/" className="text-xl">DevLink</Link>
+              <Link to="/" className="text-xl"><img src="Logo.png" alt="DevLink" width="100" height="150"></img></Link>
             </h2>
           </div>
 

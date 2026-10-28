@@ -5,7 +5,6 @@ import { projectService } from "@/data/services/project_service";
 import type { ProjectDTO, ProjectEvent } from "@/data/types/database";
 import { useLoaderData, type LoaderFunctionArgs } from "react-router-dom";
 import { useProjectEvents } from "@/hooks/use_project_events";
-import { reportError } from "@/utils/report_error";
 import { useCurrentUser } from "@/hooks/use_current_user";
 
 export async function ProjectOpenLoader({ params }: LoaderFunctionArgs): Promise<ProjectDTO> {
@@ -39,7 +38,7 @@ export default function ProjectOpenPage() {
       .then((fresh) => {
         if (fresh) setProject(fresh);
       })
-      .catch((error: unknown) => reportError("project_open: refetch após evento", error, "Não foi possível atualizar o projeto."));
+      .catch((error: unknown) => console.error("project_open: refetch após evento", error, "Não foi possível atualizar o projeto."));
   }, [project.id]);
 
   useProjectEvents(project.id, { onEvent: handleEvent });

@@ -25,7 +25,9 @@ export default function ConversationHistory({ projectId }: ConversationHistoryPr
     <div className="flex-2 border-r border-(--border-subtle)">
       <header className="flex p-3 justify-between items-center border-b border-(--border-subtle)">
         <p className="text-(--text-primary) text-base">Chat Conversations</p>
-        <button className="border-none cursor-pointer hover:bg-(--surface-3)/95 p-1 transition-colors" onClick={close}><X size={16} color="var(--text-primary)" /></button>
+        <button className="border-none cursor-pointer hover:bg-(--surface-3)/95 p-1 transition-colors" onClick={close}>
+          <X size={16} color="var(--text-primary)" />
+        </button>
       </header>
       <div className="flex flex-col gap-2 overflow-y-auto">
         {conversations.length === 0 && <div className="p-4 text-sm text-(--text-muted) text-center">No conversations yet.</div>}

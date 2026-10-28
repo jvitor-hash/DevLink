@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
 import { Box, CheckCircle, Trash2 } from "react-feather";
-
 import { todoService } from "@/data/services/todo_service";
 import { ticketService } from "@/data/services/ticket_service";
-
-import { reportError } from "@/utils/report_error";
 import { toastStore } from "@/utils/toast_store";
 import { useTicketMetadata } from "@/hooks/use_ticket_metadata";
 import KanbanBoard from "./kanban_board";
@@ -35,11 +32,11 @@ export default function ProjectWorkPanel({ projectId }: Props) {
 
     todoService.listByProject(projectId).then((rows) => {
       if (!cancelled) setTodos(rows);
-    }).catch((error: unknown) => reportError("work_panel: carregar todos", error));
+    }).catch((error: unknown) => console.error("work_panel: carregar todos", error));
 
     ticketService.listByProject(projectId).then((rows) => {
       if (!cancelled) setTickets(rows);
-    }).catch((error: unknown) => reportError("work_panel: carregar tickets", error));
+    }).catch((error: unknown) => console.error("work_panel: carregar tickets", error));
 
     return () => {
       cancelled = true;
@@ -57,7 +54,7 @@ export default function ProjectWorkPanel({ projectId }: Props) {
       const created = await todoService.create({ projectId, title });
       setTodos((current) => [...current, created]);
     } catch (error) {
-      reportError("work_panel: criar item", error);
+      console.error("work_panel: criar item", error);
       return;
     }
 
@@ -72,7 +69,7 @@ export default function ProjectWorkPanel({ projectId }: Props) {
     try {
       await todoService.update(todo.id, { isDone: nextDone });
     } catch (error) {
-      reportError("work_panel: atualizar item", error);
+      console.error("work_panel: atualizar item", error);
       setTodos((current) => current.map((row) => (row.id === todo.id ? todo : row)));
     }
   };
@@ -85,7 +82,7 @@ export default function ProjectWorkPanel({ projectId }: Props) {
     try {
       await todoService.remove(todo.id);
     } catch (error) {
-      reportError("work_panel: excluir item", error);
+      console.error("work_panel: excluir item", error);
       setTodos(snapshot);
     }
   };
@@ -101,7 +98,7 @@ export default function ProjectWorkPanel({ projectId }: Props) {
     try {
       await ticketService.update(ticketId, { status, position });
     } catch (error) {
-      reportError("board: mover cartão", error);
+      console.error("board: mover cartão", error);
       setTickets(snapshot);
     }
   };
@@ -121,7 +118,7 @@ export default function ProjectWorkPanel({ projectId }: Props) {
       setMeta(created.id, { tags: values.tags, priority: values.priority });
       toastStore.success("Cartão criado.");
     } catch (error) {
-      reportError("board: criar cartão", error);
+      console.error("board: criar cartão", error);
     }
   };
 
@@ -151,7 +148,7 @@ export default function ProjectWorkPanel({ projectId }: Props) {
 
       setTickets((current) => current.map((ticket) => (ticket.id === target.id ? updated : ticket)));
     } catch (error) {
-      reportError("board: salvar cartão", error);
+      console.error("board: salvar cartão", error);
       setTickets(snapshot);
     }
   };
@@ -171,7 +168,7 @@ export default function ProjectWorkPanel({ projectId }: Props) {
       await ticketService.remove(target.id);
       toastStore.success("Cartão excluído.");
     } catch (error) {
-      reportError("board: excluir cartão", error);
+      console.error("board: excluir cartão", error);
       setTickets(snapshot);
     }
   };

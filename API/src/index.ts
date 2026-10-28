@@ -18,6 +18,7 @@ import { ClientAuthRouter } from "./routes/v1/client";
 import { ProgrammerAuthRouter } from "./routes/v1/programmer";
 import { logger, loggerPlugin } from "./modules/logger";
 import { SseHub } from "./modules/sse_hub";
+import { OutboxDispatcher } from "./modules/outbox_dispatcher";
 
 const schema = await auth.api.generateOpenAPISchema();
 
@@ -87,6 +88,12 @@ const app = new Elysia()
 
 // Keep SSE connections alive through reverse proxies and load balancers.
 // The heartbeat interval is shorter than common idle connection timeouts.
+OutboxDispatcher.startOutboxDispatcher();
+const heartbeatTimer = SseHub.startHeartbeats(20_000);
+process.on("exit", () => {
+  OutboxDispatcher.stopOutboxDispatcher();
+  clearInterval(heartbeatTimer);
+});
 SseHub.startHeartbeats();
 
 console.log(`Elysia is running at ${app.server?.hostname}:${app.server?.port}`);

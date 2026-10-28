@@ -247,25 +247,25 @@ export default function MessageHistory({ conversationId, projectId }: MessageHis
         <footer className="relative flex items-center gap-2 border-t border-(--border-subtle) p-3">
           {offerOpen && (
             <div className="absolute bottom-16 right-4 bg-(--surface-2) border border-(--border-subtle) rounded-sm p-3 shadow-lg z-50">
-              <p className="text-sm font-semibold mb-2">Negotiation Proposal</p>
+              <p className="text-sm mb-2 text-white">Negotiation Proposal</p>
               <input
                 type="text"
                 placeholder="Amount"
                 value={offerMoney}
                 onChange={(event) => setOfferMoney(event.target.value)}
-                className="w-full mb-1 rounded-sm border border-(--border-subtle) p-1 text-sm"
+                className="w-full mb-1 rounded-sm border border-(--border-subtle) p-1 text-white"
               />
               <input
                 type="datetime-local"
                 value={offerDeadline}
                 onChange={(event) => setOfferDeadline(event.target.value)}
-                className="w-full mb-1 rounded-sm border border-(--border-subtle) p-1 text-sm"
+                className="w-full mb-1 rounded-sm border border-(--border-subtle) p-1 text-white"
               />
               <textarea
                 placeholder="Optional message"
                 value={offerMessage}
                 onChange={(event) => setOfferMessage(event.target.value)}
-                className="w-full mb-2 rounded-sm border border-(--border-subtle) p-1 text-sm"
+                className="w-full mb-2 rounded-sm border border-(--border-subtle) p-1 text-white"
               />
               <button
                 onClick={() => sendOffer()}

@@ -5,7 +5,6 @@ import { schemas } from "@/database/schema";
 import { ProjectCreateSchema, ProjectUpdateSchema } from "@/database/data-transfer-object/project_dto";
 
 export type HandlerResult = {
-  actionId: string;
   eventId: string;
   status: "PENDING";
 };
@@ -46,7 +45,7 @@ const assertProjectOwnership = async (tx: Tx, projectId: string, userId: string)
   }
 };
 
-const saveProjectHandler = async ({ userId, payload, idempotencyKey }: HandlerArgs): Promise<HandlerResult> => {
+export const saveProjectHandler = async ({ userId, payload, idempotencyKey }: HandlerArgs): Promise<HandlerResult> => {
   const data = SaveProjectSchema.parse(payload);
 
   return db.transaction(async (tx) => {
@@ -55,20 +54,10 @@ const saveProjectHandler = async ({ userId, payload, idempotencyKey }: HandlerAr
       .values({ ...data, clientId: userId })
       .returning();
 
-    const [action] = await tx
-      .insert(schemas.projectActions)
-      .values({
-        action_type: "SAVE_PROJECT",
-        user_id: userId,
-        project_id: project.id,
-        payload: data,
-      })
-      .returning();
-
     const [event] = await tx
-      .insert(schemas.outboxEvents)
+      .insert(schemas.outbox)
       .values({
-        event_type: "project.saved",
+        event_type: "project.save_project",
         aggregate_type: "project",
         aggregate_id: project.id,
         payload: { projectId: project.id, title: project.title, savedBy: userId, audience: [userId] },
@@ -77,11 +66,11 @@ const saveProjectHandler = async ({ userId, payload, idempotencyKey }: HandlerAr
       })
       .returning();
 
-    return { actionId: action.id, eventId: event.id, status: "PENDING" as const };
+    return { eventId: event.id, status: "PENDING" as const };
   });
 };
 
-const updateProjectHandler = async ({ userId, payload, idempotencyKey }: HandlerArgs): Promise<HandlerResult> => {
+export const updateProjectHandler = async ({ userId, payload, idempotencyKey }: HandlerArgs): Promise<HandlerResult> => {
   const raw = (payload ?? {}) as Record<string, unknown>;
   const projectId = z.uuid().parse(raw.projectId);
   const data = ProjectUpdateSchema.parse(payload);
@@ -97,20 +86,10 @@ const updateProjectHandler = async ({ userId, payload, idempotencyKey }: Handler
       .where(eq(schemas.project.id, projectId))
       .returning();
 
-    const [action] = await tx
-      .insert(schemas.projectActions)
-      .values({
-        action_type: "UPDATE_PROJECT",
-        user_id: userId,
-        project_id: projectId,
-        payload: updates,
-      })
-      .returning();
-
     const [event] = await tx
-      .insert(schemas.outboxEvents)
+      .insert(schemas.outbox)
       .values({
-        event_type: "project.updated",
+        event_type: "project.update_project",
         aggregate_type: "project",
         aggregate_id: project.id,
         payload: {
@@ -124,11 +103,11 @@ const updateProjectHandler = async ({ userId, payload, idempotencyKey }: Handler
       })
       .returning();
 
-    return { actionId: action.id, eventId: event.id, status: "PENDING" as const };
+    return { eventId: event.id, status: "PENDING" as const };
   });
 };
 
-const deleteProjectHandler = async ({ userId, payload, idempotencyKey }: HandlerArgs): Promise<HandlerResult> => {
+export const deleteProjectHandler = async ({ userId, payload, idempotencyKey }: HandlerArgs): Promise<HandlerResult> => {
   const raw = (payload ?? {}) as Record<string, unknown>;
   const projectId = z.uuid().parse(raw.projectId);
 
@@ -140,20 +119,10 @@ const deleteProjectHandler = async ({ userId, payload, idempotencyKey }: Handler
       .where(eq(schemas.project.id, projectId))
       .returning();
 
-    const [action] = await tx
-      .insert(schemas.projectActions)
-      .values({
-        action_type: "DELETE_PROJECT",
-        user_id: userId,
-        project_id: projectId,
-        payload: { projectId },
-      })
-      .returning();
-
     const [event] = await tx
-      .insert(schemas.outboxEvents)
+      .insert(schemas.outbox)
       .values({
-        event_type: "project.deleted",
+        event_type: "project.delete_project",
         aggregate_type: "project",
         aggregate_id: projectId,
         payload: {
@@ -166,15 +135,6 @@ const deleteProjectHandler = async ({ userId, payload, idempotencyKey }: Handler
       })
       .returning();
 
-    return { actionId: action.id, eventId: event.id, status: "PENDING" as const };
+    return { eventId: event.id, status: "PENDING" as const };
   });
 };
-
-export const handlers = {
-  SAVE_PROJECT: saveProjectHandler,
-  UPDATE_PROJECT: updateProjectHandler,
-  DELETE_PROJECT: deleteProjectHandler,
-};
-
-export type ProjectActionName = keyof typeof handlers;
-
