@@ -1,4 +1,4 @@
-import { logger } from "./logger";
+import { logger } from "@/modules/logger";
 
 export type SSEEvent = {
   id: string;

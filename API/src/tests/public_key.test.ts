@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { eq } from "drizzle-orm";
-import { UserService } from "../routes/v1/users/service";
+import { UserRepository as UserService } from "../infrastructure/database/repositories/user_repository";
 import { db } from "../client";
 import { schemas } from "../database/schema";
 

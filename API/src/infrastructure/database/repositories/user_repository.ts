@@ -1,8 +1,9 @@
 import { schemas } from "@/database/schema";
 import { and, desc, eq, ilike, sql, type SQL } from "drizzle-orm";
 import { db } from "@/client";
+import { ValidationError } from "@/shared/errors/domain_errors";
 
-export const UserService = {
+export const UserRepository = {
   /**
    * Search users by name. Empty term returns the most recently active users.
    */
@@ -93,23 +94,23 @@ export const UserService = {
 
     if (data.name !== undefined) {
       const name = data.name.trim();
-      if (name.length < 1 || name.length > 120) throw new Error("Name must be between 1 and 120 characters");
+      if (name.length < 1 || name.length > 120) throw new ValidationError("Name must be between 1 and 120 characters");
       patch.name = name;
     }
 
     if (data.bio !== undefined) {
       const bio = data.bio?.trim() ?? null;
-      if (bio && bio.length > 500) throw new Error("Bio must be at most 500 characters");
+      if (bio && bio.length > 500) throw new ValidationError("Bio must be at most 500 characters");
       patch.bio = bio;
     }
 
     if (data.image !== undefined) {
       const image = data.image?.trim() ?? null;
-      if (image && image.length > 2048) throw new Error("Image must be at most 2048 characters");
+      if (image && image.length > 2048) throw new ValidationError("Image must be at most 2048 characters");
       patch.image = image;
     }
 
-    if (Object.keys(patch).length === 0) throw new Error("No fields to update");
+    if (Object.keys(patch).length === 0) throw new ValidationError("No fields to update");
 
     const rows = await db
       .update(schemas.user)

@@ -1,9 +1,38 @@
+import { db } from "@/client";
 import { schemas } from "@/database/schema";
-import { crud } from "@/modules/crud_factory";
+import { crud } from "@/infrastructure/database/crud_factory";
 import { and, eq, gte, lte, inArray, notInArray, or, sql, type SQL } from "drizzle-orm";
 
-export const ProjectService = {
+export const ProjectRepository = {
   ...crud(schemas.project),
+
+  findById: (id: string): Promise<typeof schemas.project.$inferSelect> => db
+    .select()
+    .from(schemas.project)
+    .where(eq(schemas.project.id, id))
+    .limit(1)
+    .then(([project]) => project as typeof schemas.project.$inferSelect),
+
+  updateOwned: async (id: string, clientId: string, data: Record<string, unknown>): Promise<typeof schemas.project.$inferSelect> => {
+    const [project] = await db
+      .update(schemas.project)
+      .set(data)
+      .where(and(eq(schemas.project.id, id), eq(schemas.project.clientId, clientId)))
+      .returning();
+
+    if (!project) throw new Error("Project not found or unauthorized");
+    return project;
+  },
+
+  removeOwned: async (id: string, clientId: string): Promise<typeof schemas.project.$inferSelect> => {
+    const [project] = await db
+      .delete(schemas.project)
+      .where(and(eq(schemas.project.id, id), eq(schemas.project.clientId, clientId)))
+      .returning();
+
+    if (!project) throw new Error("Project not found or unauthorized");
+    return project;
+  },
 
   findFiltered: async (
     userId: string | null,
@@ -161,12 +190,7 @@ export const ProjectService = {
 
     await db
       .update(schemas.project)
-      .set({
-        saveTotalCount: sql`${schemas.project.saveTotalCount} + 1`,
-        lastViewedAt: new Date(),
-      })
+      .set({ lastViewedAt: new Date() })
       .where(eq(schemas.project.id, projectId));
   },
 };
-
-import { db } from "@/client";

@@ -1,10 +1,12 @@
 import { schemas } from "@/database/schema";
-import { crud } from "@/modules/crud_factory";
-import { eq, desc } from "drizzle-orm";
+import { crud } from "@/infrastructure/database/crud_factory";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/client";
 
-export const UserPreferenceService = {
+export const UserPreferenceRepository = {
   ...crud(schemas.userPreference),
+  findByIdForUser: async (id: string, userId: string) => (await db.select().from(schemas.userPreference).where(and(eq(schemas.userPreference.id, id), eq(schemas.userPreference.userId, userId))).limit(1))[0],
+  removeByUser: async (id: string, userId: string) => (await db.delete(schemas.userPreference).where(and(eq(schemas.userPreference.id, id), eq(schemas.userPreference.userId, userId))).returning())[0],
 
   /**
    * Find all preferences for a specific user (should be at most one)

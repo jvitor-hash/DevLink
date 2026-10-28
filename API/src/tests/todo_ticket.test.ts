@@ -11,6 +11,26 @@ import {
 } from "../database/data-transfer-object/ticket_dto";
 import { TodoRouter } from "../routes/v1/todo";
 import { TicketRouter } from "../routes/v1/ticket";
+import { createWorkItemController } from "../domains/work_items/controller";
+import type { WorkItemService } from "../domains/work_items/ports";
+
+const user = { id: "user-1" };
+const todo = { id: "todo-1", projectId: "project-1", title: "Write tests" };
+const createSet = () => ({ headers: {}, status: undefined as number | undefined });
+
+const createMockService = (): WorkItemService<
+  { projectId: string; title: string },
+  { title?: string },
+  typeof todo,
+  Record<string, number>
+> => ({
+  createForProject: async () => todo,
+  findAllByUser: async () => [todo],
+  findAllByProject: async () => [todo],
+  countByProjects: async () => ({ "project-1": 1 }),
+  updateForUser: async () => todo,
+  removeForUser: async () => todo,
+});
 
 describe("Todo Schema Validation", () => {
   test("TodoCreateSchema should validate todo payload", () => {
@@ -113,5 +133,50 @@ describe("Todo and Ticket Route Definition", () => {
   test("TicketRouter is properly configured", () => {
     expect(TicketRouter).toBeDefined();
     expect(typeof TicketRouter.prefix).toBe("function");
+  });
+});
+
+describe("Shared Work Item Controller", () => {
+  test("delegates creation with the authenticated user as creator", async () => {
+    const service = createMockService();
+    const controller = createWorkItemController(service, "todo");
+    const set = createSet();
+
+    const result = await controller.create({
+      body: { projectId: "project-1", title: "Write tests" },
+      user,
+      set,
+    });
+
+    expect(result).toEqual(todo);
+    expect(set.status).toBe(201);
+  });
+
+  test("returns a forbidden response when creation is unauthorized", async () => {
+    const service = createMockService();
+    service.createForProject = async () => {
+      throw new Error("Project not found or unauthorized");
+    };
+    const controller = createWorkItemController(service, "todo");
+    const set = createSet();
+
+    const result = await controller.create({
+      body: { projectId: "project-1", title: "Write tests" },
+      user,
+      set,
+    });
+
+    expect(result).toEqual({ error: "Not a project participant" });
+    expect(set.status).toBe(403);
+  });
+
+  test("delegates list, update, and remove operations", async () => {
+    const service = createMockService();
+    const controller = createWorkItemController(service, "todo");
+    const set = createSet();
+
+    expect(await controller.list({ query: { limit: 10, offset: 0 }, user, set })).toEqual([todo]);
+    expect(await controller.update({ params: { id: "todo-1" }, body: { title: "Updated" }, user, set })).toEqual(todo);
+    expect(await controller.remove({ params: { id: "todo-1" }, user, set })).toEqual(todo);
   });
 });

@@ -1,37 +1,20 @@
-import { auth } from "@/auth";
-import { db } from "@/client";
-import { schemas } from "@/database/schema";
 import { ErrorSchema } from "@/modules/error_schema";
 import { logError } from "@/modules/logger";
-import { eq } from "drizzle-orm";
+import { registerUser } from "@/app/dependencies";
 import Elysia from "elysia";
 import z from "zod";
 
 export const ProgrammerAuthRouter = new Elysia({ prefix: "/api/auth/sign-up/programmer" })
   .post("/", async ({ body, set }) => {
     try {
-      const created = await auth.api.signUpEmail({
-        body: {
-          email: body.email,
-          password: body.password,
-          name: body.name,
-        },
-        returnHeaders: true,
-      });
-
-      const [user] = await db
-        .update(schemas.user)
-        .set({ role: "PROGRAMMER" })
-        .where(eq(schemas.user.id, created.response.user.id))
-        .returning();
-
+      const created = await registerUser("PROGRAMMER", body);
       const setCookies = created.headers.getSetCookie();
       if (setCookies.length > 0) {
         set.headers["set-cookie"] = setCookies as unknown as string;
       }
 
       return {
-        user,
+        user: created.user,
       };
     } catch (error) {
       logError("POST /api/auth/sign-up/programmer", error);

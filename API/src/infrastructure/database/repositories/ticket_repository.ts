@@ -1,7 +1,8 @@
 import { schemas } from "@/database/schema";
-import { crud } from "@/modules/crud_factory";
+import { crud } from "@/infrastructure/database/crud_factory";
 import { and, asc, eq, sql, type SQL } from "drizzle-orm";
 import { db } from "@/client";
+import type { TicketCreate, TicketUpdate } from "@/database/data-transfer-object/ticket_dto";
 
 const base = crud(schemas.ticket);
 
@@ -17,7 +18,7 @@ const participantWhere = (projectId: string, userId: string): SQL<unknown> =>
     )`,
   ) as SQL<unknown>;
 
-export const TicketService = {
+export const TicketRepository = {
   ...base,
 
   // All tickets across projects where the user is client or assigned programmer.
@@ -50,7 +51,7 @@ export const TicketService = {
     return rows.map((row) => row.ticketItem);
   },
 
-  createForProject: async (data: { projectId: string; creatorId: string; title: string; description?: string | null; status?: "BACKLOG" | "IN_PROGRESS" | "REVIEW" | "DONE"; assigneeId?: string | null }) => {
+  createForProject: async (data: TicketCreate & { creatorId: string }) => {
     const project = await db
       .select({ id: schemas.project.id })
       .from(schemas.project)
@@ -86,7 +87,7 @@ export const TicketService = {
     });
   },
 
-  updateForUser: async (ticketId: string, userId: string, data: { title?: string; description?: string | null; status?: "BACKLOG" | "IN_PROGRESS" | "REVIEW" | "DONE"; position?: number; assigneeId?: string | null }) => {
+  updateForUser: async (ticketId: string, userId: string, data: TicketUpdate) => {
     return base.update(
       and(
         eq(schemas.ticket.id, ticketId),

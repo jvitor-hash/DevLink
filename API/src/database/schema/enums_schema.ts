@@ -1,8 +1,5 @@
 import { pgEnum } from "drizzle-orm/pg-core";
 
-export const outboxStatusEnum = pgEnum("outbox_status", ["PENDING", "PROCESSING", "DISPATCHED", "DEAD_LETTER"]);
-export const projectActionEnum = pgEnum("project_action", ["SAVE_PROJECT", "UPDATE_PROJECT", "DELETE_PROJECT"]);
-
 export const projectStatusEnum = pgEnum("project_status", [
   "OPEN",
   "NEGOTIATING",

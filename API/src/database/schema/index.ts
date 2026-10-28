@@ -10,7 +10,6 @@ import { user } from "./user_schema";
 import { userPreference } from "./user_preferences_schema";
 import { conversation } from "./conversation_schema";
 import { saveProject } from "./save_project_schema";
-import { outbox } from "./outbox_schema";
 
 export const schemas = {
   user,
@@ -19,7 +18,6 @@ export const schemas = {
   conversation,
   project,
   review,
-  outbox,
   notification,
   userPreference,
   message,

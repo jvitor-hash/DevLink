@@ -1,4 +1,4 @@
-import { boolean, index, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
+import { boolean, index, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { notificationTypeEnum } from "@/database/schema/enums_schema";
 import { user } from "./user_schema";
 import { project } from "./project_schema";

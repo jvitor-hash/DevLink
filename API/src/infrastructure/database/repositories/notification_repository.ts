@@ -1,10 +1,10 @@
 import { schemas } from "@/database/schema";
-import { crud } from "@/modules/crud_factory";
+import { crud } from "@/infrastructure/database/crud_factory";
 import { db } from "@/client";
 import { and, desc, eq } from "drizzle-orm";
 import type { NotificationUpdate } from "@/database/data-transfer-object/notification_dto";
 
-export const NotificationService = {
+export const NotificationRepository = {
   ...crud(schemas.notification),
 
   findAllByUser: async (userId: string, limit = 50, offset = 0): Promise<typeof schemas.notification.$inferSelect[]> => {

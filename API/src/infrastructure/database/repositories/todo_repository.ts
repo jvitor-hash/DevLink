@@ -1,7 +1,8 @@
 import { schemas } from "@/database/schema";
-import { crud } from "@/modules/crud_factory";
+import { crud } from "@/infrastructure/database/crud_factory";
 import { and, asc, eq, sql, type SQL } from "drizzle-orm";
 import { db } from "@/client";
+import type { TodoCreate, TodoUpdate } from "@/database/data-transfer-object/todo_dto";
 
 const base = crud(schemas.todo);
 
@@ -17,7 +18,7 @@ const participantWhere = (projectId: string, userId: string): SQL<unknown> =>
     )`,
   ) as SQL<unknown>;
 
-export const TodoService = {
+export const TodoRepository = {
   ...base,
 
   // All todos across projects where the user is client or assigned programmer.
@@ -50,7 +51,7 @@ export const TodoService = {
     return rows.map((row) => row.todoItem);
   },
 
-  createForProject: async (data: { projectId: string; creatorId: string; title: string; description?: string | null }) => {
+  createForProject: async (data: TodoCreate & { creatorId: string }) => {
     const project = await db
       .select({ id: schemas.project.id })
       .from(schemas.project)
@@ -71,7 +72,7 @@ export const TodoService = {
     });
   },
 
-  updateForUser: async (todoId: string, userId: string, data: { title?: string; description?: string | null; isDone?: boolean }) => {
+  updateForUser: async (todoId: string, userId: string, data: TodoUpdate) => {
     const allowed = await db
       .select({ id: schemas.todo.id })
       .from(schemas.todo)

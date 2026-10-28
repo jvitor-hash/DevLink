@@ -17,8 +17,7 @@ import { NotificationRouter } from "@/routes/v1/notification";
 import { ClientAuthRouter } from "./routes/v1/client";
 import { ProgrammerAuthRouter } from "./routes/v1/programmer";
 import { logger, loggerPlugin } from "./modules/logger";
-import { SseHub } from "./modules/sse_hub";
-import { OutboxDispatcher } from "./modules/outbox_dispatcher";
+import { SseHub } from "./infrastructure/realtime/sse_hub";
 
 const schema = await auth.api.generateOpenAPISchema();
 
@@ -36,31 +35,31 @@ const app = new Elysia()
   .trace(async ({ onHandle, onRequest, onBeforeHandle, onAfterHandle, onError }) => {
     onRequest(({ onStop }) => {
       onStop(({ elapsed }) => {
-        logger.info('request:', elapsed, 'ms')
+        logger.info("[request] received", { elapsedMs: elapsed });
       })
     })
 
     onBeforeHandle(({ onStop }) => {
       onStop(({ elapsed }) => {
-        logger.info('beforeHandle:', elapsed, 'ms')
+        logger.info("[request] before handle", { elapsedMs: elapsed });
       })
     })
 
     onHandle(({ onStop }) => {
       onStop(({ elapsed }) => {
-        logger.info('handler:', elapsed, 'ms')
+        logger.info("[request] handler complete", { elapsedMs: elapsed });
       })
     })
 
     onAfterHandle(({ onStop }) => {
       onStop(({ elapsed }) => {
-        logger.info('afterHandle:', elapsed, 'ms')
+        logger.info("[request] response complete", { elapsedMs: elapsed });
       })
     })
 
     onError(({ onStop }) => {
       onStop(({ elapsed }) => {
-        logger.error('error:', elapsed, 'ms')
+        logger.error("[request] failed", { elapsedMs: elapsed });
       })
     })
   })
@@ -88,15 +87,16 @@ const app = new Elysia()
 
 // Keep SSE connections alive through reverse proxies and load balancers.
 // The heartbeat interval is shorter than common idle connection timeouts.
-OutboxDispatcher.startOutboxDispatcher();
 const heartbeatTimer = SseHub.startHeartbeats(20_000);
 process.on("exit", () => {
-  OutboxDispatcher.stopOutboxDispatcher();
   clearInterval(heartbeatTimer);
 });
 SseHub.startHeartbeats();
 
-console.log(`Elysia is running at ${app.server?.hostname}:${app.server?.port}`);
+logger.info("[startup] API is running", {
+  hostname: app.server?.hostname,
+  port: app.server?.port,
+});
 
 export type App = typeof app;
 export { app };

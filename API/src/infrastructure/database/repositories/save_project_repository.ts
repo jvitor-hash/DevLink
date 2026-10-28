@@ -1,26 +1,12 @@
 import { db } from "@/client";
 import { schemas } from "@/database/schema";
-import { UserRoleEnum } from "@/database/data-transfer-object/enums";
 import { and, eq, sql } from "drizzle-orm";
 import { notificationEnabled } from "@/modules/notification_gate";
 
-export const handleSaveProject = async (
-  data: { userId: string; userRole: string; projectId: string } | string,
-  maybeUserRole?: string,
-  maybeProjectId?: string
-): Promise<void> => {
-  const userId = typeof data === "object" ? data.userId : data;
-  const userRole = typeof data === "object" ? data.userRole : (maybeUserRole ?? "");
-  const projectId = typeof data === "object" ? data.projectId : (maybeProjectId ?? "");
+type SaveProjectCommand = { userId: string; projectId: string };
 
-  // Only programmers may save projects.
-  if (userRole !== UserRoleEnum.enum.PROGRAMMER) {
-    return;
-  }
-
-  if (!userId || !projectId) {
-    return;
-  }
+export const SaveProjectRepository = {
+  save: async ({ userId, projectId }: SaveProjectCommand): Promise<void> => {
 
   await db.transaction(async (tx) => {
     // 2. Assign project to user
@@ -67,10 +53,9 @@ export const handleSaveProject = async (
       archived: false,
     });
   });
-};
+  },
 
-export const handleUnsaveProject = async ({ userId, userRole, projectId }: { userId: string; userRole: string; projectId: string }): Promise<void> => {
-  if (userRole !== UserRoleEnum.enum.PROGRAMMER || !userId || !projectId) return;
+  unsave: async ({ userId, projectId }: SaveProjectCommand): Promise<void> => {
 
   await db.transaction(async (tx) => {
     const deleted = await tx.delete(schemas.saveProject)
@@ -83,5 +68,6 @@ export const handleUnsaveProject = async ({ userId, userRole, projectId }: { use
         .where(eq(schemas.project.id, projectId));
     }
   });
+  },
 };
 

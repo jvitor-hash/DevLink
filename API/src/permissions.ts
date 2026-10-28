@@ -1,4 +1,4 @@
-import { createAccessControl, Role } from "better-auth/plugins";
+import { createAccessControl } from "better-auth/plugins";
 
 export const statement = {
     projects:         ["create", "update", "read", "delete", "list"],

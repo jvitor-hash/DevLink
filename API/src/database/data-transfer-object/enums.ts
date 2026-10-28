@@ -71,10 +71,4 @@ export const NotificationTypeEnum = z.enum([
     "SYSTEM"
 ]);
 
-export const OutboxEventType = z.enum([
-    "project.save_project",
-    "project.update_project",
-    "project.delete_project",
-]);
-
 export type NotificationType = z.infer<typeof NotificationTypeEnum>;
