@@ -10,11 +10,60 @@ type ReviewService = {
   removeByReviewer: (...args: any[]) => Promise<any>;
 };
 
-export const createReviewController = (service: ReviewService) => ({
-  create: ({ body, user, set }: any) => executeController(set, () => service.create({ ...body, reviewerId: user.id }), "Failed to create review", HttpStatus.INTERNAL_SERVER_ERROR),
-  list: ({ query, set }: any) => executeController(set, () => service.findAll(query.limit, query.offset), "Failed to fetch reviews", HttpStatus.INTERNAL_SERVER_ERROR),
-  byUser: ({ params, query, set }: any) => executeController(set, () => service.findReceivedByUser(params.userId, query.limit, query.offset), "Failed to fetch reviews", HttpStatus.INTERNAL_SERVER_ERROR),
-  get: ({ params, set }: any) => executeController(set, async () => requireValue(await service.findById(params.id), "Review not found"), "Failed to fetch review", HttpStatus.INTERNAL_SERVER_ERROR),
-  update: ({ params, body, user, set }: any) => executeController(set, () => service.updateByReviewer(params.id, user.id, body), "Review not found or unauthorized", HttpStatus.NOT_FOUND),
-  remove: ({ params, user, set }: any) => executeController(set, () => service.removeByReviewer(params.id, user.id), "Review not found or unauthorized", HttpStatus.NOT_FOUND),
-});
+export class ReviewControllerClass {
+  constructor(private readonly service: ReviewService) {};
+
+  public create({ body, user, set }: any) {
+    return executeController(
+      set,
+      () => this.service.create({ ...body, reviewerId: user.id }),
+      "Failed to create review",
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
+  }
+
+  public list({ query, set }: any) {
+    return executeController(
+      set,
+      () => this.service.findAll(query.limit, query.offset),
+      "Failed to fetch reviews",
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
+  }
+
+  public byUser({ params, query, set }: any) {
+    return executeController(
+      set,
+      () => this.service.findReceivedByUser(params.userId, query.limit, query.offset),
+      "Failed to fetch reviews",
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
+  }
+
+  public get({ params, set }: any) {
+    return executeController(
+      set,
+      async () => requireValue(await this.service.findById(params.id), "Review not found"),
+      "Failed to fetch review",
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
+  }
+
+  public update({ params, body, user, set }: any) {
+    return executeController(
+      set,
+      () => this.service.updateByReviewer(params.id, user.id, body),
+      "Review not found ot unauthorized",
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
+  }
+
+  public remove({ params, user, set }: any) {
+    return executeController(
+      set,
+      () => this.service.removeByReviewer(params.id, user.id),
+      "Review not found or unauthorized",
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
+  }
+}

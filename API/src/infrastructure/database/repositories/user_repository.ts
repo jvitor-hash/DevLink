@@ -125,36 +125,5 @@ export const UserRepository = {
       });
 
     return rows[0];
-  },
-
-  /**
-   * Clients ranked by published project count.
-   */
-  findProminentClients: async (limit = 5) => {
-    if (limit < 1 || limit > 50) throw new Error("Limit must be between 1 and 50");
-
-    const rows = await db
-      .select({
-        id: schemas.user.id,
-        name: schemas.user.name,
-        bio: schemas.user.bio,
-        image: schemas.user.image,
-        role: schemas.user.role,
-        projectCount: sql<number>`count(${schemas.project.id})::int`,
-      })
-      .from(schemas.user)
-      .innerJoin(schemas.project, eq(schemas.project.clientId, schemas.user.id))
-      .where(sql`${schemas.user.role}::text = 'CLIENT'`)
-      .groupBy(
-        schemas.user.id,
-        schemas.user.name,
-        schemas.user.bio,
-        schemas.user.image,
-        schemas.user.role,
-      )
-      .orderBy(desc(sql`count(${schemas.project.id})`))
-      .limit(limit);
-
-    return rows;
-  },
+  }
 };

@@ -1,4 +1,3 @@
-import { ProjectApplicationService } from "@/domains/projects/application_service";
 import { ProjectRepository } from "@/infrastructure/database/repositories/project_repository";
 import { ConversationRepository } from "@/infrastructure/database/repositories/conversation_repository";
 import { NotificationRepository } from "@/infrastructure/database/repositories/notification_repository";
@@ -7,44 +6,25 @@ import { UserPreferenceRepository } from "@/infrastructure/database/repositories
 import { UserRepository } from "@/infrastructure/database/repositories/user_repository";
 import { TicketRepository } from "@/infrastructure/database/repositories/ticket_repository";
 import { TodoRepository } from "@/infrastructure/database/repositories/todo_repository";
-import { MessageService } from "@/domains/messages/service";
-import { SaveProjectService } from "@/domains/projects/save_service";
-import { createConversationController } from "@/domains/conversations/controller";
-import { createMessageController } from "@/domains/messages/controller";
-import { createNotificationController } from "@/domains/notifications/controller";
-import { createProjectController } from "@/domains/projects/controller";
-import { createReviewController } from "@/domains/reviews/controller";
-import { createUserController } from "@/domains/users/controller";
-import { createUserPreferenceController } from "@/domains/user_preferences/controller";
-import { createWorkItemController } from "@/domains/work_items/controller";
+import { ConversationControllerClass } from "@/domains/conversations/controller";
+import { MessageControllerClass } from "@/domains/messages/controller";
+import { NotificationControllerClass } from "@/domains/notifications/controller";
+import { ProjectControllerClass } from "@/domains/projects/controller";
+import { ReviewControllerClass } from "@/domains/reviews/controller";
+import { UserControllerClass } from "@/domains/users/controller";
+import { UserPreferenceClass } from "@/domains/user_preferences/controller";
+import { WorkItemControllerClass } from "@/domains/work_items/controller";
 import { MessageWorkflowRepository } from "@/infrastructure/database/repositories/message_workflow_repository";
 import { SaveProjectRepository } from "@/infrastructure/database/repositories/save_project_repository";
 import { registerUser } from "@/infrastructure/auth/registration";
 import { streamEvents } from "@/infrastructure/realtime/sse_controller";
-import type { WorkItemService } from "@/domains/work_items/ports";
-import type { TodoCreate, TodoDTO, TodoUpdate } from "@/database/data-transfer-object/todo_dto";
-import type { TicketCreate, TicketDTO, TicketUpdate } from "@/database/data-transfer-object/ticket_dto";
 
-// Composition root: concrete infrastructure is selected here, not in domain controllers.
-export const projectApplicationService = new ProjectApplicationService(ProjectRepository);
-
-const conversationService = ConversationRepository;
-const notificationService = NotificationRepository;
-const reviewService = ReviewRepository;
-const userPreferenceService = UserPreferenceRepository;
-const userService = UserRepository;
-const ticketService: WorkItemService<TicketCreate, TicketUpdate, TicketDTO, Record<string, Record<string, number>>> = TicketRepository;
-const todoService: WorkItemService<TodoCreate, TodoUpdate, TodoDTO, Record<string, { total: number; done: number }>> = TodoRepository;
-const messageWorkflow = new MessageService(MessageWorkflowRepository);
-const saveProjectService = new SaveProjectService(SaveProjectRepository);
-
-export const ConversationController = createConversationController(conversationService);
-export const MessageController = createMessageController(messageWorkflow);
-export const NotificationController = createNotificationController(notificationService);
-export const ProjectController = createProjectController(projectApplicationService, saveProjectService);
-export const ReviewController = createReviewController(reviewService);
-export const UserController = createUserController(userService);
-export const UserPreferenceController = createUserPreferenceController(userPreferenceService);
-export const TodoController = createWorkItemController<TodoCreate, TodoUpdate, TodoDTO, Record<string, { total: number; done: number }>>(todoService, "todo");
-export const TicketController = createWorkItemController<TicketCreate, TicketUpdate, TicketDTO, Record<string, Record<string, number>>>(ticketService, "ticket");
+export const ConversationController = new ConversationControllerClass(ConversationRepository);
+export const MessageController = new MessageControllerClass(MessageWorkflowRepository);
+export const NotificationController = new NotificationControllerClass(NotificationRepository);
+export const ProjectController = new ProjectControllerClass(ProjectRepository, SaveProjectRepository);
+export const ReviewController = new ReviewControllerClass(ReviewRepository);
+export const UserController = new UserControllerClass(UserRepository);
+export const UserPreferenceController = new UserPreferenceClass(UserPreferenceRepository);
+export const WorkItemController = new WorkItemControllerClass(TicketRepository, TodoRepository);
 export { registerUser, streamEvents };

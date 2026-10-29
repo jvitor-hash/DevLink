@@ -11,9 +11,29 @@ const receivedReview = z.object({ review: ReviewSchema, reviewer: z.object({ id:
 
 export const ReviewRouter = new Elysia({ prefix: "/api/v1/reviews" })
   .use(authPlugin)
-  .post("/", ReviewController.create, { body: ReviewCreateSchema, response: { 201: ReviewSchema, 500: ErrorSchema }, tags: ["Reviews"], auth: true })
-  .get("/", ReviewController.list, { query: pagination, response: { 200: z.array(ReviewSchema), 500: ErrorSchema }, tags: ["Reviews"], auth: true })
-  .get("/by-user/:userId", ReviewController.byUser, { params: z.object({ userId: z.string().uuid() }), query: pagination, response: { 200: z.array(receivedReview), 500: ErrorSchema }, tags: ["Reviews"], auth: true })
-  .get("/:id", ReviewController.get, { params: id, response: { 200: ReviewSchema, 404: ErrorSchema, 500: ErrorSchema }, tags: ["Reviews"], auth: true })
-  .put("/:id", ReviewController.update, { params: id, body: ReviewUpdateSchema, response: { 200: ReviewSchema, 404: ErrorSchema, 500: ErrorSchema }, tags: ["Reviews"], auth: true })
-  .delete("/:id", ReviewController.remove, { params: id, response: { 200: ReviewSchema, 404: ErrorSchema, 500: ErrorSchema }, tags: ["Reviews"], auth: true });
+  .post("/", ReviewController.create, { 
+    body: ReviewCreateSchema, 
+    response: { 201: ReviewSchema, 500: ErrorSchema }, tags: ["Reviews"], auth: true 
+  })
+  .get("/", ReviewController.list, { 
+    query: pagination, 
+    response: { 200: z.array(ReviewSchema), 500: ErrorSchema }, tags: ["Reviews"], auth: true 
+  })
+  .get("/by-user/:userId", ReviewController.byUser, { 
+    params: z.object({ userId: z.uuid() }), 
+    query: pagination, 
+    response: { 200: z.array(receivedReview), 500: ErrorSchema }, tags: ["Reviews"], auth: true 
+  })
+  .get("/:id", ReviewController.get, { 
+    params: id, 
+    response: { 200: ReviewSchema, 404: ErrorSchema, 500: ErrorSchema }, tags: ["Reviews"], auth: true 
+  })
+  .put("/:id", ReviewController.update, { 
+    params: id, 
+    body: ReviewUpdateSchema, 
+    response: { 200: ReviewSchema, 404: ErrorSchema, 500: ErrorSchema }, tags: ["Reviews"], auth: true 
+  })
+  .delete("/:id", ReviewController.remove, { 
+    params: id, 
+    response: { 200: ReviewSchema, 404: ErrorSchema, 500: ErrorSchema }, tags: ["Reviews"], auth: true 
+  });
