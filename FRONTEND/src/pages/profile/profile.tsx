@@ -100,7 +100,7 @@ export default function ProfilePage() {
       <div className="w-fit px-4 py-2">
         <div className="flex gap-2">
           {FEED_TABS.map(({ key, label }) => (
-            <button key={key} className={activeTab === key ? "bg-(--primary) text-(--text-primary)" : "text-(--text-secondary)"} onClick={() => setActiveTab(key)}>
+            <button key={key} className={activeTab === key ? "bg-(--primary) text-(--text-primary) p-2" : "text-(--text-secondary)"} onClick={() => setActiveTab(key)}>
               {label}
             </button>
           ))}

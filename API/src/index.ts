@@ -32,31 +32,7 @@ const app = new Elysia()
   .use(openapi({
     documentation: schema as any,
   }))
-  .trace(async ({ onHandle, onRequest, onBeforeHandle, onAfterHandle, onError }) => {
-    onRequest(({ onStop }) => {
-      onStop(({ elapsed }) => {
-        logger.info("[request] received", { elapsedMs: elapsed });
-      })
-    })
-
-    onBeforeHandle(({ onStop }) => {
-      onStop(({ elapsed }) => {
-        logger.info("[request] before handle", { elapsedMs: elapsed });
-      })
-    })
-
-    onHandle(({ onStop }) => {
-      onStop(({ elapsed }) => {
-        logger.info("[request] handler complete", { elapsedMs: elapsed });
-      })
-    })
-
-    onAfterHandle(({ onStop }) => {
-      onStop(({ elapsed }) => {
-        logger.info("[request] response complete", { elapsedMs: elapsed });
-      })
-    })
-
+  .trace(async ({ onError }) => {
     onError(({ onStop }) => {
       onStop(({ elapsed }) => {
         logger.error("[request] failed", { elapsedMs: elapsed });

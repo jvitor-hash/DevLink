@@ -3,37 +3,12 @@ import Button from "@/components/ui/button_component";
 import { scrollToY } from "@/utils/scroll_bus";
 import { CategoryCards } from "@/components/ui/category_cards";
 import { Blob, FlutedGlass, Shader } from "shaders/react";
-
-const HOW_IT_WORKS = [
-  {
-    step: "01",
-    title: "Descreva a ideia",
-    body: "Responda o questionário guiado sobre problema e público.",
-  },
-  {
-    step: "02",
-    title: "Publique o projeto",
-    body: "A especificação vira um projeto visível para desenvolvedores.",
-  },
-  {
-    step: "03",
-    title: "Receba propostas",
-    body: "Negocie prazo e orçamento pelo chat do projeto.",
-  },
-] as const;
-
-const TEAM_MEMBERS = [
-  { name: "João Vitor Alves da Silva", role: "Desenvolvedor Full-Stack" },
-  { name: "Henrick ", role: "Desenvolvedor Front-End" },
-  { name: "Eduardo Reis", role: "Desenvolvedor Back-End" },
-  { name: "Fabricio Sacramento", role: "Banco de dados" },
-  { name: "Nicolas Motas", role: "Desenvolvedor DevOps" },
-] as const;
+import TeamMembersCard from "./team_member_card";
+import HowItWorksCard from "./how_it_works_card";
 
 export default function Home() {
   const scrollToHowItWorks = () => {
     const section = document.getElementById("como-funciona");
-
     if (section) scrollToY(window.scrollY + section.getBoundingClientRect().top - 64);
   };
 
@@ -113,18 +88,7 @@ export default function Home() {
           <div className="border border-(--border-subtle) my-6" />
         </div>
 
-        <div className="mx-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-          {HOW_IT_WORKS.map(({ step, title, body }) => (
-            <div key={step} className="p-6">
-              <div className="mb-4 flex items-baseline gap-3">
-                <h6 className="text-3xl text-(--primary)">{step}</h6>
-                <h3 className="text-xl">{title}</h3>
-              </div>
-              <div className="border border-(--border) my-4" />
-              <p className="text-sm">{body}</p>
-            </div>
-          ))}
-        </div>
+        <HowItWorksCard/>
       </section>
 
       {/* 03 Team */}
@@ -145,16 +109,11 @@ export default function Home() {
         </div>
 
         <ul className="mx-8 mt-10 grid grid-cols-1 gap-x-8 gap-y-0 md:grid-cols-2 lg:grid-cols-3">
-          {TEAM_MEMBERS.map(({ name, role }) => (
-            <li key={name} className="border-b border-(--border-subtle) py-5 relative">
-              <div className="flex flex-col">
-                <h4 className="text-lg z-10">{name}</h4>
-                <p className="mt-2 text-sm z-10">{role}</p>
-
-                <span className="absolute mask-[linear-gradient(to_left,white_35%,transparent_100%)] halftone h-[70%] w-full text-(--primary) z-0" aria-hidden="true" />
-              </div>
-            </li>
-          ))}
+          <TeamMembersCard team_member_name="João Vitor Alves" team_member_role="Desenvolvedor Full-Stack" />
+          <TeamMembersCard team_member_name="Henrick Gualberto" team_member_role="Desenvolvedor Front-End" /> 
+          <TeamMembersCard team_member_name="Eduardo Reis" team_member_role="Desenvolvedor Back-End"/>
+          <TeamMembersCard team_member_name="Nicolas Motas" team_member_role="Desenvolvedor Full-Stack"/>
+          <TeamMembersCard team_member_name="Fabricio Sacramento" team_member_role="Banco de dados"/>
         </ul>
       </section>
 

@@ -1,38 +1,39 @@
 import Elysia from "elysia";
 import { z } from "zod";
-import { TicketController } from "@/app/dependencies";
+import { WorkItemController } from "@/app/dependencies";
 import { TicketCreateSchema, TicketUpdateSchema, TicketSchema } from "@/database/data-transfer-object/ticket_dto";
 import { ErrorSchema } from "@/modules/error_schema";
 import { authPlugin } from "@/modules/auth_plugin";
 
-const pagination = z.object({ limit: z.coerce.number().min(1).max(100).default(10), offset: z.coerce.number().min(0).default(0) });
-const id = z.object({ id: z.string().uuid() });
-
 export const TicketRouter = new Elysia({ prefix: "/api/v1/tickets" })
   .use(authPlugin)
-  .post("/", controller.create, { 
-    body: TicketCreateSchema, 
+  .post("/", WorkItemController.create, { 
+    body: TicketCreateSchema,
     response: { 201: TicketSchema, 403: ErrorSchema, 500: ErrorSchema }, tags: ["Tickets"], auth: true 
   })
-  .get("/", controller.list, { 
-    query: pagination, 
+  .get("/", WorkItemController.list, { 
+    query: z.object({ limit: z.coerce.number().min(1).max(100).default(10), offset: z.coerce.number().min(0).default(0) }), 
+    body: z.object({ type: z.string().min(1) }),
     response: { 200: z.array(TicketSchema), 500: ErrorSchema }, tags: ["Tickets"], auth: true 
   })
-  .get("/project/:projectId", controller.listByProject, { 
+  .get("/project/:projectId", WorkItemController.listByProject, { 
     params: z.object({ projectId: z.uuid() }), 
+    body: z.object({ type: z.string().min(1) }),
     response: { 200: z.array(TicketSchema), 500: ErrorSchema }, tags: ["Tickets"], auth: true 
   })
-  .get("/counts", controller.counts, { 
-    query: z.object({ projectIds: z.string() }), 
+  .get("/counts", WorkItemController.counts, { 
+    query: z.object({ projectIds: z.string() }),
+    body: z.object({ type: z.string().min(1) }),
     response: { 200: z.object({ counts: z.record(z.string(), z.record(z.string(), z.number())) }), 500: ErrorSchema }, 
     tags: ["Tickets"], authOptional: true 
   })
-  .put("/:id", controller.update, { 
-    params: id, 
+  .put("/:id", WorkItemController.update, { 
+    params: z.object({ id: z.uuid() }),
     body: TicketUpdateSchema, 
     response: { 200: TicketSchema, 404: ErrorSchema }, tags: ["Tickets"], auth: true 
   })
-  .delete("/:id", controller.remove, { 
-    params: id, 
+  .delete("/:id", WorkItemController.remove, { 
+    params: z.object({ id: z.uuid() }), 
+    body: z.object({ type: z.string().min(1) }),
     response: { 200: TicketSchema, 404: ErrorSchema }, tags: ["Tickets"], auth: true 
   });
