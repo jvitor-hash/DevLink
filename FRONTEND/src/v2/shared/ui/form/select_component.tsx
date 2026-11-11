@@ -1,30 +1,3 @@
-function selectBase(props: any, onChange?: (e: any) => void) {
-  
-  const styling = `
-    border py-2 px-4 rounded-sm 
-    ${props.error ? "border-(--error)" : "border-(--border-subtle"} 
-    ${props.className}
-  `;
-  
-  return (
-    <>
-      <select 
-        onChange={onChange} 
-        name={props.name} 
-        className={styling} 
-        data-test-id={props.dataTestId}
-      >
-        {props.children}
-      </select>
-    </>
-  )
-}
-
-function selectItem(props: any) {
-  const styling = `bg-(--surface-1) text-(--text-primary)`;
-  return (
-    <option key={props.key} className={styling}>
-      {props.label}
-    </option>
-  )
-} 
+import { forwardRef, type ReactNode, type SelectHTMLAttributes } from "react";
+export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement> & { error?: boolean }>(function Select({ className, error, children, ...props }, ref) { return <select ref={ref} {...props} aria-invalid={error || props["aria-invalid"] || undefined} className={["rounded-sm border bg-(--surface-1) px-4 py-2 text-(--text-primary) outline-none", error ? "border-(--error)" : "border-(--border-subtle)", className].filter(Boolean).join(" ")}>{children}</select>; });
+export function SelectOption({ value, children }: { value: string; children: ReactNode }) { return <option value={value}>{children}</option>; }

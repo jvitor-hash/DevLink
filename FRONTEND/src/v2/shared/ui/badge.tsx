@@ -1,0 +1,2 @@
+import type { ReactNode } from "react";
+export function Badge({ children, tone = "primary", className }: { children: ReactNode; tone?: "primary" | "secondary" | "success" | "warning" | "error" | "info"; className?: string }) { return <span className={["rounded-sm px-2 py-1 text-sm text-white", `bg-(--${tone === "secondary" ? "surface-2" : tone})`, className].filter(Boolean).join(" ")}>{children}</span>; }
