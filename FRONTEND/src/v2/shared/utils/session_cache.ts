@@ -36,3 +36,5 @@ class SessionCache {
     return exists;
   }
 }
+
+export const sessionCache = new SessionCache("devlink");

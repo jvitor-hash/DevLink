@@ -51,3 +51,5 @@ class ApiClient {
     return (await response.json()) as T;
   }
 }
+
+export const APIClient = new ApiClient();

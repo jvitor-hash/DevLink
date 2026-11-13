@@ -1,3 +1,24 @@
-import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
-export const Button = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement> & { tone?: "primary" | "secondary" | "danger" }>(function Button({ tone = "primary", className, children, ...props }, ref) { return <button ref={ref} {...props} className={["inline-flex cursor-pointer items-center justify-center rounded-sm px-8 py-2 text-white disabled:cursor-not-allowed disabled:opacity-50", tone === "primary" ? "bg-(--primary)" : tone === "secondary" ? "bg-(--secondary)" : "bg-(--error)", className].filter(Boolean).join(" ")}>{children}</button>; });
-export function IconButton({ label, children, ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { label: string; children: ReactNode }) { return <button {...props} type={props.type ?? "button"} aria-label={label} className={["inline-flex cursor-pointer items-center justify-center rounded p-2 hover:bg-(--surface-3)", props.className].filter(Boolean).join(" ")}>{children}</button>; }
+export function Button({ tone = "primary", children, ...props }) { 
+    const styling_button=`
+        inline-flex cursor-pointer items-center 
+        justify-center rounded-sm px-8 py-2 
+        text-white disabled:cursor-not-allowed 
+        disabled:opacity-50 
+        ${tone === "primary" ? "bg-(--primary)" : tone === "secondary" ? "bg-(--secondary)" : "bg-(--error)"}
+    `;
+
+    return (
+        <button {...props} className={styling_button}>
+        {children}
+        </button>
+    ); 
+};
+
+export function IconButton({ label, children, ...props }) { 
+    const styling_button="inline-flex cursor-pointer items-center justify-center rounded p-2 hover:bg-(--surface-3)";
+    return (
+        <button {...props} type={props.type ?? "button"} aria-label={label} className={styling_button}>
+            {children}
+        </button>
+    ); 
+}

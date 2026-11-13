@@ -1,2 +1,28 @@
-import { useState, type InputHTMLAttributes } from "react";
-export function Checkbox({ children, checked, defaultChecked, onChange, ...props }: Omit<InputHTMLAttributes<HTMLInputElement>, "type"> & { children?: React.ReactNode }) { const [internal, setInternal] = useState(defaultChecked ?? false); const isChecked = checked ?? internal; return <label className="inline-flex cursor-pointer items-center gap-2"><input {...props} type="checkbox" checked={isChecked} onChange={(event) => { if (checked === undefined) setInternal(event.target.checked); onChange?.(event); }} className="m-0 h-5 w-5 appearance-none rounded border border-(--border-subtle) bg-transparent checked:border-(--primary) checked:bg-(--primary) checked:before:content-['✓'] checked:before:text-white" />{children}</label>; }
+import { useState } from "react";
+export function Checkbox({ children, checked, defaultChecked, onChange, ...props }) {
+    const styling_input=`
+        m-0 h-5 w-5 appearance-none rounded border 
+        border-(--border-subtle) bg-transparent 
+        checked:border-(--primary) checked:bg-(--primary) 
+        checked:before:content-['✓'] checked:before:text-white
+    `;
+
+    const [internal, setInternal] = useState(defaultChecked ?? false);
+    const isChecked = checked ?? internal;
+
+    return (
+        <label className="inline-flex cursor-pointer items-center gap-2">
+            <input
+                {...props}
+                type="checkbox"
+                checked={isChecked}
+                onChange={(event) => {
+                    if (checked === undefined) setInternal(event.target.checked);
+                    onChange?.(event);
+                }}
+                className={styling_input}
+            />
+            {children}
+        </label>
+    );
+}

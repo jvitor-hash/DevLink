@@ -7,14 +7,6 @@ import RouteFallback from "@/components/ui/route_fallback";
 import ErrorPage from "@/pages/error";
 
 // Every page and its loader are code-split: they load on demand.
-const HomePage = lazy(() => import("@/pages/home/home"));
-const ProjectPage = lazy(() => import("@/pages/project/project"));
-const ProjectOpenPage = lazy(() => import("@/pages/project_open/project_open"));
-const ProfilePage = lazy(() => import("@/pages/profile/profile"));
-const SettingsPage = lazy(() => import("@/pages/settings/settings"));
-const NotificationPage = lazy(() => import("@/pages/notification_center/notification"));
-const QuestionnairePage = lazy(() => import("@/pages/questionnaire/questionnaire"));
-
 const deferred = (node: React.ReactNode) => <Suspense fallback={<RouteFallback />}>{node}</Suspense>;
 
 // Loaders stay on the route definitions so navigation keeps its data contract,

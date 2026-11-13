@@ -1,3 +1,17 @@
-import type { CSSProperties, ReactNode } from "react";
-export function Card({ children, className, style }: { children: ReactNode; className?: string; style?: CSSProperties }) { return <div className={["border border-(--border-subtle) p-5 transition-shadow hover:shadow-lg", className].filter(Boolean).join(" ")} style={style}>{children}</div>; }
-export function Card3D({ children, className, onClick }: { children: ReactNode; className?: string; onClick?: () => void }) { return <div onClick={onClick} className={["[perspective:1000px]", className].filter(Boolean).join(" ")}><div className="transition-transform duration-150 hover:[transform:rotateX(2deg)_rotateY(-2deg)_scale(1.02)]">{children}</div></div>; }
+export function Card({children, style}) {
+  return (
+    <div className="border border-(--border-subtle) p-5 transition-shadow hover:shadow-lg" style={style}>
+      {children}
+    </div>
+  );
+}
+
+export function Card3D({children, onClick}) {
+  return (
+    <div onClick={onClick} className="[perspective:1000px]">
+      <div className="transition-transform duration-150 hover:[transform:rotateX(2deg)_rotateY(-2deg)_scale(1.02)]">
+        {children}
+      </div>
+    </div>
+  );
+}

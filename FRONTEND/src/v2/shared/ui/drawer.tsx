@@ -1,2 +1,27 @@
-import { useEffect, type ReactNode } from "react";
-export function Drawer({ open, onClose, children }: { open: boolean; onClose: () => void; children: ReactNode }) { useEffect(() => { if (!open) return; const close = (event: KeyboardEvent) => event.key === "Escape" && onClose(); document.addEventListener("keydown", close); return () => document.removeEventListener("keydown", close); }, [open, onClose]); return <><div aria-hidden="true" onClick={onClose} className={`fixed inset-0 z-40 bg-black/20 transition-opacity ${open ? "opacity-100" : "pointer-events-none opacity-0"}`} /><aside aria-hidden={!open} className={`fixed inset-y-0 left-0 z-50 w-full max-w-md bg-(--surface-1) p-4 shadow-xl transition-transform ${open ? "translate-x-0" : "-translate-x-full"}`}>{children}</aside></>; }
+import { useEffect } from "react";
+export function Drawer({open, onClose, children}) {
+  useEffect(() => {
+    if (!open) return;
+    const close = (event: KeyboardEvent) => event.key === "Escape" && onClose();
+    document.addEventListener("keydown", close);
+    return () => document.removeEventListener("keydown", close);
+  }, [open, onClose]);
+
+  return (
+    <>
+      <div
+        aria-hidden="true"
+        onClick={onClose}
+        className={`fixed inset-0 z-40 bg-black/20 transition-opacity ${open ? "opacity-100" : "pointer-events-none opacity-0"}`}
+      />
+      <aside
+        aria-hidden={!open}
+        className={`fixed inset-y-0 left-0 z-50 w-full max-w-md bg-(--surface-1) p-4 shadow-xl transition-transform ${
+          open ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {children}
+      </aside>
+    </>
+  );
+}
