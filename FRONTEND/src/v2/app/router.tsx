@@ -9,14 +9,16 @@ import ErrorPage from "@/pages/status/error";
 import LoadingScreen from "@/pages/status/loading";
 import ProtectedRoute from "@/pages/status/protected_route";
 
+
 // All the views available
-const HomePage = lazy(() => import("@/pages/home/home"));
-const ProjectPage = lazy(() => import("@/pages/project/project"));
-const ProjectOpenPage = lazy(() => import("@/pages/project_open/project_open"));
-const ProfilePage = lazy(() => import("@/pages/profile/profile"));
-const SettingsPage = lazy(() => import("@/pages/settings/settings"));
-const NotificationPage = lazy(() => import("@/pages/notification_center/notification"));
-const QuestionnairePage = lazy(() => import("@/pages/questionnaire/questionnaire"));
+const HomePage = lazy(() => import("@/pages/home"));
+const ProjectPage = lazy(() => import("@/pages/project"));
+const ProjectOpenPage = lazy(() => import("@/pages/project_open"));
+const ProfilePage = lazy(() => import("@/pages/profile"));
+const SettingsPage = lazy(() => import("@/pages/settings"));
+const NotificationPage = lazy(() => import("@/pages/notification"));
+const QuestionnairePage = lazy(() => import("@/pages/questionnaire"));
+const ContactPage = lazy(() => import("@/pages/contact"));
 
 export const router = createBrowserRouter([
     {
@@ -25,6 +27,7 @@ export const router = createBrowserRouter([
         errorElement: <ErrorPage/>,
         children=[
             { index: true, element: <HomePage/> },
+            { path: "contact", element: <ContactPage/>}
 
             // Protected Routes
             {
