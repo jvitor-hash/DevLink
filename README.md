@@ -1,6 +1,20 @@
 # DevLink
 Versão: v2.0.2
 
+## Devições tecnicas
+
+### API
+
+O API foi desenvolvida em volta do typescript junto com os princípios SOLID com uma organização de rotas baseado em MVC, em conjunto com postgres, elysia para rotas e better-auth para autenticação de usuários de forma fácil. A API Apresenta 
+
+### Front-End
+
+Front-end foi realizando inteiramente em React em typescript com algumas dependências como shaders, react-dom-router e react-feather para icones para as interfaces.
+
+## Ferramentas de teste
+
+No Front-end foi utilizado cypress para testes end-to-end nas partes criticas das interfaces, em conjunto com o bun runtime test para testes unitários
+
 ## Tecnologias utilizadas
 - ![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=for-the-badge&logo=bun&logoColor=white)
 - ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
@@ -18,18 +32,18 @@ Versão: v2.0.2
 ## Instalação
 
 1. Clonar o repositório:
-```
+```bash
 git clone https://github.com/jvitor-hash/DevLink
 cd '.\DevLink\'
 ```
 
 2. Instalação das dependências do projeto:
-```
+```bash
 bun install
 ```
 
 3. Configuração das variáveis de ambiente: (BACK-END)
-```
+```text
 BETTER_AUTH_SECRET=
 BETTER_AUTH_URL=
 FRONT_END_URL=
@@ -39,6 +53,6 @@ PORT=3333
 ```
 
 3.1 Configuração das variáveis de ambiente: (FRONT-END)
-```
+```text
 API_URL=
 ```

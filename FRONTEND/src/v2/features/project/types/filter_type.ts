@@ -1,0 +1,1 @@
+export type SearchFilterType = Record<string, string | string[] | undefined>;
