@@ -36,14 +36,18 @@ class ApiClient {
   }
 
   private async request<T>(path: string, init: RequestInit = {}): Promise<T> {
-    const response = await fetch(`${BASE_URL}${path}`, {
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+    const baseUrl = BASE_URL.endsWith("/") ? BASE_URL.slice(0, -1) : BASE_URL;
+    const url = `${baseUrl}${normalizedPath}`;
+
+    const response = await fetch(url, {
       ...init,
       credentials: "include",
       headers: { "Content-Type": "application/json", ...init.headers },
     });
 
     if (!response.ok) {
-      console.error(`Request Failed: ${BASE_URL}${path}`);
+      console.error(`Request Failed: ${url}`);
       return undefined as T;
     }
 

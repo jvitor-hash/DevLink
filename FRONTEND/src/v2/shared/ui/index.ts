@@ -16,9 +16,11 @@ import { Segment, Segmented } from "./form/segmented";
 import { SegmentedProgress } from "./form/progress";
 import { Steps } from "./form/steps";
 import { MoneyInput } from "./form/money";
+import { Toaster } from "./toaster";
 
 export const ULIB = {
     button: Button,
+    Button: Button,
     iconButton: IconButton,
     card: Card,
     card3D: Card3D,
@@ -45,5 +47,6 @@ export const ULIB = {
     segmented: Segmented,
     segmentedProgress: SegmentedProgress,
     steps: Steps,
-    moneyInput: MoneyInput
+    moneyInput: MoneyInput,
+    toaster: Toaster
 }

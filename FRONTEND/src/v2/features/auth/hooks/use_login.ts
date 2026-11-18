@@ -1,27 +1,61 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useAuthContext } from "@/features/auth/components/auth_provider";
+import type { RegisterRole } from "@/features/auth/service/auth_service";
 
-export default function useLogin({ data, mode }) {
+export interface UseLoginOptions {
+  onSuccess?: () => void;
+}
+
+export default function useLogin(options: UseLoginOptions = {}) {
   const [submitting, setSubmitting] = useState<boolean>(false);
-  const [error, setError] = useState<any | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const { attemptLogin, attemptRegister } = useAuthContext();
 
-  try {
-    const result = null;
-    if (!mode) { // login
-      result = attemptLogin(data);
-    } else { // register
-      result = attemptRegister(data, mode ? "CLIENT" | "PROGRAMMER");
+  const handleLogin = useCallback(async (data: { email: string; password: string }) => {
+    setSubmitting(true);
+    setError(null);
+    try {
+      const result = await attemptLogin(data);
+      if (result.success) {
+        options.onSuccess?.();
+        return true;
+      } else {
+        setError(result.errors?.message || "Credenciais inválidas ou erro no servidor");
+        return false;
+      }
+    } catch (err: any) {
+      setError(err?.message || "Erro inesperado ao realizar login");
+      return false;
+    } finally {
+      setSubmitting(false);
     }
+  }, [attemptLogin, options]);
 
-    if (result.success) // Success & not null
-      return result;
+  const handleRegister = useCallback(async (data: { email: string; password: string; name: string }, role: RegisterRole = "CLIENT") => {
+    setSubmitting(true);
+    setError(null);
+    try {
+      const result = await attemptRegister(data, role);
+      if (result.success) {
+        options.onSuccess?.();
+        return true;
+      } else {
+        setError(result.errors?.message || "Erro ao criar conta");
+        return false;
+      }
+    } catch (err: any) {
+      setError(err?.message || "Erro inesperado ao cadastrar");
+      return false;
+    } finally {
+      setSubmitting(false);
+    }
+  }, [attemptRegister, options]);
 
-  } catch (error) {
-    setError(error);
-  } finally {
-    setSubmitting(false);
-  }
-
-  return [submitting, error];
+  return {
+    submitting,
+    error,
+    setError,
+    handleLogin,
+    handleRegister,
+  };
 }
