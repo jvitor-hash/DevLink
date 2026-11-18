@@ -1,7 +1,7 @@
 # DevLink
 Versão: v2.0.2
 
-## Devições tecnicas
+## Decisões tecnicas
 
 ### API
 
