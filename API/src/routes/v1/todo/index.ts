@@ -1,116 +1,53 @@
 import Elysia from "elysia";
 import { z } from "zod";
-import { TodoService } from "./service";
-import { TodoCreateSchema, TodoUpdateSchema, TodoSchema, type TodoCreate, type TodoUpdate } from "@/database/data-transfer-object/todo_dto";
+import { WorkItemController } from "@/app/dependencies";
+import { TodoCreateSchema, TodoUpdateSchema, TodoSchema } from "@/database/data-transfer-object/todo_dto";
 import { ErrorSchema } from "@/modules/error_schema";
 import { authPlugin } from "@/modules/auth_plugin";
-import { logError } from "@/modules/logger";
 
 export const TodoRouter = new Elysia({ prefix: "/api/v1/todos" })
   .use(authPlugin)
-  .post("/", async ({ body, user, set }) => {
-    try {
-      const data = body as TodoCreate;
-      const newTodo = await TodoService.createForProject({
-        projectId: data.projectId,
-        creatorId: user.id,
-        title: data.title,
-        description: data.description,
-      });
-      set.status = 201;
-      return newTodo;
-    } catch (error) {
-      logError("POST /api/v1/todos", error);
-      set.status = (error as Error).message === "Project not found or unauthorized" ? 403 : 500;
-      return { error: (error as Error).message === "Project not found or unauthorized" ? "Not a project participant" : "Failed to create todo" };
-    }
+  .post("/", (ctx) => {
+    ctx.body = { ...(ctx.body as object), type: "TODO" };
+    return WorkItemController.create(ctx);
   }, {
     body: TodoCreateSchema,
-    response: {
-      201: TodoSchema,
-      403: ErrorSchema,
-      500: ErrorSchema,
-    },
-    tags: ["Todos"],
-    auth: true,
+    response: { 201: TodoSchema, 403: ErrorSchema, 500: ErrorSchema }, tags: ["Todos"], auth: true
   })
-  .get("/", async ({ query, user }) => {
-    return await TodoService.findAllByUser(user.id, query.limit, query.offset);
+  .get("/", (ctx) => {
+    ctx.body = { type: "TODO" };
+    return WorkItemController.list(ctx);
   }, {
-    query: z.object({
-      limit: z.coerce.number().min(1).max(100).default(10),
-      offset: z.coerce.number().min(0).default(0),
-    }),
-    response: {
-      200: z.array(TodoSchema),
-    },
-    tags: ["Todos"],
-    auth: true,
+    query: z.object({ limit: z.coerce.number().min(1).max(100).default(10), offset: z.coerce.number().min(0).default(0) }),
+    response: { 200: z.array(TodoSchema), 500: ErrorSchema }, tags: ["Todos"], auth: true
   })
-  .get("/project/:projectId", async ({ params, user }) => {
-    return await TodoService.findAllByProject(params.projectId, user.id);
+  .get("/project/:projectId", (ctx) => {
+    ctx.body = { type: "TODO" };
+    return WorkItemController.listByProject(ctx);
   }, {
-    params: z.object({
-      projectId: z.string().uuid(),
-    }),
-    response: {
-      200: z.array(TodoSchema),
-    },
-    tags: ["Todos"],
-    auth: true,
+    params: z.object({ projectId: z.uuid() }),
+    response: { 200: z.array(TodoSchema), 500: ErrorSchema }, tags: ["Todos"], auth: true
   })
-  .get("/counts", async ({ query }) => {
-    const counts = await TodoService.countByProjects(query.projectIds);
-    return { counts };
+  .get("/counts", (ctx) => {
+    ctx.body = { type: "TODO" };
+    return WorkItemController.counts(ctx);
   }, {
-    query: z.object({
-      projectIds: z.string(),
-    }),
-    response: {
-      200: z.any(),
-    },
-    tags: ["Todos"],
-    authOptional: true,
+    query: z.object({ projectIds: z.string() }),
+    response: { 200: z.object({ counts: z.record(z.string(), z.object({ total: z.number(), done: z.number() })) }), 500: ErrorSchema },
+    tags: ["Todos"], authOptional: true
   })
-  .put("/:id", async ({ params, body, user, set }) => {
-    try {
-      const data = body as TodoUpdate;
-      const updated = await TodoService.updateForUser(params.id, user.id, data);
-      return updated;
-    } catch (error) {
-      logError("PUT /api/v1/todos/:id", error);
-      set.status = 404;
-      return { error: "Todo not found or unauthorized" };
-    }
+  .put("/:id", (ctx) => {
+    ctx.body = { ...(ctx.body as object), type: "TODO" };
+    return WorkItemController.update(ctx);
   }, {
-    params: z.object({
-      id: z.string().uuid(),
-    }),
+    params: z.object({ id: z.uuid() }),
     body: TodoUpdateSchema,
-    response: {
-      200: TodoSchema,
-      404: ErrorSchema,
-    },
-    tags: ["Todos"],
-    auth: true,
+    response: { 200: TodoSchema, 404: ErrorSchema }, tags: ["Todos"], auth: true
   })
-  .delete("/:id", async ({ params, user, set }) => {
-    try {
-      const deleted = await TodoService.removeForUser(params.id, user.id);
-      return deleted;
-    } catch (error) {
-      logError("DELETE /api/v1/todos/:id", error);
-      set.status = 404;
-      return { error: "Todo not found or unauthorized" };
-    }
+  .delete("/:id", (ctx) => {
+    ctx.body = { type: "TODO" };
+    return WorkItemController.remove(ctx);
   }, {
-    params: z.object({
-      id: z.string().uuid(),
-    }),
-    response: {
-      200: TodoSchema,
-      404: ErrorSchema,
-    },
-    tags: ["Todos"],
-    auth: true,
+    params: z.object({ id: z.uuid() }),
+    response: { 200: TodoSchema, 404: ErrorSchema }, tags: ["Todos"], auth: true
   });

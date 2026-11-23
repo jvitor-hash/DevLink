@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { UserService } from "../routes/v1/users/service";
+import { UserRepository as UserService } from "../infrastructure/database/repositories/user_repository";
 
 describe("Users Route Definition", () => {
   test("UserService exposes profile update", () => {

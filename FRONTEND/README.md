@@ -17,4 +17,7 @@ Useful commands:
 bun run build
 bun run lint
 bun run preview
+bun run type-check
+bun run cy:run
+bun run cy:open
 ```

@@ -4,7 +4,6 @@ import { schemas } from "../index";
 export const projectsRelations = relations(schemas.project, ({ one, many }) => ({
   message: many(schemas.message),
   reviews: many(schemas.review),
-  savedBy: many(schemas.savedTicket),
   notifications: many(schemas.notification),
   client: one(schemas.user, {
     fields: [schemas.project.clientId],

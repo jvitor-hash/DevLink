@@ -62,8 +62,13 @@ export const NotificationTypeEnum = z.enum([
     "NEW_REVIEW",
     "NEW_PROJECT",
     "PROJECT_UPDATE",
+    "PROJECT_DEVELOPMENT",
     "PROJECT_COMPLETED",
     "PROJECT_CANCELLED",
     "TICKET_SAVED",
+    "OFFER_ACCEPTED",
+    "OFFER_REJECTED",
     "SYSTEM"
 ]);
+
+export type NotificationType = z.infer<typeof NotificationTypeEnum>;

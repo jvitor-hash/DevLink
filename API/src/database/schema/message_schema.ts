@@ -1,29 +1,26 @@
-import { boolean, index, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
-import { offerStatusEnum } from "./enums_schema";
-import { user } from "./user_schema";
-import { project } from "./project_schema";
+import { boolean, index, numeric, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { conversation } from "./conversation_schema";
+import { messageTypeEnum, offerStatusEnum } from "./enums_schema";
 
 export const message = pgTable("message", {
   id: uuid("id").defaultRandom().primaryKey(),
-  projectId: uuid("project_id")
-    .notNull()
-    .references(() => project.id, {
-      onDelete: "cascade",
-    }),
-  senderId: uuid("sender_id")
-    .notNull()
-    .references(() => user.id, {
-      onDelete: "cascade",
-    }),
+  conversationId: uuid("conversation_id")
+        .notNull()
+        .references(() => conversation.id, {
+          onDelete: "cascade",
+        }),
   content: text("content").notNull(),
+  userId: uuid("user_id").notNull(),
   isRead: boolean("is_read").default(false).notNull(),
-  offerDeadline: timestamp("offer_deadline"),
+  readAt: timestamp("read_at"),
+  messageType: messageTypeEnum("message_type").default("MESSAGE").notNull(),
   offerStatus: offerStatusEnum("offer_status"),
+  offerMoney: numeric("offer_money", { precision: 12, scale: 2 }),
+  offerDeadline: timestamp("offer_deadline"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 },
 (table) => [
-  index("messages_project_id_idx").on(table.projectId),
-  index("messages_sender_id_idx").on(table.senderId),
-  index("messages_created_at_idx").on(table.createdAt),
+  index("message_conversation_id_idx").on(table.conversationId),
+  index("message_created_at_idx").on(table.createdAt),
 ]);

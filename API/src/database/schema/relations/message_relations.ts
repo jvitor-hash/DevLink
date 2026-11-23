@@ -1,14 +1,27 @@
 import { relations } from "drizzle-orm/_relations";
-import { schemas } from "../index";
+import { message } from "../message_schema";
+import { conversation } from "../conversation_schema";
+import { user } from "../user_schema";
 
-export const messagesRelations = relations(schemas.message, ({ one }) => ({
-  project: one(schemas.project, {
-    fields: [schemas.message.projectId],
-    references: [schemas.project.id],
-  }),
+export const conversationRelations = relations(conversation, ({ one, many }) => ({
+    messages: many(message),
 
-  sender: one(schemas.user, {
-    fields: [schemas.message.senderId],
-    references: [schemas.user.id],
+    user: one(user, {
+      fields: [conversation.userId],
+      references: [user.id],
+    }),
+
+    recipient: one(user, {
+      fields: [conversation.recipientId],
+      references: [user.id],
+    }),
   }),
-}));
+);
+
+export const messageRelations = relations(message, ({ one }) => ({
+    conversation: one(conversation, {
+      fields: [message.conversationId],
+      references: [conversation.id],
+    }),
+  }),
+);

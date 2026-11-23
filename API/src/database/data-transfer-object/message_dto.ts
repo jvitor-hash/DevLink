@@ -1,34 +1,30 @@
-import { z } from "zod";
 import { createCrudSchemas, idSchema, timestampsSchema } from "./helper";
+import { z } from "zod";
 
 export const MessageSchema = z.object({
   id: idSchema,
-  projectId: idSchema,
-  senderId: idSchema,
-  content: z.string().min(1),
+  conversationId: idSchema,
+  userId: idSchema.optional(),
+  content: z.string().trim().min(1),
   isRead: z.boolean().default(false),
-  offerDeadline: z.union([z.date(), z.string().datetime(), z.string()]).nullable().optional(),
-  offerStatus: z.enum(["PENDING", "ACCEPTED", "REJECTED"]).nullable().optional(),
+  readAt: z.union([z.date(), z.string().datetime()]).nullable().optional(),
+  recipientId: idSchema.optional(),
+  projectId: idSchema.optional(),
+  messageType: z.enum(["MESSAGE", "OFFER"]).default("MESSAGE"),
+  offerStatus: z.enum(["PENDING", "REFUSED", "ACCEPTED"]).nullable().optional(),
+  offerMoney: z.union([z.number().nonnegative(), z.string()]).nullable().optional(),
+  offerDeadline: z.union([z.date(), z.string().datetime()]).nullable().optional(),
 }).merge(timestampsSchema);
 
 const MessageDTOs = createCrudSchemas(MessageSchema, [
   "id",
-  "senderId",
   "createdAt",
   "updatedAt",
+  "readAt",
 ]);
 
-// A negotiation offer is a message with a proposed deadline; sending one
-// requires the offer deadline and never persists a client-chosen status.
-export const MessageCreateSchema = MessageDTOs.create.extend({
-  offerDeadline: z.union([z.date(), z.string().datetime(), z.string()]).nullable().optional(),
-}).omit({ offerStatus: true });
-
-export const MessageUpdateSchema = MessageDTOs.update
-  .extend({
-    offerStatus: z.enum(["PENDING", "ACCEPTED", "REJECTED"]).nullable().optional(),
-  })
-  .omit({ offerDeadline: true });
+export const MessageCreateSchema = MessageDTOs.create;
+export const MessageUpdateSchema = MessageDTOs.update;
 
 export type MessageDTO = z.infer<typeof MessageSchema>;
 export type MessageCreate = z.infer<typeof MessageCreateSchema>;

@@ -1,0 +1,196 @@
+import { db } from "@/client";
+import { schemas } from "@/database/schema";
+import { crud } from "@/infrastructure/database/crud_factory";
+import { and, eq, gte, lte, inArray, notInArray, or, sql, type SQL } from "drizzle-orm";
+
+export const ProjectRepository = {
+  ...crud(schemas.project),
+
+  findById: (id: string): Promise<typeof schemas.project.$inferSelect> => db
+    .select()
+    .from(schemas.project)
+    .where(eq(schemas.project.id, id))
+    .limit(1)
+    .then(([project]) => project as typeof schemas.project.$inferSelect),
+
+  updateOwned: async (id: string, clientId: string, data: Record<string, unknown>): Promise<typeof schemas.project.$inferSelect> => {
+    const [project] = await db
+      .update(schemas.project)
+      .set(data)
+      .where(and(eq(schemas.project.id, id), eq(schemas.project.clientId, clientId)))
+      .returning();
+
+    if (!project) throw new Error("Project not found or unauthorized");
+    return project;
+  },
+
+  removeOwned: async (id: string, clientId: string): Promise<typeof schemas.project.$inferSelect> => {
+    const [project] = await db
+      .delete(schemas.project)
+      .where(and(eq(schemas.project.id, id), eq(schemas.project.clientId, clientId)))
+      .returning();
+
+    if (!project) throw new Error("Project not found or unauthorized");
+    return project;
+  },
+
+  findFiltered: async (
+    userId: string | null,
+    filters: {
+      audience?: string;
+      platforms?: string[];
+      primaryLanguage?: string;
+      status?: string;
+      excludeStatuses?: string[];
+      minBudget?: number;
+      maxBudget?: number;
+      q?: string;
+      category?: string;
+      sub_category?: string;
+      clientId?: string;
+    },
+    limit = 10,
+    offset = 0,
+  ) => {
+    if (limit < 1 || limit > 100) throw new Error("Limit must be between 1 and 100");
+    if (offset < 0) throw new Error("Offset must be >= 0");
+
+    const conditions: SQL<unknown>[] = [];
+
+    if (filters.audience && filters.audience !== "ALL") {
+      conditions.push(sql`${schemas.project.audience}::text = ${filters.audience}`);
+    }
+
+    if (filters.platforms && filters.platforms.length) {
+      const activePlatforms = filters.platforms.filter((p) => p !== "ALL");
+      if (activePlatforms.length) {
+        conditions.push(
+          sql`${schemas.project.platforms} && ARRAY[${sql.join(activePlatforms.map((platform) => sql`${platform}`), sql`, `)}]::platform_type[]`,
+        );
+      }
+    }
+
+    if (filters.primaryLanguage && filters.primaryLanguage !== "ALL") {
+      conditions.push(sql`${schemas.project.primaryLanguage}::text = ${filters.primaryLanguage}`);
+    }
+
+    if (filters.status && filters.status !== "ALL") {
+      conditions.push(sql`${schemas.project.status}::text = ${filters.status}`);
+    }
+
+    if (filters.excludeStatuses?.length) {
+      conditions.push(notInArray(schemas.project.status, filters.excludeStatuses as (typeof schemas.project.status.enumValues)[number][]));
+    }
+
+    if (filters.q) {
+      const term = `%${filters.q}%`;
+      conditions.push(
+        sql`(${schemas.project.title} ILIKE ${term} OR ${schemas.project.description} ILIKE ${term} OR ${schemas.project.category} ILIKE ${term})`,
+      );
+    }
+
+    // Case-insensitive exact match so category cards can filter reliably.
+    if (filters.category && filters.category !== "ALL") {
+      conditions.push(sql`${schemas.project.category} ILIKE ${filters.category}`);
+    }
+
+    if (filters.sub_category && filters.sub_category !== "ALL") {
+      conditions.push(sql`${schemas.project.sub_category} ILIKE ${filters.sub_category}`);
+    }
+
+    if (filters.clientId) {
+      conditions.push(eq(schemas.project.clientId, filters.clientId));
+    }
+
+    if (filters.minBudget != null && filters.minBudget >= 0) {
+      conditions.push(gte(schemas.project.minBudget, filters.minBudget));
+    }
+
+    if (filters.maxBudget != null && filters.maxBudget >= 0) {
+      conditions.push(lte(schemas.project.maxBudget, filters.maxBudget));
+    }
+
+    conditions.push(or(
+      sql`${schemas.project.status} <> 'IN_DEVELOPMENT'`,
+      ...(userId ? [eq(schemas.project.clientId, userId), eq(schemas.project.programmerId, userId)] : []),
+    ) as SQL<unknown>);
+
+    const where = conditions.length ? and(...conditions) : undefined;
+
+    const rows = await db.select().from(schemas.project).where(where).limit(limit).offset(offset);
+    return rows as typeof schemas.project.$inferSelect[];
+  },
+
+  findSavedByUser: async (userId: string, limit = 20, offset = 0): Promise<typeof schemas.project.$inferSelect[]> => {
+    const rows = await db
+      .select({ project: schemas.project })
+      .from(schemas.saveProject)
+      .innerJoin(schemas.project, eq(schemas.saveProject.projectId, schemas.project.id))
+      .where(and(
+        eq(schemas.saveProject.userId, userId),
+        or(
+          sql`${schemas.project.status} <> 'IN_DEVELOPMENT'`,
+          eq(schemas.project.clientId, userId),
+          eq(schemas.project.programmerId, userId),
+        ),
+      ))
+      .orderBy(sql`${schemas.saveProject.createdAt} desc`)
+      .limit(limit)
+      .offset(offset);
+
+    return rows.map(({ project }) => project);
+  },
+
+  /** Open project counts grouped by category, keyed by the stored category value. */
+  countByCategory: async (excludeStatuses?: string[]): Promise<Record<string, number>> => {
+    const where = excludeStatuses?.length
+      ? notInArray(schemas.project.status, excludeStatuses as (typeof schemas.project.status.enumValues)[number][])
+      : undefined;
+
+    const rows = await db
+      .select({ category: schemas.project.category, total: sql<number>`count(*)::int` })
+      .from(schemas.project)
+      .where(where)
+      .groupBy(schemas.project.category);
+
+    const counts: Record<string, number> = {};
+    for (const row of rows) {
+      if (row.category) counts[row.category] = row.total;
+    }
+    return counts;
+  },
+
+  countProjectsByClients: async (clientIds: string): Promise<Record<string, number>> => {
+    const ids = clientIds.split(",").map((id) => id.trim()).filter((id) => id.length > 0);
+    if (!ids.length) return {};
+
+    const rows = await db
+      .select({ clientId: schemas.project.clientId, total: sql<number>`count(*)::int` })
+      .from(schemas.project)
+      .where(inArray(schemas.project.clientId, ids))
+      .groupBy(schemas.project.clientId);
+
+    const counts: Record<string, number> = {};
+    for (const row of rows) {
+      counts[row.clientId] = row.total;
+    }
+    return counts;
+  },
+
+  // Bump view counters for a project; clients inspecting their own page do not count.
+  recordView: async (projectId: string, viewerId: string | null): Promise<void> => {
+    const rows = await db
+      .select({ clientId: schemas.project.clientId })
+      .from(schemas.project)
+      .where(eq(schemas.project.id, projectId))
+      .limit(1);
+
+    if (!rows.length) return;
+    if (viewerId && rows[0].clientId === viewerId) return;
+
+    await db
+      .update(schemas.project)
+      .set({ lastViewedAt: new Date() })
+      .where(eq(schemas.project.id, projectId));
+  },
+};

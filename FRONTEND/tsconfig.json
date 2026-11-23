@@ -1,6 +1,18 @@
 {
   "compilerOptions": {
-    "paths": { "@/*": ["./src/*"] }
+    "paths": { "@/*": ["./src/*"] },
+    "noErrorTruncation": true,
+    "esModuleInterop": true,
+    "allowJs": false,
+    "outDir": "./build",
+    "rootDir": "src",
+    "strict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "allowUnreachableCode": false,
   },
   "files": [],
   "references": [
