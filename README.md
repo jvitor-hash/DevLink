@@ -12,7 +12,6 @@ A API foi desenvolvida em TypeScript utilizando o runtime Bun e orientada pelos 
   - **Controladores (`domains/*/controller.ts`)**: Orquestração das requisições isolada da camada de persistência, utilizando o executor `executeController` para padronização de respostas e tratamento de falhas.
   - **Tratamento de Erros de Domínio**: Hierarquia centralizada com `DomainError` e mapeamento de status codes (`HttpStatus`), eliminando falhas silenciosas e vazamento de detalhes internos.
   - **Repositórios e Abstração de Dados (`infrastructure/database/`)**: Acesso ao PostgreSQL gerenciado pelo Drizzle ORM através de um **Generic CRUD Factory** (`crud_factory.ts`), reduzindo boilerplate para operações rotineiras e padronizando logs de operações do banco.
-  - **Injeção de Dependências**: Centralização das instâncias e acoplamentos no ponto de composição (`app/dependencies.ts`), facilitando testes unitários e modularidade.
 
 - **Padrões de Projeto (Design Patterns)**:
   - **Strategy Pattern (`WorkItemSupervisor`)**: Implementado para unificar a gestão de itens de trabalho (`TicketStrategy` e `TodoStrategy`), permitindo que a API processe e redirecione operações entre chamados técnicos (tickets) e tarefas (todos) de forma polimórfica e intercambiável sem duplicação de regras.
@@ -51,11 +50,6 @@ O front-end foi realizado inteiramente em React 19 com TypeScript, construído s
 
 - **Segurança e Criptografia no Cliente**:
   - Módulo de criptografia dedicado (`crypto_service.ts`) no chat para suporte à troca segura de mensagens e chaves públicas/privadas na camada de cliente antes do tráfego de dados sensíveis.
-
-- **Design System e Estilização com Tailwind CSS v4**:
-  - Adoção do **Tailwind CSS v4** integrado via `@tailwindcss/vite`, proporcionando alto desempenho de compilação e estilização utilitária moderna.
-  - Componentes de formulário ricos e reutilizáveis (seletores customizados, campos com máscaras monetárias, switches, steps, avaliação por rating e barras de progresso).
-  - Ícones vetoriais com **React Feather** e efeitos visuais imersivos com **Shaders**.
 
 ## Ferramentas de teste
 
