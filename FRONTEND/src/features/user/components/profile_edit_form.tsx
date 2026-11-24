@@ -2,14 +2,7 @@ import { useState } from "react";
 import { ULIB } from "@/shared/ui";
 import { toast } from "@/shared/utils/toast_store";
 
-interface ProfileEditFormProps {
-  initialName: string;
-  initialBio?: string | null;
-  onSave: (data: { name: string; bio: string }) => Promise<boolean>;
-  onCancel?: () => void;
-}
-
-export function ProfileEditForm({ initialName, initialBio, onSave, onCancel }: ProfileEditFormProps) {
+export function ProfileEditForm(initialName, initialBio, onSave, onCancel) {
   const [name, setName] = useState(initialName);
   const [bio, setBio] = useState(initialBio ?? "");
   const [saving, setSaving] = useState(false);
@@ -58,9 +51,7 @@ export function ProfileEditForm({ initialName, initialBio, onSave, onCancel }: P
 
       <div className="flex gap-2 justify-end">
         {onCancel && (
-          <ULIB.button type="button" tone="secondary" onClick={onCancel} disabled={saving}>
-            Cancelar
-          </ULIB.button>
+          <ULIB.button type="button" tone="secondary" onClick={onCancel} disabled={saving}>Cancelar</ULIB.button>
         )}
         <ULIB.button type="submit" disabled={saving}>
           {saving ? "Salvando..." : "Salvar Alterações"}

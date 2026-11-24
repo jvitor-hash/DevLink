@@ -14,24 +14,17 @@ export default function NavbarLayout() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 p-4 pb-2 bg-(--background)/80 backdrop-blur-md border-b border-(--border-subtle)">
+      <header className="sticky top-4 z-40 m-4 p-4 pb-2 bg-(--background)/25 backdrop-blur-md">
         <div className="flex items-center justify-between px-4 py-2">
           <div className="flex items-center gap-6">
             <Link to="/" className="font-bold text-xl tracking-tight text-(--text-primary)">
-              <img src="/favicon.ico" alt="DevLink" className="w-6 h-6 inline-block mr-2" />
-              DevLink
+              <img src="/Logo.png" alt="DevLink" className="w-24 h-8 inline-block mr-2" />
             </Link>
 
             <nav className="flex items-center gap-4 text-sm font-medium text-(--text-secondary)">
-              <Link to="/project" className="hover:text-(--text-primary) transition-colors">
-                Projetos
-              </Link>
-              <Link to="/questionaire" className="hover:text-(--text-primary) transition-colors">
-                Criar Projeto
-              </Link>
-              <Link to="/contact" className="hover:text-(--text-primary) transition-colors">
-                Contato
-              </Link>
+              <Link to="/project" className="hover:text-(--text-primary) transition-colors">Projetos</Link>
+              <Link to="/questionaire" className="hover:text-(--text-primary) transition-colors">Criar Projeto</Link>
+              <Link to="/contact" className="hover:text-(--text-primary) transition-colors">Contato</Link>
             </nav>
           </div>
 
@@ -40,9 +33,8 @@ export default function NavbarLayout() {
               <div className="flex items-center gap-3">
                 <NotificationBell />
 
-                <Link
-                  to="/profile"
-                  className="flex items-center gap-2 text-sm font-medium text-(--text-primary) hover:text-(--primary) transition-colors"
+                <Link to="/profile"
+                  className="flex items-center gap-2 text-sm text-(--text-primary) hover:text-(--primary) transition-colors"
                 >
                   <User size={16} />
                   <span>{currentUser.name}</span>

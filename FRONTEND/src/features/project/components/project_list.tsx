@@ -1,29 +1,11 @@
 import ProjectPreview from "./project_preview";
-import type { ProjectDTO } from "@/shared/types/database";
 
-interface ProjectListProps {
-  projects: ProjectDTO[];
-  loading?: boolean;
-  savedIds?: Set<string>;
-  onToggleSave?: (project: ProjectDTO) => void;
-  emptyMessage?: string;
-}
-
-export function ProjectList({
-  projects,
-  loading = false,
-  savedIds = new Set(),
-  onToggleSave,
-  emptyMessage = "Nenhum projeto encontrado com os filtros selecionados.",
-}: ProjectListProps) {
+export function ProjectList({ projects, loading = false, emptyMessage = "Nenhum projeto encontrado com os filtros selecionados." }) {
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            className="h-44 border border-(--border-subtle) bg-(--surface-1) animate-pulse rounded-md"
-          />
+          <div key={i} className="h-44 border border-(--border-subtle) bg-(--surface-1) animate-pulse rounded-md"/>
         ))}
       </div>
     );
@@ -40,10 +22,7 @@ export function ProjectList({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
       {projects.map((proj) => (
-        <ProjectPreview
-          key={proj.id}
-          {...proj}
-        />
+        <ProjectPreview key={proj.id} {...proj}/>
       ))}
     </div>
   );

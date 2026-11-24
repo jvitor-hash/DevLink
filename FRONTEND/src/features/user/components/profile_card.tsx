@@ -1,13 +1,7 @@
 import { ULIB } from "@/shared/ui";
 import { UserBadge } from "./user_badge";
-import type { PublicUserDTO } from "@/shared/types/database";
 
-interface ProfileCardProps {
-  user: PublicUserDTO;
-  actions?: React.ReactNode;
-}
-
-export function ProfileCard({ user, actions }: ProfileCardProps) {
+export function ProfileCard(user, actions) {
   return (
     <ULIB.card className="p-6 flex flex-col gap-4 border border-(--border)">
       <div className="flex items-center justify-between">

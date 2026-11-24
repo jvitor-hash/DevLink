@@ -40,7 +40,7 @@ export default function Projects() {
   const { projects, loading, error } = useProjects(query);
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-8 flex flex-col lg:flex-row gap-6 items-start">
+    <div className="mx-auto w-full px-4 py-8 flex flex-col lg:flex-row gap-6 items-start">
       {/* Search and Filters Sidebar */}
       <SearchFiltering />
 

@@ -5,19 +5,9 @@ export function Field({ children, className = "" }: { children?: ReactNode; clas
   return <div className={`flex flex-col gap-1.5 ${className}`}>{children}</div>;
 }
 
-export function Label({
-  htmlFor,
-  children,
-  required = false,
-  className = "",
-}: {
-  htmlFor?: string;
-  children?: ReactNode;
-  required?: boolean;
-  className?: string;
-}) {
+export function Label({ htmlFor, children, required = false, className = ""}: { htmlFor?: string; children?: ReactNode; required?: boolean; className?: string;}) {
   return (
-    <label htmlFor={htmlFor} className={`block text-xs font-medium text-(--text-secondary) ${className}`}>
+    <label htmlFor={htmlFor} className={`block text-sm text-(--text-secondary) ${className}`}>
       {children}
       {required && <span className="ml-1 text-(--error)">*</span>}
     </label>

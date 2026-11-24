@@ -8,21 +8,9 @@ const STATUSES = [
   { value: "CANCELLED", label: "Cancelado" },
 ];
 
-interface SearchProjectStatusFilterProps {
-  value?: string;
-  onSelect: (status: string) => void;
-}
-
-export default function SearchProjectStatusFilter({
-  value = "",
-  onSelect,
-}: SearchProjectStatusFilterProps) {
+export default function SearchProjectStatusFilter({ value = "", onSelect }) {
   return (
-    <ULIB.select
-      value={value}
-      onChange={(e: any) => onSelect(e.target.value)}
-      aria-label="Filtrar por Status"
-    >
+    <ULIB.select value={value} onChange={(e: any) => onSelect(e.target.value)} aria-label="Filtrar por Status">
       <option value="">Todos os Status</option>
       {STATUSES.map((s) => (
         <ULIB.selectOption key={s.value} value={s.value}>

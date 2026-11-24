@@ -1,24 +1,12 @@
-import type { NotificationDTO } from "@/shared/types/database";
 import { Check, Archive, MessageSquare, Briefcase, Star, Bell } from "react-feather";
 
-interface NotificationItemProps {
-  notification: NotificationDTO;
-  onMarkAsRead?: (id: string) => void;
-  onToggleArchive?: (notification: NotificationDTO) => void;
-  onClick?: () => void;
-}
-
-export function NotificationItem({
-  notification,
-  onMarkAsRead,
-  onToggleArchive,
-  onClick,
-}: NotificationItemProps) {
+export function NotificationItem({ notification, onMarkAsRead, onToggleArchive, onClick }) {
   const getIcon = () => {
     switch (notification.type) {
       case "NEW_MESSAGE":
         return <MessageSquare size={16} className="text-(--info)" />;
       case "NEW_PROJECT":
+        return <MessageSquare size={16} className="text-(--info)" />;
       case "PROJECT_UPDATE":
         return <Briefcase size={16} className="text-(--primary)" />;
       case "NEW_REVIEW":
@@ -29,8 +17,7 @@ export function NotificationItem({
   };
 
   return (
-    <div
-      onClick={onClick}
+    <div onClick={onClick}
       className={`p-3 border-b border-(--border-subtle) flex items-start gap-3 transition-colors ${
         notification.isRead ? "bg-(--surface-1) opacity-80" : "bg-(--surface-2)/40 font-medium"
       } hover:bg-(--surface-2) cursor-pointer group`}

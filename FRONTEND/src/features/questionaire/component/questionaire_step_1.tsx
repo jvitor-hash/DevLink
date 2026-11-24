@@ -1,5 +1,5 @@
 import { ULIB } from "@/shared/ui";
-import { homeCategories } from "@/shared/utils/home_categories";
+import { subCategoriesList } from "@/shared/utils/sub_categories";
 import type { QuestionaireFormData } from "../hooks/use_questionaire_form";
 
 interface QuestionaireStepOneProps {
@@ -8,10 +8,10 @@ interface QuestionaireStepOneProps {
 }
 
 export default function QuestionaireStepOne({ data, onChange }: QuestionaireStepOneProps) {
-  const currentCategoryObj = homeCategories.find((c) => c.value === data.category);
+  const currentCategoryObj = subCategoriesList.find((c) => c.value === data.category);
   const subCategories = currentCategoryObj
     ? currentCategoryObj.subCategories
-    : homeCategories[0].subCategories;
+    : subCategoriesList[0].subCategories;
 
   return (
     <div className="flex flex-col gap-5">
@@ -30,11 +30,11 @@ export default function QuestionaireStepOne({ data, onChange }: QuestionaireStep
             value={data.category}
             onChange={(e: any) => {
               const cat = e.target.value;
-              const sub = homeCategories.find((c) => c.value === cat)?.subCategories[0]?.value || "";
+              const sub = subCategoriesList.find((c) => c.value === cat)?.subCategories[0]?.value || "";
               onChange({ category: cat, sub_category: sub });
             }}
           >
-            {homeCategories.map((c) => (
+            {subCategoriesList.map((c) => (
               <ULIB.selectOption key={c.value} value={c.value}>
                 {c.label}
               </ULIB.selectOption>

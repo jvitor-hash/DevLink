@@ -1,10 +1,4 @@
-export type HomeCategory = {
-  label: string;
-  value: string;
-  subCategories: Array<{ label: string; value: string }>;
-};
-
-export const homeCategories: HomeCategory[] = [
+export const subCategoriesList = [
   {
     label: "Websites",
     value: "WEBSITES",

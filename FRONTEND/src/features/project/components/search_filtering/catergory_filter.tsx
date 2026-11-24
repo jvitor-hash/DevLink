@@ -1,12 +1,7 @@
 import { ULIB } from "@/shared/ui";
-import { homeCategories } from "@/shared/utils/home_categories";
+import { subCategoriesList } from "@/shared/utils/sub_categories";
 
-interface SearchCategoryFilterProps {
-  value?: string;
-  onSelect: (category: string) => void;
-}
-
-export default function SearchCategoryFilter({ value = "", onSelect }: SearchCategoryFilterProps) {
+export default function SearchCategoryFilter({ value = "", onSelect }) {
   return (
     <ULIB.select
       value={value}
@@ -14,7 +9,7 @@ export default function SearchCategoryFilter({ value = "", onSelect }: SearchCat
       aria-label="Filtrar por Categoria"
     >
       <option value="">Todas as Categorias</option>
-      {homeCategories.map((cat) => (
+      {subCategoriesList.map((cat) => (
         <ULIB.selectOption key={cat.value} value={cat.value}>
           {cat.label}
         </ULIB.selectOption>

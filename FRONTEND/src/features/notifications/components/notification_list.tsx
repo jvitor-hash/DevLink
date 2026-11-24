@@ -6,8 +6,7 @@ import { useRedirect } from "@/shared/hooks/use_redirect";
 import { Check } from "react-feather";
 
 export function NotificationList() {
-  const { notifications, loading, unreadCount, markAsRead, markAllAsRead, toggleArchive } =
-    useNotifications();
+  const { notifications, loading, unreadCount, markAsRead, markAllAsRead, toggleArchive } = useNotifications();
   const [tab, setTab] = useState<"all" | "unread" | "archived">("all");
   const redirect = useRedirect();
 

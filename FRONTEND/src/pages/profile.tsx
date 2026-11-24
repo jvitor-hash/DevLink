@@ -53,13 +53,9 @@ export default function ProfilePage() {
         user={profile}
         actions={
           isOwnProfile ? (
-            <ULIB.button onClick={() => redirect("/settings")}>
-              Editar perfil
-            </ULIB.button>
+            <ULIB.button onClick={() => redirect("/settings")}>Editar perfil</ULIB.button>
           ) : (
-            <ULIB.button tone="secondary" onClick={() => redirect("/project")}>
-              Ver projetos
-            </ULIB.button>
+            <ULIB.button tone="secondary" onClick={() => redirect("/project")}>Ver projetos</ULIB.button>
           )
         }
       />
@@ -81,7 +77,7 @@ export default function ProfilePage() {
         <button
           type="button"
           onClick={() => setActiveTab("reviews")}
-          className={`px-3 py-1.5 text-sm font-medium rounded transition-colors cursor-pointer ${
+          className={`px-3 py-1.5 text-sm transition-colors cursor-pointer ${
             activeTab === "reviews"
               ? "bg-(--surface-2) text-(--text-primary) border border-(--border)"
               : "text-(--text-muted) hover:text-(--text-primary)"
@@ -93,7 +89,7 @@ export default function ProfilePage() {
         <button
           type="button"
           onClick={() => setActiveTab("activity")}
-          className={`px-3 py-1.5 text-sm font-medium rounded transition-colors cursor-pointer ${
+          className={`px-3 py-1.5 text-sm transition-colors cursor-pointer ${
             activeTab === "activity"
               ? "bg-(--surface-2) text-(--text-primary) border border-(--border)"
               : "text-(--text-muted) hover:text-(--text-primary)"
@@ -114,7 +110,7 @@ export default function ProfilePage() {
                   Carregando projetos...
                 </div>
               ) : projects.length === 0 ? (
-                <div className="p-8 text-center text-sm text-(--text-muted) italic border border-dashed border-(--border-subtle) rounded-md">
+                <div className="p-8 text-center text-sm text-(--text-muted) italic border border-dashed border-(--border-subtle)">
                   Nenhum projeto publicado por este usuário.
                 </div>
               ) : (
@@ -128,42 +124,26 @@ export default function ProfilePage() {
           )}
 
           {activeTab === "reviews" && (
-            <ReviewList
-              reviews={reviews}
-              averageRating={averageRating}
-              loading={reviewsLoading}
-            />
+            <ReviewList reviews={reviews} averageRating={averageRating} loading={reviewsLoading}/>
           )}
 
           {activeTab === "activity" && (
-            <div className="p-4 border border-(--border-subtle) bg-(--surface-1) rounded-md flex flex-col gap-3">
-              <h3 className="text-sm font-semibold text-(--text-primary)">
-                Atividades recentes
-              </h3>
+            <div className="p-4 border border-(--border-subtle) bg-(--surface-1) flex flex-col gap-3">
+              <h3 className="text-sm text-(--text-primary)">Atividades recentes</h3>
               {projects.length === 0 ? (
-                <p className="text-xs text-(--text-muted) italic">
-                  Nenhuma atividade registrada até o momento.
-                </p>
+                <p className="text-xs text-(--text-muted) italic">Nenhuma atividade registrada até o momento.</p>
               ) : (
                 <ul className="flex flex-col gap-2">
                   {projects.slice(0, 5).map((project) => (
                     <li
                       key={project.id}
-                      className="p-3 rounded border border-(--border-subtle) bg-(--surface-2)/40 flex items-center justify-between"
+                      className="p-3 border border-(--border-subtle) bg-(--surface-2)/40 flex items-center justify-between"
                     >
                       <div>
-                        <p className="text-xs font-medium text-(--text-primary)">
-                          {project.title}
-                        </p>
-                        <span className="text-[11px] text-(--text-muted)">
-                          Status: {project.status}
-                        </span>
+                        <p className="text-xs text-(--text-primary)">{project.title}</p>
+                        <span className="text-xs text-(--text-muted)">Status: {project.status}</span>
                       </div>
-                      <ULIB.button
-                        tone="secondary"
-                        className="text-xs"
-                        onClick={() => redirect(`/project/open/${project.id}`)}
-                      >
+                      <ULIB.button tone="secondary" className="text-xs" onClick={() => redirect(`/project/open/${project.id}`)}>
                         Abrir
                       </ULIB.button>
                     </li>
@@ -177,25 +157,19 @@ export default function ProfilePage() {
         {/* Sidebar: Open Projects */}
         <aside className="flex flex-col gap-4">
           <div className="p-4 rounded-md border border-(--border-subtle) bg-(--surface-1)">
-            <h3 className="font-semibold text-sm mb-3 text-(--text-primary)">
-              Projetos Abertos
-            </h3>
+            <h3 className="font-semibold text-sm mb-3 text-(--text-primary)">Projetos Abertos</h3>
             {openProjects.length === 0 ? (
-              <p className="text-xs text-(--text-muted) italic">
-                Nenhum projeto em aberto no momento.
-              </p>
+              <p className="text-xs text-(--text-muted) italic">Nenhum projeto em aberto no momento.</p>
             ) : (
               <div className="flex flex-col gap-2">
                 {openProjects.map((p) => (
-                  <div
-                    key={p.id}
-                    onClick={() => redirect(`/project/open/${p.id}`)}
-                    className="p-3 rounded border border-(--border-subtle) bg-(--surface-2)/50 hover:border-(--primary)/50 cursor-pointer transition-colors"
+                  <div key={p.id} onClick={() => redirect(`/project/open/${p.id}`)}
+                    className="p-3 border border-(--border-subtle) bg-(--surface-2)/50 hover:border-(--primary)/50 cursor-pointer transition-colors"
                   >
-                    <p className="text-xs font-medium text-(--text-primary) line-clamp-1">
+                    <p className="text-xs text-(--text-primary) line-clamp-1">
                       {p.title}
                     </p>
-                    <p className="text-[11px] text-(--text-muted) mt-1">
+                    <p className="text-xs text-(--text-muted) mt-1">
                       R$ {p.minBudget.toLocaleString("pt-BR")} – R$ {p.maxBudget.toLocaleString("pt-BR")}
                     </p>
                   </div>

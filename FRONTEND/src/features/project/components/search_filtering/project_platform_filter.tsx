@@ -6,21 +6,9 @@ const PLATFORMS = [
   { value: "DESKTOP", label: "Desktop" },
 ];
 
-interface SearchProjectPlatformFilterProps {
-  value?: string;
-  onSelect: (platform: string) => void;
-}
-
-export default function SearchProjectPlatformFilter({
-  value = "",
-  onSelect,
-}: SearchProjectPlatformFilterProps) {
+export default function SearchProjectPlatformFilter({ value = "", onSelect }) {
   return (
-    <ULIB.select
-      value={value}
-      onChange={(e: any) => onSelect(e.target.value)}
-      aria-label="Filtrar por Plataforma"
-    >
+    <ULIB.select value={value} onChange={(e: any) => onSelect(e.target.value)} aria-label="Filtrar por Plataforma">
       <option value="">Todas as Plataformas</option>
       {PLATFORMS.map((p) => (
         <ULIB.selectOption key={p.value} value={p.value}>

@@ -1,7 +1,36 @@
 # DevLink
-Versão: v2.0.2
+Versão: v2.0.3
 
-## Decisões técnicas
+## Sumário
+
+| Numeração | Título |
+| :---: | :----: |
+| 01 | <a href="#sobre-o-projeto">Sobre o projeto</a> |
+| 02 | <a href="#histórico">Histórico</a> |
+| 03 | <a href="#decisões-técnicas">Decisões técnicas</a> |
+| 04 | <a href="#api">API</a> |
+| 05 | <a href="#front-end">Front-End</a> |
+| 06 | <a href="#ferramentas-de-teste">Ferramentas de teste</a> |
+| 07 | <a href="#tecnologias-utilizadas">Tecnologias Utilizadas</a> |
+| 08 | <a href="#pré-requisitos">Pré-requisitos</a> |
+| 09 | <a href="#instalação">Instalação</a> |
+| 10 | <a href="#equipe">Equipe</a> |
+
+## Sobre o projeto
+
+O DevLink é uma plataforma de freelancing voltada para programadores e clientes que desejam criar novos projetos. A plataforma aproxima as duas partes por meio de uma comunicação direta, permitindo que clientes publiquem oportunidades e que programadores encontrem projetos compatíveis com suas habilidades.
+
+Além da conexão entre clientes e programadores, o DevLink oferece recursos para negociação e acompanhamento dos projetos.
+
+## Histórico
+
+O DevLink começou como um projeto em Node.js, utilizando Express, PostgreSQL e Handlebars, sem um framework de front-end e seguindo o padrão MVC. Após alguns problemas de organização, o projeto foi refeito do zero a partir da versão anterior.
+
+Na versão atual, a aplicação foi reconstruída com React e TypeScript, incorporando novas tecnologias e uma organização mais modular.
+
+---
+
+# Decisões técnicas
 
 ### API
 
@@ -11,7 +40,7 @@ A API foi desenvolvida em TypeScript utilizando o runtime Bun e orientada pelos 
   - **Rotas (`routes/v1/`)**: Declaração tipada e versionada dos endpoints via Elysia, integrando schemas Zod e documentação OpenAPI/Swagger automática.
   - **Controladores (`domains/*/controller.ts`)**: Orquestração das requisições isolada da camada de persistência, utilizando o executor `executeController` para padronização de respostas e tratamento de falhas.
   - **Tratamento de Erros de Domínio**: Hierarquia centralizada com `DomainError` e mapeamento de status codes (`HttpStatus`), eliminando falhas silenciosas e vazamento de detalhes internos.
-  - **Repositórios e Abstração de Dados (`infrastructure/database/`)**: Acesso ao PostgreSQL gerenciado pelo Drizzle ORM através de um **Generic CRUD Factory** (`crud_factory.ts`), reduzindo boilerplate para operações rotineiras e padronizando logs de operações do banco.
+  - **Repositórios e Abstração de Dados (`infrastructure/database/`)**: Acesso ao PostgreSQL gerenciado pelo Drizzle ORM através de um CRUD Factory (`crud_factory.ts`), reduzindo boilerplate para operações rotineiras e padronizando logs de operações do banco.
 
 - **Padrões de Projeto (Design Patterns)**:
   - **Strategy Pattern (`WorkItemSupervisor`)**: Implementado para unificar a gestão de itens de trabalho (`TicketStrategy` e `TodoStrategy`), permitindo que a API processe e redirecione operações entre chamados técnicos (tickets) e tarefas (todos) de forma polimórfica e intercambiável sem duplicação de regras.
@@ -30,9 +59,9 @@ A API foi desenvolvida em TypeScript utilizando o runtime Bun e orientada pelos 
 
 ---
 
-### Front-End (V2)
+### Front-End
 
-O front-end foi realizado inteiramente em React 19 com TypeScript, construído sobre o Vite e evoluído na versão V2 de uma estrutura tradicional para uma arquitetura modular orientada a funcionalidades (**Feature-Driven / Modular Architecture**). O projeto conta com dependências como Tailwind CSS v4 para estilização, Shaders para efeitos visuais, React Router para gerenciamento de rotas e React Feather para ícones de interface. As principais decisões de design incluem:
+O front-end foi realizado inteiramente em React 19 com TypeScript, construído sobre o Vite de uma estrutura tradicional para uma arquitetura modular orientada a funcionalidades (**Feature-Driven / Modular Architecture**). O projeto conta com dependências como Tailwind CSS para estilização, Shaders para efeitos visuais, React Router para gerenciamento de rotas e React Feather para ícones de interface. As principais decisões de design incluem:
 
 - **Arquitetura Modular por Funcionalidade (Feature-Driven Design)**:
   - **`features/`**: Cada domínio de negócio (`auth`, `chat`, `project`, `work_items`, `notifications`, `reviews`, `settings`, `questionaire`, `user`) é autocontido, agrupando seus próprios componentes visuais, custom hooks de estado/efeito, serviços de comunicação com a API e tipos locais.
@@ -41,7 +70,7 @@ O front-end foi realizado inteiramente em React 19 com TypeScript, construído s
   - **`app/`**: Inicialização, provedores globais e configuração centralizada do roteador.
 
 - **Roteamento, Code Splitting e Proteção de Rotas**:
-  - Utilização do **React Router v7** (`createBrowserRouter`) com divisão dinâmica de código por rota (`React.lazy` + `Suspense`), utilizando telas de carregamento intermediárias (`LoadingScreen`) para otimizar o tempo de resposta e carregamento inicial.
+  - Utilização do **React Router** (`createBrowserRouter`) com divisão dinâmica de código por rota (`React.lazy` + `Suspense`), utilizando telas de carregamento intermediárias (`LoadingScreen`) para otimizar o tempo de resposta e carregamento inicial.
   - Rotas autenticadas encapsuladas em layouts de proteção (`ProtectedRoute`), garantindo navegação segura e redirecionamento de usuários não autenticados.
 
 - **Reatividade e Eventos em Tempo Real**:
@@ -56,7 +85,9 @@ O front-end foi realizado inteiramente em React 19 com TypeScript, construído s
 - **Front-End**: Utilização do **Cypress** para testes end-to-end (E2E) nas partes críticas dos fluxos e interfaces do usuário, além de verificação estática de tipos com **TypeScript** (`tsc -b`) e padronização com **ESLint**.
 - **Back-End (API)**: Utilização do **Bun Test** runtime para execução de testes unitários e de integração (rotas, autenticação, controllers, permissões e repositórios) com geração de relatórios de cobertura (`bun test --coverage`).
 
-## Tecnologias utilizadas
+---
+
+# Tecnologias utilizadas
 - ![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=for-the-badge&logo=bun&logoColor=white)
 - ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
 - ![React](https://img.shields.io/badge/react-%2320232a.svg?logo=react&logoColor=%2361dafb&style=for-the-badge)
@@ -80,7 +111,7 @@ O front-end foi realizado inteiramente em React 19 com TypeScript, construído s
 git clone https://github.com/jvitor-hash/DevLink
 cd '.\DevLink\'
 ```
-
+Membros da nossa equipe:
 2. Instalação das dependências do projeto:
 ```bash
 bun install
@@ -100,3 +131,13 @@ PORT=3333
 ```text
 API_URL=
 ```
+
+---
+
+# Equipe
+
+João Vitor Alves - Full-stack
+Nicolas Motas - Back-end
+Henrick Gualberto - Front-end
+Fabricio Sacramento - Banco de dados
+Eduardo Reis - Front-end

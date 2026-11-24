@@ -5,17 +5,19 @@ export default function ProjectPreview(project) {
     const redirect = useRedirect();
 
     return (
-        <ULIB.card className="p-4 border border-(--border) hover:border-(--primary)/50 cursor-pointer transition-all flex flex-col justify-between gap-3">
+        <ULIB.card3D 
+            className="p-4 border border-(--border) hover:border-(--primary)/50 cursor-pointer transition-all flex flex-col justify-between gap-3"
+        >
             <div onClick={() => redirect(`/project/open/${project.id}`)} className="flex flex-col gap-2">
                 <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-semibold text-lg text-(--text-primary) line-clamp-1">{project.title}</h3>
+                    <h3 className="text-lg text-(--text-primary) line-clamp-1">{project.title}</h3>
                 </div>
                 <p className="text-sm text-(--text-secondary) line-clamp-2">{project.description}</p>
                 <div className="flex flex-wrap gap-1.5 mt-1">
                     <ULIB.badge tone="brand">{project.category}</ULIB.badge>
                     <ULIB.badge tone="default">{project.sub_category}</ULIB.badge>
                     <ULIB.badge tone="secondary">{project.status}</ULIB.badge>
-                    <span className="text-xs px-2 py-0.5 rounded bg-(--surface-2) text-(--text-muted)">
+                    <span className="text-xs px-2 py-0.5 bg-(--surface-2) text-(--text-muted)">
                         {project.platforms.join(", ")}
                     </span>
                 </div>
@@ -27,6 +29,6 @@ export default function ProjectPreview(project) {
                     R$ {project.minBudget.toLocaleString("pt-BR")} - R$ {project.maxBudget.toLocaleString("pt-BR")}
                 </span>
             </div>
-        </ULIB.card>
+        </ULIB.card3D>
     );
 }

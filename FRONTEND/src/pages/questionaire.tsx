@@ -2,7 +2,7 @@ import { QuestionaireWizard } from "@/features/questionaire/component/questionai
 
 export default function Questionaire() {
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-8">
+    <div className="mx-auto w-full px-4 py-8">
       <header className="mb-6 border-b border-(--border-subtle) pb-4 text-center">
         <h1 className="text-3xl font-bold tracking-tight text-(--text-primary)">
           Criação de Projetos

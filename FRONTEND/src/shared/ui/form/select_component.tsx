@@ -7,7 +7,7 @@ export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 
 export function Select({ error, children, className = "", ...props }: SelectProps) {
   const styling_select = `
-    w-full rounded-md border bg-(--surface-1) px-3 
+    w-full border bg-(--surface-1) px-3 
     py-2 text-sm text-(--text-primary) outline-none transition-colors 
     ${error ? "border-(--error)" : "border-(--border-subtle)"}
     ${className}

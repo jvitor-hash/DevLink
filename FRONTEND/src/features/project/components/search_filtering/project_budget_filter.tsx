@@ -1,17 +1,7 @@
 import { useState } from "react";
 import { ULIB } from "@/shared/ui";
 
-interface SearchProjectBudgetFilterProps {
-  minBudget?: number | string;
-  maxBudget?: number | string;
-  onChange: (min?: number, max?: number) => void;
-}
-
-export default function SearchProjectBudgetFilter({
-  minBudget,
-  maxBudget,
-  onChange,
-}: SearchProjectBudgetFilterProps) {
+export default function SearchProjectBudgetFilter({ minBudget, maxBudget, onChange }) {
   const [min, setMin] = useState<string>(minBudget ? String(minBudget) : "");
   const [max, setMax] = useState<string>(maxBudget ? String(maxBudget) : "");
 

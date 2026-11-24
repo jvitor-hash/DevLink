@@ -24,7 +24,7 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src/"],
+  "include": ["src/", "src/app"],
   "exclude": [
     "node_modules",
     "dist",
