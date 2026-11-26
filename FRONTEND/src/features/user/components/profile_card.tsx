@@ -1,7 +1,7 @@
 import { ULIB } from "@/shared/ui";
 import { UserBadge } from "./user_badge";
 
-export function ProfileCard(user, actions) {
+export function ProfileCard({ user, actions }) {
   return (
     <ULIB.card className="p-6 flex flex-col gap-4 border border-(--border)">
       <div className="flex items-center justify-between">

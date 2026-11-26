@@ -11,9 +11,13 @@ type ReviewService = {
 };
 
 export class ReviewControllerClass {
-  constructor(private readonly service: ReviewService) {};
+  private readonly service: ReviewService;
+  
+  constructor(service: ReviewService) {
+    this.service = service;
+  };
 
-  public create({ body, user, set }: any) {
+  public create = ({ body, user, set }: any) => {
     return executeController(
       set,
       () => this.service.create({ ...body, reviewerId: user.id }),
@@ -22,7 +26,7 @@ export class ReviewControllerClass {
     );
   }
 
-  public list({ query, set }: any) {
+  public list = ({ query, set }: any) => {
     return executeController(
       set,
       () => this.service.findAll(query.limit, query.offset),
@@ -31,7 +35,7 @@ export class ReviewControllerClass {
     );
   }
 
-  public byUser({ params, query, set }: any) {
+  public byUser = ({ params, query, set }: any) => {
     return executeController(
       set,
       () => this.service.findReceivedByUser(params.userId, query.limit, query.offset),
@@ -40,7 +44,7 @@ export class ReviewControllerClass {
     );
   }
 
-  public get({ params, set }: any) {
+  public get = ({ params, set }: any) => {
     return executeController(
       set,
       async () => requireValue(await this.service.findById(params.id), "Review not found"),
@@ -49,7 +53,7 @@ export class ReviewControllerClass {
     );
   }
 
-  public update({ params, body, user, set }: any) {
+  public update = ({ params, body, user, set }: any) => {
     return executeController(
       set,
       () => this.service.updateByReviewer(params.id, user.id, body),
@@ -58,7 +62,7 @@ export class ReviewControllerClass {
     );
   }
 
-  public remove({ params, user, set }: any) {
+  public remove = ({ params, user, set }: any) => {
     return executeController(
       set,
       () => this.service.removeByReviewer(params.id, user.id),

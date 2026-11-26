@@ -1,11 +1,11 @@
-import { useState, type ReactNode, type InputHTMLAttributes } from "react";
+import { useState } from "react";
 import { Eye, EyeOff } from "react-feather";
 
-export function Field({ children, className = "" }: { children?: ReactNode; className?: string }) {
+export function Field({ children, className = "" }) {
   return <div className={`flex flex-col gap-1.5 ${className}`}>{children}</div>;
 }
 
-export function Label({ htmlFor, children, required = false, className = ""}: { htmlFor?: string; children?: ReactNode; required?: boolean; className?: string;}) {
+export function Label({ htmlFor, children, required = false, className = ""}) {
   return (
     <label htmlFor={htmlFor} className={`block text-sm text-(--text-secondary) ${className}`}>
       {children}
@@ -14,13 +14,9 @@ export function Label({ htmlFor, children, required = false, className = ""}: { 
   );
 }
 
-export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  error?: string | boolean | null;
-}
-
-export function Input({ error, className = "", ...props }: InputProps) {
+export function Input({ error, className = "", ...props }) {
   const styling_input = `
-    w-full rounded-md border bg-transparent p-2.5 text-sm 
+    w-full border bg-transparent p-2.5 text-sm 
     text-(--text-primary) outline-none transition-colors 
     placeholder:text-(--text-muted) hover:border-gray-400 
     focus:border-(--primary) 
@@ -29,35 +25,27 @@ export function Input({ error, className = "", ...props }: InputProps) {
   `;
 
   return (
-    <input
-      {...props}
-      aria-invalid={error ? true : props["aria-invalid"]}
-      className={styling_input}
-    />
+    <input {...props} aria-invalid={error ? true : props["aria-invalid"]} className={styling_input} />
   );
 }
 
-export function InputGroup({ children, className = "" }: { children: ReactNode; className?: string }) {
+export function InputGroup({ children, className = "" }) {
   return <div className={`relative ${className}`}>{children}</div>;
 }
 
-export function InputAdornment({ children, side = "left" }: { children: ReactNode; side?: "left" | "right" }) {
+export function InputAdornment({ children, side = "left" }) {
   return (
     <span
-      className={`pointer-events-none absolute top-1/2 -translate-y-1/2 text-(--text-muted) ${
-        side === "left" ? "left-3" : "right-3"
-      }`}
+      className={`pointer-events-none absolute top-1/2 -translate-y-1/2 text-(--text-muted) ${side === "left" ? "left-3" : "right-3"}`}
     >
       {children}
     </span>
   );
 }
 
-export function PasswordToggle({ visible, onToggle }: { visible: boolean; onToggle: () => void }) {
+export function PasswordToggle({ visible, onToggle }) {
   return (
-    <button
-      type="button"
-      onClick={onToggle}
+    <button type="button" onClick={onToggle}
       className="absolute right-3 top-1/2 -translate-y-1/2 text-(--text-muted) hover:text-white cursor-pointer"
       aria-label={visible ? "Esconder senha" : "Ver senha"}
     >
@@ -66,7 +54,7 @@ export function PasswordToggle({ visible, onToggle }: { visible: boolean; onTogg
   );
 }
 
-export function PasswordInput(props: InputProps) {
+export function PasswordInput(props) {
   const [visible, setVisible] = useState(false);
   return (
     <InputGroup>

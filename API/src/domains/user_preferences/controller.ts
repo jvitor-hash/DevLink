@@ -11,9 +11,13 @@ type UserPreferenceService = {
 };
 
 export class UserPreferenceClass {
-  constructor(private readonly service: UserPreferenceService) {};
+  private readonly service: UserPreferenceService;
 
-  public create({ body, user, set }: any) {
+  constructor(service: UserPreferenceService) {
+    this.service = service;
+  };
+
+  public create = ({ body, user, set }: any) => {
     return executeController(
       set,
       () => this.service.create({...body, userId: user.id}),
@@ -22,7 +26,7 @@ export class UserPreferenceClass {
     )
   }
 
-  public list({ query, user, set }: any) {
+  public list = ({ query, user, set }: any) => {
     return executeController(
       set,
       () => this.service.findAllByUser(user.id, query.limit, query.offset),
@@ -31,7 +35,7 @@ export class UserPreferenceClass {
     )
   }
 
-  public byUser({ params, user, set }: any) {
+  public byUser = ({ params, user, set }: any) => {
     return executeController(
       set,
       async () => {
@@ -43,7 +47,7 @@ export class UserPreferenceClass {
     )
   }
 
-  public get({ params, user, set }: any) {
+  public get = ({ params, user, set }: any) => {
     return executeController(
       set,
       () => this.service.findByIdForUser(params.userId, user.id),
@@ -52,7 +56,7 @@ export class UserPreferenceClass {
     )
   }
 
-  public update({ params, body, user, set }: any) {
+  public update = ({ params, body, user, set }: any) => {
     return executeController(
       set,
       async () => {
@@ -64,7 +68,7 @@ export class UserPreferenceClass {
     )
   }
   
-  public remove({ params, user, set }: any) {
+  public remove = ({ params, user, set }: any) => {
     return executeController(
       set,
       () => this.service.removeByUser(params.id, user.id),

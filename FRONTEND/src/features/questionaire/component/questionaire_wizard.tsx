@@ -7,12 +7,12 @@ import { QuestionaireStepThree } from "./questionaire_step_3";
 import { QuestionaireStepFour } from "./questionaire_step_4";
 
 export function QuestionaireWizard() {
-  const { step, setStep, formData, updateFields, nextStep, prevStep, submitProject, submitting,} = useQuestionaireForm();
+  const { step, setStep, formData, updateFields, nextStep, prevStep, submitProject, submitting } = useQuestionaireForm();
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 w-full mx-auto p-4">
       {/* Form Steps Card */}
-      <div className="flex-1 border border-(--border) bg-(--surface-1) p-6 rounded-lg shadow-sm flex flex-col justify-between">
+      <div className="flex-1 border border-(--border) bg-(--surface-1) p-6 shadow-sm flex flex-col justify-between">
         <div>
           {step === 1 && (
             <QuestionaireStepOne data={formData} onChange={updateFields} />
@@ -28,13 +28,7 @@ export function QuestionaireWizard() {
           )}
         </div>
 
-        <QuestionaireNavigation
-          step={step}
-          submitting={submitting}
-          onPrev={prevStep}
-          onNext={nextStep}
-          onSubmit={submitProject}
-        />
+        <QuestionaireNavigation step={step} submitting={submitting} onPrev={prevStep} onNext={nextStep} onSubmit={submitProject} />
       </div>
 
       {/* Progress Sidebar */}

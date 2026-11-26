@@ -1,13 +1,7 @@
 import { ULIB } from "@/shared/ui";
 import type { QuestionaireFormData } from "../hooks/use_questionaire_form";
-import type { Audience } from "@/shared/types/database";
 
-interface QuestionaireStepThreeProps {
-  data: QuestionaireFormData;
-  onChange: (patch: Partial<QuestionaireFormData>) => void;
-}
-
-const AUDIENCES: Array<{ value: Audience; label: string }> = [
+const AUDIENCES: Array<{ value; label: string }> = [
   { value: "CLIENTS", label: "Clientes / Consumidores Finais" },
   { value: "BUSINESSES", label: "Empresas e Negócios (B2B)" },
   { value: "INTERNAL_TOOL", label: "Equipe Interna / Ferramenta Interna" },
@@ -16,7 +10,7 @@ const AUDIENCES: Array<{ value: Audience; label: string }> = [
   { value: "RESEARCHER", label: "Pesquisadores e Acadêmicos" },
 ];
 
-export function QuestionaireStepThree({ data, onChange }: QuestionaireStepThreeProps) {
+export function QuestionaireStepThree({ data, onChange }) {
   return (
     <div className="flex flex-col gap-5">
       <div>
@@ -28,11 +22,7 @@ export function QuestionaireStepThree({ data, onChange }: QuestionaireStepThreeP
 
       <ULIB.field>
         <ULIB.label htmlFor="q-aud" required>Público Principal</ULIB.label>
-        <ULIB.select
-          id="q-aud"
-          value={data.audience}
-          onChange={(e: any) => onChange({ audience: e.target.value as Audience })}
-        >
+        <ULIB.select id="q-aud" value={data.audience} onChange={(e: any) => onChange({ audience: e.target.value })}>
           {AUDIENCES.map((a) => (
             <ULIB.selectOption key={a.value} value={a.value}>
               {a.label}
@@ -49,6 +39,7 @@ export function QuestionaireStepThree({ data, onChange }: QuestionaireStepThreeP
           placeholder="Ex: Demora no atendimento, dificuldade em encontrar produtos, erros manuais..."
           value={data.audiencePainPoints}
           onChange={(e: any) => onChange({ audiencePainPoints: e.target.value })}
+          error={null}
         />
       </ULIB.field>
 
@@ -59,6 +50,7 @@ export function QuestionaireStepThree({ data, onChange }: QuestionaireStepThreeP
           placeholder="Ex: Grandes redes de varejo, usuários sem acesso à internet..."
           value={data.notAudience}
           onChange={(e: any) => onChange({ notAudience: e.target.value })}
+          error={null}
         />
       </ULIB.field>
     </div>

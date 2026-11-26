@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { sessionCache } from "@/shared/utils/session_cache";
 import { questionaireService } from "../service/questionaire_service";
-import type { ProjectCreate, ProgrammingLanguage, PlatformType, Audience } from "@/shared/types/database";
 import { toast } from "@/shared/utils/toast_store";
 import { useRedirect } from "@/shared/hooks/use_redirect";
 
@@ -21,14 +20,14 @@ export interface QuestionaireFormData {
   valueProposition: string;
 
   // Step 3: Audience
-  audience: Audience;
+  audience: any;
   audiencePainPoints: string;
   audienceAssumptions: string;
   notAudience: string;
 
   // Step 4: Execution
-  platforms: PlatformType[];
-  primaryLanguage: ProgrammingLanguage;
+  platforms: any[];
+  primaryLanguage: any;
   minBudget: number;
   maxBudget: number;
   deadline: string;
@@ -132,7 +131,7 @@ export function useQuestionaireForm() {
 
     const cleanField = (val: string | undefined | null) => (val && val.trim() ? val.trim() : null);
 
-    const payload: ProjectCreate = {
+    const payload = {
       category: formData.category,
       sub_category: formData.sub_category,
       title: formData.title.trim(),
@@ -169,14 +168,5 @@ export function useQuestionaireForm() {
     }
   };
 
-  return {
-    step,
-    setStep,
-    formData,
-    updateFields,
-    nextStep,
-    prevStep,
-    submitProject,
-    submitting,
-  };
+  return { step, setStep, formData, updateFields, nextStep, prevStep, submitProject, submitting };
 }

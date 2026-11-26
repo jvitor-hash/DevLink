@@ -6,7 +6,7 @@ export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElemen
 
 export function Textarea({ error, className = "", ...props }: TextareaProps) {
   const styling_textarea = `
-    w-full resize-y rounded-md border bg-transparent 
+    w-full resize-y border bg-transparent 
     p-2.5 text-sm text-(--text-primary) outline-none transition-colors 
     placeholder:text-(--text-muted) hover:border-gray-400 focus:border-(--primary) 
     ${error ? "border-(--error)" : "border-(--border-subtle)"}

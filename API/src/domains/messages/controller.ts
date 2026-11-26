@@ -10,9 +10,13 @@ type MessageService = {
 };
 
 export class MessageControllerClass {
-  constructor(private readonly service: MessageService) {};
+  private readonly service: MessageService;
+  
+  constructor(service: MessageService) {
+    this.service = service;
+  };
 
-  public create({ body, user, set }: any) {
+  public create = ({ body, user, set }: any) => {
     return executeController(
       set,
       () => this.service.create(body, user),
@@ -21,7 +25,7 @@ export class MessageControllerClass {
     );
   }
 
-  public list({ query, user, set }: any) {
+  public list = ({ query, user, set }: any) => {
     return executeController(
       set,
       () => this.service.list(query.conversationId, user, query.limit, query.offset),
@@ -30,7 +34,7 @@ export class MessageControllerClass {
     );
   }
 
-  public get({ params, set }: any) {
+  public get = ({ params, set }: any) => {
     return executeController(
       set,
       () => this.service.get(params.id),
@@ -39,7 +43,7 @@ export class MessageControllerClass {
     );
   }
 
-  public update({ params, body, user, set }: any) {
+  public update = ({ params, body, user, set }: any) => {
     return executeController(
       set,
       () => this.service.update(params.id, body, user),
@@ -48,7 +52,7 @@ export class MessageControllerClass {
     );
   }
 
-  public remove({ params, set }: any) {
+  public remove = ({ params, set }: any) => {
     return executeController(
       set,
       () => this.service.remove(params.id),

@@ -8,9 +8,13 @@ type NotificationService = {
 };
 
 export class NotificationControllerClass {
-  constructor(private readonly service: NotificationService) {};
+  private readonly service: NotificationService;
+  
+  constructor(service: NotificationService) {
+    this.service = service;
+  };
 
-  public list({ query, user, set }: any) {
+  public list = ({ query, user, set }: any) => {
     return executeController(
       set,
       () => this.service.findAllByUser(user.id, query.limit, query.offset),
@@ -19,7 +23,7 @@ export class NotificationControllerClass {
     )
   }
 
-  public readAll({ user, set }: any) {
+  public readAll = ({ user, set }: any) => {
     return executeController(
       set,
       () => this.service.markAllAsReadForUser(user.id),
@@ -28,7 +32,7 @@ export class NotificationControllerClass {
     )
   }
 
-  public update({ params, body, user, set }: any) {
+  public update = ({ params, body, user, set }: any) => {
     return executeController(
       set,
       async () => requireValue(await this.service.updateForUser(params.id, user.id, body), "Notification not found"),

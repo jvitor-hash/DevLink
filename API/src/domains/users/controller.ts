@@ -11,9 +11,13 @@ type UserService = {
 };
 
 export class UserControllerClass {
-  constructor(private readonly service: UserService) {};
+  private readonly service: UserService;
 
-  public search({ query, set }: any) {
+  constructor(service: UserService) {
+    this.service = service;
+  };
+
+  public search = ({ query, set }: any) => {
     return executeController(
       set,
       () => this.service.search(query.q ?? "", query.role, query.limit, query.offset),
@@ -22,7 +26,7 @@ export class UserControllerClass {
     )
   }
 
-  public updateMe({ body, user, set }: any) {
+  public updateMe = ({ body, user, set }: any) => {
     return executeController(
       set,
       async () => requireValue(this.service.updateOwnProfile(user.id, body), "User not found"),
@@ -31,7 +35,7 @@ export class UserControllerClass {
     )
   }
 
-  public publicKey({ user, set }: any) {
+  public publicKey = ({ user, set }: any) => {
     return executeController(
       set,
       () => this.service.getPublicKey(user.id),
@@ -40,7 +44,7 @@ export class UserControllerClass {
     )
   }
 
-  public updatePublicKey({ body, user, set }: any) {
+  public updatePublicKey = ({ body, user, set }: any) => {
     return executeController(
       set,
       () => this.service.updatePublicKey(user.id, body.publicKey),
@@ -49,7 +53,7 @@ export class UserControllerClass {
     )
   }
 
-  public userPublicKey({ params, set }: any) {
+  public userPublicKey = ({ params, set }: any) => {
     return executeController(
       set,
       async () => await this.service.findPublicKeyById(params.id),
@@ -58,7 +62,7 @@ export class UserControllerClass {
     )
   }
 
-  public getById({ params, set }: any) {
+  public getById = ({ params, set }: any) => {
     return executeController(
       set,
       async () => requireValue(await this.service.findById(params.id), "User not found"),

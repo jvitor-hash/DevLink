@@ -1,6 +1,6 @@
 import { ULIB } from "@/shared/ui";
 
-export function UserBadge(role) {
+export function UserBadge({ role }) {
   if (!role) return null;
 
   const isProgrammer = role.toUpperCase() === "PROGRAMMER";

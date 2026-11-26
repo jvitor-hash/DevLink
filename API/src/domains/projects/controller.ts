@@ -35,9 +35,15 @@ type SaveProjectService = {
 };
 
 export class ProjectControllerClass {
-  constructor(private readonly projectService: ProjectService, private readonly saveProjectService: SaveProjectService) {};
+  private readonly projectService: ProjectService;
+  private readonly saveProjectService: SaveProjectService;
 
-  public create({ body, user, set }: any) {
+  constructor(projectService: ProjectService, saveProjectService: SaveProjectService) {
+    this.projectService = projectService;
+    this.saveProjectService = saveProjectService;
+  };
+
+  public create = ({ body, user, set }: any) => {
     return executeController(
       set,
       () => this.projectService.create({ ...body, clientId: user.id }),
@@ -46,7 +52,7 @@ export class ProjectControllerClass {
     );
   }
 
-  public action({ body, user, set }: any) {
+  public action = ({ body, user, set }: any) => {
     return executeController(
       set,
       async () => {
@@ -61,7 +67,7 @@ export class ProjectControllerClass {
     );
   }
 
-  public list({ query, user, set }: any) {
+  public list = ({ query, user, set }: any) => {
     return executeController(
       set,
       () => this.projectService.findFiltered(user.id ?? null, projectFilters(query), query.limit, query.offset),
@@ -70,7 +76,7 @@ export class ProjectControllerClass {
     );
   }
 
-  public saved({ query, user, set }: any) {
+  public saved = ({ query, user, set }: any) => {
     return executeController(
       set,
       () => this.projectService.findSavedByUser(user.id, query.limit, query.offset),
@@ -79,7 +85,7 @@ export class ProjectControllerClass {
     );
   }
 
-  public countByClient({ query, set }: any) {
+  public countByClient = ({ query, set }: any) => {
     return executeController(
       set,
       async () => {
@@ -90,7 +96,7 @@ export class ProjectControllerClass {
     );
   }
 
-  public countByCategory({ query, set }: any) {
+  public countByCategory = ({ query, set }: any) => {
     return executeController(
       set,
       async () => {
@@ -101,7 +107,7 @@ export class ProjectControllerClass {
     );
   }
 
-  public get({ params, user, set }: any) {
+  public get = ({ params, user, set }: any) => {
     return executeController(
       set,
       async() => {
@@ -119,7 +125,7 @@ export class ProjectControllerClass {
     );
   }
 
-  public update({ body, params, user, set }: any) {
+  public update = ({ body, params, user, set }: any) => {
     return executeController(
       set,
       () => this.projectService.updateOwned(params.id, user.id, body),
@@ -128,7 +134,7 @@ export class ProjectControllerClass {
     );
   }
 
-  public remove({ params, user, set }: any) {
+  public remove = ({ params, user, set }: any) => {
     return executeController(
       set,
       () => this.projectService.removeOwned(params.id, user.id),

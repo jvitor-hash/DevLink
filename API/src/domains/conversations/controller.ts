@@ -9,9 +9,13 @@ type ConversationService = {
 };
 
 export class ConversationControllerClass {
-  constructor(private readonly service: ConversationService) {};
+  private readonly service: ConversationService;
 
-  public list({ query, user, set }: any) {
+  constructor(service: ConversationService) {
+    this.service = service;
+  };
+
+  public list = ({ query, user, set }: any) => {
     return executeController(
       set,
       () => this.service.listForUser(user.id, user.role, query.projectId),
@@ -20,7 +24,7 @@ export class ConversationControllerClass {
     );
   }
 
-  public create({ body, user, set}: any) {
+  public create = ({ body, user, set}: any) => {
     return executeController(
       set,
       async () => {
@@ -41,7 +45,7 @@ export class ConversationControllerClass {
     );
   } 
 
-  public get({ params, set }: any) {
+  public get = ({ params, set }: any) => {
     return executeController(
       set,
       async () => requireValue(await this.service.findById(params.id), "Conversation not found"),

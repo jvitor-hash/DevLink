@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ULIB } from "@/shared/ui";
 import { toast } from "@/shared/utils/toast_store";
 
-export function ProfileEditForm(initialName, initialBio, onSave, onCancel) {
+export function ProfileEditForm({ initialName, initialBio, onSave, onCancel }) {
   const [name, setName] = useState(initialName);
   const [bio, setBio] = useState(initialBio ?? "");
   const [saving, setSaving] = useState(false);

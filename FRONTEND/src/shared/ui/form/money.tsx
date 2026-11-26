@@ -1,21 +1,8 @@
 import { useState } from "react";
-import { Input, InputAdornment, InputGroup, type InputProps } from "./input_component";
+import { Input, InputAdornment, InputGroup } from "./input_component";
 
-const format = (value: string) =>
-  value
-    ? Number(value).toLocaleString("pt-BR", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })
-    : "";
-
-export interface MoneyInputProps extends Omit<InputProps, "onChange" | "value"> {
-  value?: string;
-  onChange?: (value: string) => void;
-  maxLength?: number;
-}
-
-export function MoneyInput({ value, onChange, maxLength, ...props }: MoneyInputProps) {
+const format = (value: string) => value ? Number(value).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }): "";
+export function MoneyInput({ value, onChange, maxLength, ...props }) {
   const [internal, setInternal] = useState(value ?? "");
   const [focused, setFocused] = useState(false);
   const current = value ?? internal;
@@ -23,9 +10,7 @@ export function MoneyInput({ value, onChange, maxLength, ...props }: MoneyInputP
   return (
     <InputGroup>
       <InputAdornment>R$</InputAdornment>
-      <Input
-        {...props}
-        inputMode="numeric"
+      <Input {...props} inputMode="numeric"
         value={focused ? current : format(current)}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
