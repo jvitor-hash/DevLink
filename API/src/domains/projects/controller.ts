@@ -110,16 +110,17 @@ export class ProjectControllerClass {
   public get = ({ params, user, set }: any) => {
     return executeController(
       set,
-      async() => {
-        const project = await requireValue(await this.projectService.findById(params.id), "Project not found");
-        const isParticipant = project.clientId === user?.id || project.programmerId === user?.id;
+      async () => await requireValue(await this.projectService.findById(params.id), "Project not found"),
+      // async() => {
+      //   const project = await requireValue(await this.projectService.findById(params.id), "Project not found");
+      //   const isParticipant = project.clientId === user?.id || project.programmerId === user?.id;
         
-        if (project.status === "IN_DEVELOPMENT" && !isParticipant)
-          throw new ForbiddenError("Project is only available to its participants");
+      //   if (project.status === "IN_DEVELOPMENT" && !isParticipant)
+      //     throw new ForbiddenError("Project is only available to its participants");
 
-        return await this.projectService.recordView(project.id, user.id ?? null)
-                .catch(() => { throw new Error("Failed to fetch project record") })
-      },
+      //   // return await this.projectService.recordView(project.id, user.id ?? null)
+      //   //         .catch(() => { throw new Error("Failed to fetch project record") })
+      // },
       "Failed to fetch project",
       HttpStatus.INTERNAL_SERVER_ERROR
     );

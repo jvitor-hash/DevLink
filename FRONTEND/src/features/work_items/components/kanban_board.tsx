@@ -5,22 +5,15 @@ import { TicketModal } from "./ticket_modal";
 import { COLUMNS } from "../types/ticket_board";
 import { useTickets } from "../hooks/use_tickets";
 import { useTicketMetadata } from "../hooks/use_ticket_metadata";
-import type { TicketDTO, TicketStatus } from "@/shared/types/database";
 import { Search, Plus } from "react-feather";
 
-interface KanbanBoardProps {
-  projectId: string;
-}
-
-export function KanbanBoard({ projectId }: KanbanBoardProps) {
-  const { tickets, loading, addTicket, updateTicket, moveTicket, removeTicket } =
-    useTickets(projectId);
+export function KanbanBoard({ projectId }) {
+  const { tickets, loading, addTicket, updateTicket, moveTicket, removeTicket } = useTickets(projectId);
   const { metaMap, setMeta } = useTicketMetadata(projectId);
-
   const [searchQuery, setSearchQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalStatus, setModalStatus] = useState<TicketStatus>("BACKLOG");
-  const [editingTicket, setEditingTicket] = useState<TicketDTO | null>(null);
+  const [modalStatus, setModalStatus] = useState<any>("BACKLOG");
+  const [editingTicket, setEditingTicket] = useState<any | null>(null);
 
   const filteredTickets = useMemo(() => {
     if (!searchQuery.trim()) return tickets;
@@ -34,13 +27,13 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
     });
   }, [tickets, searchQuery, metaMap]);
 
-  const handleOpenAdd = (status: TicketStatus = "BACKLOG") => {
+  const handleOpenAdd = (status = "BACKLOG") => {
     setEditingTicket(null);
     setModalStatus(status);
     setModalOpen(true);
   };
 
-  const handleOpenEdit = (ticket: TicketDTO) => {
+  const handleOpenEdit = (ticket) => {
     setEditingTicket(ticket);
     setModalStatus(ticket.status);
     setModalOpen(true);
@@ -56,7 +49,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
     }
   };
 
-  const statusOrder: TicketStatus[] = ["BACKLOG", "IN_PROGRESS", "REVIEW", "DONE"];
+  const statusOrder = ["BACKLOG", "IN_PROGRESS", "REVIEW", "DONE"];
 
   const handleMoveLeft = (ticketId: string) => {
     const ticket = tickets.find((t) => t.id === ticketId);
@@ -89,6 +82,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
             value={searchQuery}
             onChange={(e: any) => setSearchQuery(e.target.value)}
             className="pl-8 text-sm"
+            error={null}
           />
           <Search size={15} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-(--text-muted)" />
         </div>

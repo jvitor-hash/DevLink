@@ -1,5 +1,5 @@
 # DevLink
-Versão: v2.0.3
+Versão: v2.0.4
 
 ## Sumário
 

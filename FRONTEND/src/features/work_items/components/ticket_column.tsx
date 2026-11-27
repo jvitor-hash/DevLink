@@ -1,27 +1,8 @@
 import { TicketCard } from "./ticket_card";
-import type { TicketDTO, TicketStatus } from "@/shared/types/database";
-import type { TicketMetaMap } from "../types/ticket_board";
 import { Plus } from "react-feather";
 
-interface TicketColumnProps {
-  status: TicketStatus;
-  label: string;
-  hint: string;
-  tickets: TicketDTO[];
-  metaMap: TicketMetaMap;
-  canMoveLeft: boolean;
-  canMoveRight: boolean;
-  onMoveLeft: (ticketId: string) => void;
-  onMoveRight: (ticketId: string) => void;
-  onDeleteTicket: (ticketId: string) => void;
-  onSelectTicket?: (ticket: TicketDTO) => void;
-  onAddTicket?: (status: TicketStatus) => void;
-}
 
-export function TicketColumn({
-  status,
-  label,
-  hint,
+export function TicketColumn({ status, label, hint,
   tickets,
   metaMap,
   canMoveLeft,
@@ -31,14 +12,14 @@ export function TicketColumn({
   onDeleteTicket,
   onSelectTicket,
   onAddTicket,
-}: TicketColumnProps) {
+}) {
   return (
-    <div className="flex-1 min-w-[260px] bg-(--surface-2)/40 border border-(--border-subtle) rounded-md flex flex-col max-h-[700px]">
+    <div className="flex-1 min-w-[260px] bg-(--surface-2)/40 border border-(--border-subtle) flex flex-col max-h-[700px]">
       <div className="p-3 border-b border-(--border-subtle) flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2">
             <h3 className="font-medium text-sm text-(--text-primary)">{label}</h3>
-            <span className="text-xs px-1.5 py-0.2 bg-(--surface-1) border border-(--border-subtle) rounded-full font-mono">
+            <span className="text-xs px-1.5 py-0.2 bg-(--surface-1) border border-(--border-subtle) font-mono">
               {tickets.length}
             </span>
           </div>
@@ -59,9 +40,7 @@ export function TicketColumn({
 
       <div className="p-2 flex flex-col gap-2 overflow-y-auto flex-1">
         {tickets.length === 0 && (
-          <div className="py-8 text-center text-xs text-(--text-muted) italic">
-            Nenhum ticket
-          </div>
+          <div className="py-8 text-center text-xs text-(--text-muted) italic">Nenhum ticket</div>
         )}
 
         {tickets.map((ticket) => (

@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { projectViewService } from "../service/project_view_service";
-import type { ProjectDTO } from "@/shared/types/database";
 import type { ProjectFetchListQuery } from "../types/project_fetch_list_query";
 
 export function useProjects(initialQuery: ProjectFetchListQuery = {}) {
-  const [projects, setProjects] = useState<ProjectDTO[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 

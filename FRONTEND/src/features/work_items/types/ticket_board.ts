@@ -1,6 +1,4 @@
-import type { TicketDTO, TicketStatus } from "@/shared/types/database";
-
-export const COLUMNS: ReadonlyArray<{ status: TicketStatus; label: string; hint: string }> = [
+export const COLUMNS: ReadonlyArray<{ status; label: string; hint: string }> = [
   { status: "BACKLOG", label: "Backlog", hint: "A fazer" },
   { status: "IN_PROGRESS", label: "Em andamento", hint: "Em desenvolvimento" },
   { status: "REVIEW", label: "Validação", hint: "Em revisão" },
@@ -41,13 +39,13 @@ export type TicketMetaMap = Record<string, TicketMeta>;
 
 export const DEFAULT_TICKET_META: TicketMeta = { tags: [], priority: DEFAULT_PRIORITY };
 
-export const orderTickets = (tickets: TicketDTO[]): TicketDTO[] =>
+export const orderTickets = (tickets) =>
   [...tickets].sort(
     (a, b) => a.position - b.position || String(a.createdAt ?? "").localeCompare(String(b.createdAt ?? ""))
   );
 
-export const countByStatus = (tickets: TicketDTO[]): Record<TicketStatus, number> => {
-  const counts = { BACKLOG: 0, IN_PROGRESS: 0, REVIEW: 0, DONE: 0 } as Record<TicketStatus, number>;
+export const countByStatus = (tickets): Record<any, number> => {
+  const counts = { BACKLOG: 0, IN_PROGRESS: 0, REVIEW: 0, DONE: 0 } as Record<any, number>;
   for (const ticket of tickets) counts[ticket.status] += 1;
   return counts;
 };

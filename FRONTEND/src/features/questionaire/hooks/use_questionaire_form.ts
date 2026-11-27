@@ -84,13 +84,13 @@ export function useQuestionaireForm() {
         toast.error("Por favor, selecione a categoria e sub-categoria.");
         return false;
       }
-      if (!formData.problem.trim()) {
+      if (!formData.problem?.trim()) {
         toast.error("Por favor, descreva o problema que seu projeto pretende resolver.");
         return false;
       }
     }
     if (currentStep === 2) {
-      if (!formData.title.trim() || !formData.description.trim()) {
+      if (!formData.title?.trim() || !formData.description?.trim()) {
         toast.error("Por favor, preencha o título e a descrição do projeto.");
         return false;
       }
@@ -102,11 +102,13 @@ export function useQuestionaireForm() {
       }
     }
     if (currentStep === 4) {
-      if (formData.platforms.length === 0) {
+      if (!formData.platforms || formData.platforms.length === 0) {
         toast.error("Selecione pelo menos uma plataforma.");
         return false;
       }
-      if (formData.minBudget <= 0 || formData.maxBudget < formData.minBudget) {
+      const minB = Number(formData.minBudget);
+      const maxB = Number(formData.maxBudget);
+      if (Number.isNaN(minB) || Number.isNaN(maxB) || minB <= 0 || maxB < minB) {
         toast.error("Verifique os valores de orçamento mínimo e máximo.");
         return false;
       }
@@ -114,10 +116,26 @@ export function useQuestionaireForm() {
     return true;
   };
 
-  const nextStep = () => {
-    if (validateStep(step)) {
-      setStep((prev) => Math.min(prev + 1, 4));
+  const goToStep = (targetStep: number) => {
+    if (targetStep === step) return;
+
+    if (targetStep < step) {
+      setStep(targetStep);
+      return;
     }
+
+    for (let s = 1; s < targetStep; s++) {
+      if (!validateStep(s)) {
+        setStep(s);
+        return;
+      }
+    }
+
+    setStep(targetStep);
+  };
+
+  const nextStep = () => {
+    goToStep(step + 1);
   };
 
   const prevStep = () => {
@@ -125,7 +143,12 @@ export function useQuestionaireForm() {
   };
 
   const submitProject = async () => {
-    if (!validateStep(4)) return;
+    for (let s = 1; s <= 4; s++) {
+      if (!validateStep(s)) {
+        setStep(s);
+        return;
+      }
+    }
 
     setSubmitting(true);
 
@@ -168,5 +191,15 @@ export function useQuestionaireForm() {
     }
   };
 
-  return { step, setStep, formData, updateFields, nextStep, prevStep, submitProject, submitting };
+  return {
+    step,
+    goToStep,
+    setStep: goToStep,
+    formData,
+    updateFields,
+    nextStep,
+    prevStep,
+    submitProject,
+    submitting,
+  };
 }

@@ -1,7 +1,23 @@
 import { ULIB } from "@/shared/ui";
 import { ArrowLeft, ArrowRight, Check } from "react-feather";
 
-export function QuestionaireNavigation({ step, totalSteps = 4, submitting = false, onPrev, onNext, onSubmit }) {
+interface QuestionaireNavigationProps {
+  step: number;
+  totalSteps?: number;
+  submitting?: boolean;
+  onPrev: () => void;
+  onNext: () => void;
+  onSubmit: () => void;
+}
+
+export function QuestionaireNavigation({
+  step,
+  totalSteps = 4,
+  submitting = false,
+  onPrev,
+  onNext,
+  onSubmit,
+}: QuestionaireNavigationProps) {
   const isLast = step === totalSteps;
 
   return (

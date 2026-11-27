@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { projectViewService } from "../service/project_view_service";
-import type { ProjectDTO } from "@/shared/types/database";
 
 export function useProjectDetails(projectId?: string) {
-  const [project, setProject] = useState<ProjectDTO | null>(null);
-  const [loading, setLoading] = useState<boolean>(Boolean(projectId));
+  const [project, setProject] = useState<any | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchProject = useCallback(async (id: string) => {

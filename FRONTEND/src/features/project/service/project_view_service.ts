@@ -1,12 +1,11 @@
 import { APIClient } from "@/shared/utils/api_client";
 import type { ServiceRequestInterface } from "@/shared/types/service_request_interface";
 import type { ProjectFetchListQuery } from "@/features/project/types/project_fetch_list_query";
-import type { ProjectDTO } from "@/shared/types/database";
 
 class ProjectViewService {
-  async fetchProjects(listQuery: ProjectFetchListQuery = {}): Promise<ServiceRequestInterface<ProjectDTO[]>> {
+  async fetchProjects(listQuery: ProjectFetchListQuery = {}): Promise<ServiceRequestInterface<any[]>> {
     try {
-      const result = await APIClient.get<ProjectDTO[]>("/api/v1/projects", { ...listQuery });
+      const result = await APIClient.get<any[]>("/api/v1/projects", { ...listQuery });
 
       if (!result)
         return { success: false, data: null, errors: new Error("Falha ao buscar projetos") };
@@ -17,9 +16,9 @@ class ProjectViewService {
     }
   }
 
-  async fetchProjectById(id: string): Promise<ServiceRequestInterface<ProjectDTO>> {
+  async fetchProjectById(id: string): Promise<ServiceRequestInterface> {
     try {
-      const result = await APIClient.get<ProjectDTO>(`/api/v1/projects/${id}`);
+      const result = await APIClient.get<any>(`/api/v1/projects/${id}`);
 
       if (!result)
         return { success: false, data: null, errors: new Error("Projeto não encontrado") };
@@ -60,9 +59,9 @@ class ProjectViewService {
     }
   }
 
-  async fetchSavedProjects(params: { limit?: number; offset?: number } = {}): Promise<ServiceRequestInterface<ProjectDTO[]>> {
+  async fetchSavedProjects(params: { limit?: number; offset?: number } = {}): Promise<ServiceRequestInterface<any[]>> {
     try {
-      const result = await APIClient.get<ProjectDTO[]>("/api/v1/projects/saved", params);
+      const result = await APIClient.get<any[]>("/api/v1/projects/saved", params);
 
       if (!result)
         return { success: false, data: null, errors: new Error("Falha ao buscar projetos salvos") };

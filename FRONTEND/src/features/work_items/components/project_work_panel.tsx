@@ -16,7 +16,7 @@ export function ProjectWorkPanel({ projectId }: ProjectWorkPanelProps) {
         <button
           type="button"
           onClick={() => setActiveTab("kanban")}
-          className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors cursor-pointer ${
+          className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer ${
             activeTab === "kanban"
               ? "bg-(--surface-2) text-(--text-primary) border border-(--border)"
               : "text-(--text-muted) hover:text-(--text-primary)"
@@ -28,7 +28,7 @@ export function ProjectWorkPanel({ projectId }: ProjectWorkPanelProps) {
         <button
           type="button"
           onClick={() => setActiveTab("todos")}
-          className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors cursor-pointer ${
+          className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer ${
             activeTab === "todos"
               ? "bg-(--surface-2) text-(--text-primary) border border-(--border)"
               : "text-(--text-muted) hover:text-(--text-primary)"

@@ -7,7 +7,7 @@ import { QuestionaireStepThree } from "./questionaire_step_3";
 import { QuestionaireStepFour } from "./questionaire_step_4";
 
 export function QuestionaireWizard() {
-  const { step, setStep, formData, updateFields, nextStep, prevStep, submitProject, submitting } = useQuestionaireForm();
+  const { step, goToStep, formData, updateFields, nextStep, prevStep, submitProject, submitting } = useQuestionaireForm();
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 w-full mx-auto p-4">
@@ -33,7 +33,7 @@ export function QuestionaireWizard() {
 
       {/* Progress Sidebar */}
       <div className="w-full lg:w-72 shrink-0">
-        <QuestionaireProgress currentStep={step} onStepClick={setStep} />
+        <QuestionaireProgress currentStep={step} onStepClick={goToStep} />
       </div>
     </div>
   );

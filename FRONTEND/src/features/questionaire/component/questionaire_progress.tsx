@@ -1,3 +1,8 @@
+interface QuestionaireProgressProps {
+  currentStep: number;
+  onStepClick?: (step: number) => void;
+}
+
 const STEPS = [
   { num: 1, label: "Problema & Categoria" },
   { num: 2, label: "Solução & Descrição" },
@@ -5,7 +10,7 @@ const STEPS = [
   { num: 4, label: "Orçamento & Execução" },
 ];
 
-export function QuestionaireProgress({ currentStep, onStepClick}) {
+export function QuestionaireProgress({ currentStep, onStepClick }: QuestionaireProgressProps) {
   return (
     <div className="flex flex-col gap-3">
       {STEPS.map((s) => {

@@ -76,7 +76,7 @@ export default function Projects() {
         )}
 
         {!loading && !error && projects.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             {projects.map((project) => (
               <ProjectPreview key={project.id} {...project} />
             ))}

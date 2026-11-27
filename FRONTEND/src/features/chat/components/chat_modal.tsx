@@ -5,6 +5,7 @@ import { MessageComposer } from "./message_composer";
 import { OfferModal } from "./offer_modal";
 import { useConversations } from "../hooks/use_conversations";
 import { useMessages } from "../hooks/use_messages";
+import { messageService } from "../service/message_service";
 import { useCurrentUser } from "@/features/auth/hooks/use_current_user";
 import { X, MessageCircle } from "react-feather";
 
@@ -21,6 +22,7 @@ export function ChatModal({ projectId, isOpen, onClose }: ChatModalProps) {
     activeConversationId,
     setActiveConversationId,
     loading: loadingConversations,
+    createConversation,
   } = useConversations(projectId);
 
   const {
@@ -35,20 +37,63 @@ export function ChatModal({ projectId, isOpen, onClose }: ChatModalProps) {
   if (!isOpen) return null;
 
   const handleSendText = async (text: string) => {
-    await sendMessage({
-      content: text,
-      messageType: "MESSAGE",
-    });
+    let convId = activeConversationId;
+    if (!convId && projectId) {
+      const created = await createConversation({
+        projectId,
+        userId: currentUser?.id,
+      } as any);
+      if (created) {
+        convId = created.id;
+        setActiveConversationId(created.id);
+      }
+    }
+
+    if (convId) {
+      if (activeConversationId) {
+        await sendMessage({
+          content: text,
+          messageType: "MESSAGE",
+        });
+      } else {
+        await messageService.sendMessage({
+          conversationId: convId,
+          content: text,
+          messageType: "MESSAGE",
+        });
+      }
+    }
   };
 
   const handleSendOffer = async (offerData: { money: number; deadline: string; notes: string }) => {
-    await sendMessage({
-      content: offerData.notes || `Proposta enviada no valor de R$ ${offerData.money.toLocaleString()}`,
-      messageType: "OFFER",
-      offerMoney: offerData.money,
-      offerDeadline: offerData.deadline,
-      offerStatus: "PENDING",
-    });
+    let convId = activeConversationId;
+    if (!convId && projectId) {
+      const created = await createConversation({
+        projectId,
+        userId: currentUser?.id,
+      } as any);
+      if (created) {
+        convId = created.id;
+        setActiveConversationId(created.id);
+      }
+    }
+
+    if (convId) {
+      const payload = {
+        conversationId: convId,
+        content: offerData.notes || `Proposta enviada no valor de R$ ${offerData.money.toLocaleString("pt-BR")}`,
+        messageType: "OFFER" as const,
+        offerMoney: offerData.money,
+        offerDeadline: offerData.deadline,
+        offerStatus: "PENDING" as const,
+      };
+
+      if (activeConversationId) {
+        await sendMessage(payload);
+      } else {
+        await messageService.sendMessage(payload);
+      }
+    }
   };
 
   return (
@@ -82,6 +127,8 @@ export function ChatModal({ projectId, isOpen, onClose }: ChatModalProps) {
               <h4 className="font-medium text-sm">
                 {activeConversationId
                   ? `Conversa #${activeConversationId.slice(0, 8)}`
+                  : projectId
+                  ? "Conversar com o criador do projeto"
                   : "Selecione uma conversa"}
               </h4>
             </div>
@@ -103,8 +150,8 @@ export function ChatModal({ projectId, isOpen, onClose }: ChatModalProps) {
 
           <MessageComposer
             onSendMessage={handleSendText}
-            onOpenOffer={() => setOfferModalOpen(true)}
-            disabled={!activeConversationId}
+            onOpenOffer={currentUser?.role === "PROGRAMMER" ? () => setOfferModalOpen(true) : undefined}
+            disabled={!activeConversationId && !projectId}
           />
         </div>
       </div>
